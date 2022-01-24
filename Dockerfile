@@ -11,7 +11,7 @@ WORKDIR /home/ubuntu/tools/FastBATLLNN/HyperplaneRegionEnum
 RUN python3 posetFastCharm_numba.py
 
 WORKDIR /home/ubuntu
-RUN echo "export PYTHONPATH=/home/ubuntu/tools/FastBATLLNN/HyperplaneRegionEnum:/home/ubuntu/tools/FastBATLLNN/Simple2xHRep" >> /home/ubuntu/.bashrc
+RUN echo "export PYTHONPATH=/home/ubuntu/tools/FastBATLLNN:/home/ubuntu/tools/FastBATLLNN/HyperplaneRegionEnum:/home/ubuntu/tools/FastBATLLNN/Simple2xHRep" >> /home/ubuntu/.bashrc
 WORKDIR /home/ubuntu/tools/FastBATLLNN
 
 USER root
