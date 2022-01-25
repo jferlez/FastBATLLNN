@@ -15,6 +15,14 @@ import posetFastCharm_numba
 import itertools
 import random
 import region_helpers
+
+try:
+    from simple2xSuccessorWorker import simple2xSuccessorWorker
+    simple2xAvailable = True
+except ImportError:
+    simple2xAvailable = False
+
+
 cvxopt.solvers.options['show_progress'] = False
 
 # All hyperplanes assumed to be specified as A x >= b
@@ -210,10 +218,10 @@ class TLLHypercubeReach(Chare):
 
         if self.usePosetChecking:
              # For poset checking:
-            self.poset = Chare(posetFastCharm.Poset,args=[pes, PosetNodeTLLVerOriginCheck, self.checkerLocalVars, None],onPE=charm.myPe())
+            self.poset = Chare(posetFastCharm.Poset,args=[pes, PosetNodeTLLVerOriginCheck, self.checkerLocalVars, (simple2xSuccessorWorker if simple2xAvailable else None)],onPE=charm.myPe())
         else:
             # For node checking;
-            self.poset = Chare(posetFastCharm.Poset,args=[pes, PosetNodeTLLVer, self.checkerLocalVars, None],onPE=charm.myPe())
+            self.poset = Chare(posetFastCharm.Poset,args=[pes, PosetNodeTLLVer, self.checkerLocalVars, (simple2xSuccessorWorker if simple2xAvailable else None)],onPE=charm.myPe())
        
         charm.awaitCreation(self.poset)
 
@@ -369,7 +377,7 @@ class TLLHypercubeReach(Chare):
         return windLB if lb else windUB
 
     @coro
-    def verifyLB(self,lb, out=0, timeout=None):
+    def verifyLB(self,lb, out=0, timeout=None, method='fastLP'):
         if out >= self.m:
             raise ValueError('Output ' + str(out) + ' is greater than m = ' + str(self.m))
         
@@ -382,7 +390,7 @@ class TLLHypercubeReach(Chare):
         self.copyTime += time.time() - t # Total time across all PEs to set up a new problem
 
         t = time.time()
-        retVal = self.poset.populatePoset(method='fastLP',solver='glpk',findAll=False,useQuery=self.useQuery,useBounding=self.useBounding,ret=True).get() # specify retChannelEndPoint=self.thisProxy to send to a channel as follows
+        retVal = self.poset.populatePoset(method=method,solver='glpk',findAll=False,useQuery=self.useQuery,useBounding=self.useBounding,ret=True).get() # specify retChannelEndPoint=self.thisProxy to send to a channel as follows
         self.posetTime += time.time() - t
 
         return retVal
