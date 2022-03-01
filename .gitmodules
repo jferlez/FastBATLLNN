@@ -1,0 +1,6 @@
+[submodule "HyperplaneRegionEnum"]
+	path = HyperplaneRegionEnum
+	url = https://github.com/jferlez/HyperplaneRegionEnum
+[submodule "TLLnet"]
+	path = TLLnet
+	url = https://github.com/jferlez/TLLnet
