@@ -216,12 +216,14 @@ class TLLHypercubeReach(Chare):
         
         charm.awaitCreation(self.checkerLocalVars)
 
+        self.poset = Chare(posetFastCharm.Poset,args=[],onPE=charm.myPe())
+
         if self.usePosetChecking:
-             # For poset checking:
-            self.poset = Chare(posetFastCharm.Poset,args=[pes, PosetNodeTLLVerOriginCheck, self.checkerLocalVars, (simple2xSuccessorWorker if simple2xAvailable else None)],onPE=charm.myPe())
+             # For poset checking:    
+            self.poset.init(pes, PosetNodeTLLVerOriginCheck, self.checkerLocalVars, (simple2xSuccessorWorker if simple2xAvailable else None),awaitable=True).get()
         else:
             # For node checking;
-            self.poset = Chare(posetFastCharm.Poset,args=[pes, PosetNodeTLLVer, self.checkerLocalVars, (simple2xSuccessorWorker if simple2xAvailable else None)],onPE=charm.myPe())
+            self.poset.init(pes, PosetNodeTLLVer, self.checkerLocalVars, (simple2xSuccessorWorker if simple2xAvailable else None),awaitable=True).get()
        
         charm.awaitCreation(self.poset)
 
