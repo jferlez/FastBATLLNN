@@ -93,7 +93,9 @@ class Main(Chare):
         pes = {'poset':[(0,3,1)],'hash':[(3,4,1)]}
         useQuery = True
         useBounding = True
-        tllReach = Chare(TLLHypercubeReach.TLLHypercubeReach, args=[localLinearFns, selectorMats, constraints, 100, pes, useQuery, useBounding])
+        tllReach = Chare(TLLHypercubeReach.TLLHypercubeReach, args=[pes])
+        charm.awaitCreation(tllReach)
+        tllReach.initialize(localLinearFns, selectorMats, constraints, 100, useQuery, useBounding,awaitable=True).get()
         # charm.awaitCreation(tllReach)
 
         t = time.time()
