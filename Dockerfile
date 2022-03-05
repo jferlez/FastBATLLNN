@@ -13,6 +13,7 @@ WORKDIR /home/${USER_NAME}/tools/FastBATLLNN
 RUN chown -R ${UID}:${GID} /home/${USER_NAME}/tools
 
 USER ${USER_NAME}
+RUN ssh-keygen -t rsa
 # Now copy over code
 COPY --chown=${UID}:${GID} . .
 
@@ -23,5 +24,5 @@ WORKDIR /home/${USER_NAME}
 RUN echo "export PYTHONPATH=/home/${USER_NAME}/tools/FastBATLLNN:/home/${USER_NAME}/tools/FastBATLLNN/HyperplaneRegionEnum:/home/${USER_NAME}/tools/FastBATLLNN/Simple2xHRep" >> /home/${USER_NAME}/.bashrc
 WORKDIR /home/${USER_NAME}/tools/FastBATLLNN
 
-USER root
+USER ${USER_NAME}
 ENTRYPOINT [ "/usr/local/bin/startup.sh" ]
