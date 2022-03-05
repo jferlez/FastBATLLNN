@@ -9,7 +9,7 @@ RUN useradd -rm -d /home/${USER_NAME} -s /bin/bash -g ${USER_NAME} -G sudo -u ${
 
 # switch to unpriviledged user, and configure remote access
 WORKDIR /home/${USER_NAME}/tools/FastBATLLNN
-RUN chown -R ${UID}:${GID} /home/ubuntu/tools
+RUN chown -R ${UID}:${GID} /home/${USER_NAME}/tools
 
 USER ${USER_NAME}
 # Now copy over code
