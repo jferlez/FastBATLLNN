@@ -13,7 +13,7 @@ WORKDIR /home/${USER_NAME}/tools/FastBATLLNN
 RUN chown -R ${UID}:${GID} /home/${USER_NAME}/tools
 
 USER ${USER_NAME}
-RUN ssh-keygen -t rsa -q -f ${USER_NAME}/.ssh/id_rsa -N ""
+RUN ssh-keygen -t rsa -q -f /home/${USER_NAME}/.ssh/id_rsa -N ""
 # Now copy over code
 COPY --chown=${UID}:${GID} . .
 
