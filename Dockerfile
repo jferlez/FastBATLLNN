@@ -1,18 +1,26 @@
 FROM jferlez/fastbatllnn:deps
+
+ARG USER_NAME
+ARG UID
+ARG GID
+
+RUN addgroup --gid ${GID} ${USER_NAME}
+RUN useradd -rm -d /home/${USER_NAME} -s /bin/bash -g ${USER_NAME} -G sudo -u ${UID} ${USER_NAME}
+
 # switch to unpriviledged user, and configure remote access
-WORKDIR /home/ubuntu/tools/FastBATLLNN
-RUN chown -R ubuntu:root /home/ubuntu/tools
+WORKDIR /home/${USER_NAME}/tools/FastBATLLNN
+RUN chown -R ${UID}:${GID} /home/ubuntu/tools
 
-USER ubuntu
+USER ${USER_NAME}
 # Now copy over code
-COPY --chown=ubuntu:root . .
+COPY --chown=${UID}:${GID} . .
 
-WORKDIR /home/ubuntu/tools/FastBATLLNN/HyperplaneRegionEnum
-RUN python3 posetFastCharm_numba.py
+WORKDIR /home/${USER_NAME}/tools/FastBATLLNN/HyperplaneRegionEnum
+RUN python3.9 posetFastCharm_numba.py
 
-WORKDIR /home/ubuntu
-RUN echo "export PYTHONPATH=/home/ubuntu/tools/FastBATLLNN:/home/ubuntu/tools/FastBATLLNN/HyperplaneRegionEnum:/home/ubuntu/tools/FastBATLLNN/Simple2xHRep" >> /home/ubuntu/.bashrc
-WORKDIR /home/ubuntu/tools/FastBATLLNN
+WORKDIR /home/${USER_NAME}
+RUN echo "export PYTHONPATH=/home/${USER_NAME}/tools/FastBATLLNN:/home/${USER_NAME}/tools/FastBATLLNN/HyperplaneRegionEnum:/home/${USER_NAME}/tools/FastBATLLNN/Simple2xHRep" >> /home/${USER_NAME}/.bashrc
+WORKDIR /home/${USER_NAME}/tools/FastBATLLNN
 
 USER root
-CMD /usr/local/bin/startup.sh
+CMD /usr/local/bin/startup.sh ${USER_NAME}
