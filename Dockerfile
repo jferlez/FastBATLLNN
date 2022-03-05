@@ -24,4 +24,4 @@ RUN echo "export PYTHONPATH=/home/${USER_NAME}/tools/FastBATLLNN:/home/${USER_NA
 WORKDIR /home/${USER_NAME}/tools/FastBATLLNN
 
 USER root
-CMD /usr/local/bin/startup.sh ${USER_NAME}
+ENTRYPOINT [ "/usr/local/bin/startup.sh" ]
