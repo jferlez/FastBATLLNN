@@ -44,15 +44,16 @@ RUN sed -i -E -e 's/(assert not self.running and charm.runningEntryMethod is Non
 # RUN useradd -rm -d /home/ubuntu -s /bin/bash -g root -G sudo -u 1000 ubuntu
 # RUN echo 'ubuntu:ubuntu' | chpasswd
 RUN /usr/bin/ssh-keygen -A
-RUN echo "#!/bin/bash\nnohup /usr/sbin/sshd -D &> /root/nohup.out &\nsudo -u ${1} /bin/bash" > /usr/local/bin/startup.sh
-RUN chmod 700 /usr/local/bin/startup.sh
-RUN echo "export PATH=/usr/local/bin:$PATH\nexport LD_LIBRARY_PATH=/usr/local/lib\nexport COIN_INSTALL_DIR=/usr/local" >> /etc/bash.bashrc
+RUN echo "#!/bin/bash\nnohup /usr/sbin/sshd -D &> /root/nohup.out &\nif [ -e /etc/ssh/ssh_host_rsa_key.pub ]\nthen\n echo \"\n****** SSH host key ******\"\ncat /etc/ssh/ssh_host_rsa_key.pub\necho \"**************************\n\"\nsudo -u \$1 cp /etc/ssh/ssh_host_rsa_key.pub /home/\$1/results\nfi\nif [ -e /home/\$1/results/authorized_keys ] && [ -d /home/\$1/.ssh ]\nthen\ncp /home/\$1/results/authorized_keys /home/\$1/.ssh\nchmod 600 /home/\$1/.ssh/authorized_keys && chown \$1:\$1 /home/\$1/.ssh/authorized_keys && rm /home/\$1/results/authorized_keys\nfi\nsudo -u \$1 /bin/bash" > /usr/local/bin/startup.sh
+RUN chmod 755 /usr/local/bin/startup.sh
+RUN echo "export PATH=/usr/local/bin:\$PATH\nexport LD_LIBRARY_PATH=/usr/local/lib\nexport COIN_INSTALL_DIR=/usr/local" >> /etc/bash.bashrc
 # RUN chown ubuntu:root /home/ubuntu/.bashrc
 # RUN rm /etc/ssh/ssh_host_rsa_key /etc/ssh/ssh_host_ecdsa_key && \
 #     ssh-keygen -f /etc/ssh/ssh_host_rsa_key -N '' -t rsa && \
 #     ssh-keygen -f /etc/ssh/ssh_host_dsa_key -N '' -t dsa && \
 #     ssh-keygen -f /etc/ssh/ssh_host_ecdsa_key -N '' -t ecdsa -b 521
 # RUN /usr/bin/ssh-keygen -A
+RUN sed -i -E -e 's/PasswordAuthentication\s+yes/PasswordAuthentication no/' /etc/ssh/sshd_config
 RUN service ssh start
 EXPOSE 22
 # CMD ["/bin/bash"]

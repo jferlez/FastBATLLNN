@@ -10,12 +10,14 @@ fi
 cd container_results
 if [ -e ~/.ssh/id_rsa.pub ]
 then
+    echo "Copying public key from ~/.ssh/id_rsa.pub to container authorized_keys"
     cat ~/.ssh/id_rsa.pub > authorized_keys
     echo "" >> authorized_keys
 fi
 if [ -e ~/.ssh/authorized_keys ]
 then
+    echo "Copying public keys from ~/.ssh/authorized_keys to container authorized_keys"
     cat ~/.ssh/authorized_keys >> authorized_keys
 fi
 cd ..
-docker run --privileged -it -p 3000:22 -v "$(pwd)"/container_results:/home/${user}/results fastbatllnn-test:${user} ${user}
+docker run --privileged --gpus all -it -p 3000:22 -v "$(pwd)"/container_results:/home/${user}/results fastbatllnn-test:${user} ${user}
