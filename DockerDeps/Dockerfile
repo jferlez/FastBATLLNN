@@ -53,7 +53,7 @@ RUN echo "export PATH=/usr/local/bin:\$PATH\nexport LD_LIBRARY_PATH=/usr/local/l
 #     ssh-keygen -f /etc/ssh/ssh_host_dsa_key -N '' -t dsa && \
 #     ssh-keygen -f /etc/ssh/ssh_host_ecdsa_key -N '' -t ecdsa -b 521
 # RUN /usr/bin/ssh-keygen -A
-RUN sed -i -E -e 's/PasswordAuthentication\s+yes/PasswordAuthentication no/' /etc/ssh/sshd_config
+RUN sed -i -E -e 's/\s*#\s*PasswordAuthentication\s+(yes|no)/PasswordAuthentication no/' /etc/ssh/sshd_config
 RUN service ssh start
 EXPOSE 22
 # CMD ["/bin/bash"]
