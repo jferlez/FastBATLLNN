@@ -11,7 +11,7 @@ cd container_results
 if [ -e ~/.ssh/id_rsa.pub ]
 then
     cat ~/.ssh/id_rsa.pub > authorized_keys
-    echo "\n" >> authorized_keys
+    echo "" >> authorized_keys
 fi
 if [ -e ~/.ssh/authorized_keys ]
 then
