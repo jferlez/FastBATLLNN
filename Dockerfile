@@ -10,6 +10,8 @@ RUN echo "${USER_NAME}:${USER_NAME}" | chpasswd
 RUN mkdir -p /home/${USER_NAME}/.ssh
 RUN ssh-keygen -t rsa -q -f /home/${USER_NAME}/.ssh/id_rsa -N ""
 
+RUN mkdir -p /home/${USER_NAME}/results
+
 # switch to unpriviledged user, and configure remote access
 WORKDIR /home/${USER_NAME}/tools/FastBATLLNN
 RUN chown -R ${UID}:${GID} /home/${USER_NAME}/tools
@@ -28,5 +30,4 @@ WORKDIR /home/${USER_NAME}/tools/FastBATLLNN
 USER root
 RUN chown -R ${UID}:${GID} /home/${USER_NAME}/
 
-USER ${USER_NAME}
 ENTRYPOINT [ "/usr/local/bin/startup.sh" ]
