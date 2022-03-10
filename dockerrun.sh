@@ -3,7 +3,7 @@
 user=`id -n -u`
 uid=`id -u`
 gid=`id -g`
-SHMSIZE = $(( `grep MemTotal /proc/meminfo | sed -e 's/[^0-9]//g'` / 2097152 ))
+SHMSIZE = $(( `grep MemTotal /proc/meminfo | sed -e 's/[^0-9]//g'` / 2 ))
 if [ ! -d container_results ]
 then
     mkdir container_results
@@ -21,4 +21,4 @@ then
     cat ~/.ssh/authorized_keys >> authorized_keys
 fi
 cd ..
-docker run --privileged --gpus all --shm-size=${SHMSIZE}gb -it -p 3000:22 -v "$(pwd)"/container_results:/home/${user}/results fastbatllnn-test:${user} ${user}
+docker run --privileged --gpus all --shm-size ${SHMSIZE} -it -p 3000:22 -v "$(pwd)"/container_results:/home/${user}/results fastbatllnn-test:${user} ${user}
