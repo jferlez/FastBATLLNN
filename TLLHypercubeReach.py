@@ -379,10 +379,12 @@ class TLLHypercubeReach(Chare):
         return windLB if lb else windUB
 
     @coro
-    def verifyLB(self,lb, out=0, timeout=None, method='fastLP'):
+    def verifyLB(self,lb, out=0, timeout=None, method='fastLP',findAll=False,**kwargs):
         if out >= self.m:
             raise ValueError('Output ' + str(out) + ' is greater than m = ' + str(self.m))
-        
+        for kwrd in ['ret', 'awaitable']:
+            if kwrd in kwargs:
+                kwargs.pop('ret')
         t = time.time()
         
         stat = self.poset.setConstraint(lb, out=out, timeout=timeout, awaitable=True)
@@ -392,13 +394,13 @@ class TLLHypercubeReach(Chare):
         self.copyTime += time.time() - t # Total time across all PEs to set up a new problem
 
         t = time.time()
-        retVal = self.poset.populatePoset(method=method,solver='glpk',findAll=False,useQuery=self.useQuery,useBounding=self.useBounding,ret=True).get() # specify retChannelEndPoint=self.thisProxy to send to a channel as follows
+        retVal = self.poset.populatePoset(method=method,solver='glpk',findAll=findAll,useQuery=self.useQuery,useBounding=self.useBounding,**kwargs,ret=True).get() # specify retChannelEndPoint=self.thisProxy to send to a channel as follows
         self.posetTime += time.time() - t
 
         return retVal
     
     @coro
-    def verifyUB(self,ub,out=0, timeout=None):
+    def verifyUB(self,ub,out=0, timeout=None, **kwargs):
         if out >= self.m:
             raise ValueError('Output ' + str(out) + ' is greater than m = ' + str(self.m))
         self.ubCheckerGroup.reset(timeout,awaitable=True).get()
