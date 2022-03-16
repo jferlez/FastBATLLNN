@@ -384,7 +384,7 @@ class TLLHypercubeReach(Chare):
             raise ValueError('Output ' + str(out) + ' is greater than m = ' + str(self.m))
         for kwrd in ['ret', 'awaitable']:
             if kwrd in kwargs:
-                kwargs.pop('ret')
+                kwargs.pop(kwrd)
         t = time.time()
         
         stat = self.poset.setConstraint(lb, out=out, timeout=timeout, awaitable=True)
