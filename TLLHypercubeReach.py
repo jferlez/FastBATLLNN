@@ -268,7 +268,7 @@ class TLLHypercubeReach(Chare):
                         self.selectorMats[k] \
                     ) \
                 )
-
+        self.selectorMats = None
         # Defunct
         # self.poset.setSuccessorCommonProperty('selectorSetsFull',self.selectorSetsFull,awaitable=True).get()
         if self.usePosetChecking:
@@ -282,7 +282,7 @@ class TLLHypercubeReach(Chare):
         stat = self.poset.initialize(self.localLinearFns, self.pt, self.inputConstraintsA, self.inputConstraintsb, awaitable=True)
         stat.get()
         
-        stat = self.ubCheckerGroup.initialize(self.localLinearFns, self.pt, self.inputConstraintsA, self.inputConstraintsb, self.selectorMats, awaitable=True)
+        stat = self.ubCheckerGroup.initialize(self.localLinearFns, self.pt, self.inputConstraintsA, self.inputConstraintsb, self.selectorSetsFull, awaitable=True)
         stat.get()
 
         self.copyTime = 0
@@ -419,7 +419,7 @@ class TLLHypercubeReach(Chare):
 
 class minGroupFeasibleUB(Chare):
 
-    def initialize(self, AbPairs, pt, fixedA, fixedb, selectorMats):
+    def initialize(self, AbPairs, pt, fixedA, fixedb, selectorSets):
         self.constraints = None
         self.AbPairs = AbPairs
         self.pt = pt
@@ -427,17 +427,18 @@ class minGroupFeasibleUB(Chare):
         self.fixedb = fixedb
         self.N = len(self.AbPairs[0][0])
         self.n = len(self.AbPairs[0][0][0])
-        self.selectorMatsFull = selectorMats
+        self.selectorSetsFull = selectorSets
+        # self.selectorMatsFull = selectorMats
         
-        self.selectorSetsFull = [[] for k in range(len(selectorMats))]
-        # Convert the matrices to sets of 'used' hyperplanes
-        for k in range(len(selectorMats)):
-            self.selectorSetsFull[k] = list( \
-                    map( \
-                        lambda x: frozenset(np.flatnonzero(np.count_nonzero(x, axis=0)>0)), \
-                        self.selectorMatsFull[k] \
-                    ) \
-                )
+        # self.selectorSetsFull = [[] for k in range(len(selectorMats))]
+        # # Convert the matrices to sets of 'used' hyperplanes
+        # for k in range(len(selectorMats)):
+        #     self.selectorSetsFull[k] = list( \
+        #             map( \
+        #                 lambda x: frozenset(np.flatnonzero(np.count_nonzero(x, axis=0)>0)), \
+        #                 self.selectorMatsFull[k] \
+        #             ) \
+        #         )
         
         self.lp = encapsulateLP.encapsulateLP()
 
