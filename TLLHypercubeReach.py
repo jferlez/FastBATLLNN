@@ -217,7 +217,7 @@ class TLLHypercubeReach(Chare):
         
         charm.awaitCreation(self.checkerLocalVars)
 
-        if 'gpu' in pes:
+        if simple2xAvailable and 'gpu' in pes:
             self.poset = Chare(PosetSimple2x,args=[],onPE=charm.myPe())
         else:
             self.poset = Chare(posetFastCharm.Poset,args=[],onPE=charm.myPe())
