@@ -18,6 +18,7 @@ import region_helpers
 
 try:
     from simple2xSuccessorWorker import simple2xSuccessorWorker
+    from simple2xPosetFastCharm import PosetSimple2x
     simple2xAvailable = True
 except ImportError:
     simple2xAvailable = False
@@ -216,7 +217,10 @@ class TLLHypercubeReach(Chare):
         
         charm.awaitCreation(self.checkerLocalVars)
 
-        self.poset = Chare(posetFastCharm.Poset,args=[],onPE=charm.myPe())
+        if 'gpu' in pes:
+            self.poset = Chare(PosetSimple2x,args=[],onPE=charm.myPe())
+        else:
+            self.poset = Chare(posetFastCharm.Poset,args=[],onPE=charm.myPe())
 
         if self.usePosetChecking:
              # For poset checking:    
