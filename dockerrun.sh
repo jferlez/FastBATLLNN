@@ -3,12 +3,15 @@
 user=`id -n -u`
 uid=`id -u`
 gid=`id -g`
+
+SCRIPT_DIR=$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )
+
 SHMSIZE=$(( `grep MemTotal /proc/meminfo | sed -e 's/[^0-9]//g'` / 2097152 ))
-if [ ! -d container_results ]
+if [ ! -d "$SCRIPT_DIR/container_results" ]
 then
-    mkdir container_results
+    mkdir "$SCRIPT_DIR/container_results"
 fi
-cd container_results
+cd "$SCRIPT_DIR/container_results"
 if [ -e ~/.ssh/id_rsa.pub ]
 then
     echo "Copying public key from ~/.ssh/id_rsa.pub to container authorized_keys"

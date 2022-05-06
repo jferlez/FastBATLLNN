@@ -3,8 +3,10 @@
 user=`id -n -u`
 GID=`id -g`
 
-cd DockerDeps
+SCRIPT_DIR=$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )
+
+cd "$SCRIPT_DIR/DockerDeps"
 docker build -t fastbatllnn:deps .
-cd ..
+cd "$SCRIPT_DIR"
 
 docker build --build-arg USER_NAME=$user --build-arg UID=$UID --build-arg GID=$GID -t fastbatllnn-test:${user} .
