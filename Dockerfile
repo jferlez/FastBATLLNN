@@ -1,4 +1,4 @@
-FROM jferlez/fastbatllnn:deps
+FROM fastbatllnn:deps
 
 ARG USER_NAME
 ARG UID
