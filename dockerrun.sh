@@ -33,4 +33,16 @@ then
     cat ~/.ssh/authorized_keys >> authorized_keys
 fi
 cd ..
-docker run --privileged $GPUS --shm-size=${SHMSIZE}gb -it -p 3000:22 -v "$(pwd)"/container_results:/home/${user}/results fastbatllnn-test:${user} ${user}
+
+CONTAINERS=`docker container ls -a | grep fastbatllnn-run:$user | sed -e "s/[ ].*//"`
+EXISTING_CONTAINER=""
+for CONT in $CONTAINERS; do
+    EXISTING_CONTAINER=$CONT
+    break
+done
+
+if [ "$EXISTING_CONTAINER" = "" ]; then
+    docker run --privileged $GPUS --shm-size=${SHMSIZE}gb -it -p 3000:22 -v "$(pwd)"/container_results:/home/${user}/results fastbatllnn-run:${user} ${user}
+else
+    docker start $EXISTING_CONTAINER
+fi
