@@ -4,6 +4,11 @@ ARG USER_NAME
 ARG UID
 ARG GID
 
+# Delete some groups that overlap with MacOS standard user groups
+RUN delgroup --only-if-empty dialout
+RUN delgroup --only-if-empty fax
+RUN delgroup --only-if-empty voice
+
 RUN addgroup --gid ${GID} ${USER_NAME}
 RUN useradd -rm -d /home/${USER_NAME} -s /bin/bash -g ${USER_NAME} -G sudo -u ${UID} ${USER_NAME}
 RUN echo "${USER_NAME}:${USER_NAME}" | chpasswd
