@@ -6,7 +6,16 @@ gid=`id -g`
 
 SCRIPT_DIR=$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )
 
-SHMSIZE=$(( `grep MemTotal /proc/meminfo | sed -e 's/[^0-9]//g'` / 2097152 ))
+SYSTEM_TYPE=$(uname)
+
+if [ "$SYSTEM_TYPE" = "Darwin" ]; then
+    SHMSIZE=$(( `sysctl hw.memsize | sed -e 's/[^0-9]//g'` / 2097152 ))
+else
+    SHMSIZE=$(( `grep MemTotal /proc/meminfo | sed -e 's/[^0-9]//g'` / 2097152 ))
+    GPUS="--gpus all"
+fi
+GPUS=""
+
 if [ ! -d "$SCRIPT_DIR/container_results" ]
 then
     mkdir "$SCRIPT_DIR/container_results"
@@ -24,4 +33,4 @@ then
     cat ~/.ssh/authorized_keys >> authorized_keys
 fi
 cd ..
-docker run --privileged --gpus all --shm-size=${SHMSIZE}gb -it -p 3000:22 -v "$(pwd)"/container_results:/home/${user}/results fastbatllnn-test:${user} ${user}
+docker run --privileged $GPUS --shm-size=${SHMSIZE}gb -it -p 3000:22 -v "$(pwd)"/container_results:/home/${user}/results fastbatllnn-test:${user} ${user}
