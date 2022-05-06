@@ -7,7 +7,7 @@ RUN apt-get update && \
     apt -y install clang-12 python3-pip python3.9 python3.9-dev libopenmpi-dev cmake gcc-10 libgsl-dev libfftw3-3 libfftw3-dev libsuitesparse-dev git clang-11 libgmp-dev vim emacs nano screen tmux ipython3 openssh-server sudo && \
     python3.9 -m pip install --upgrade pip && \
     python3.9 -m pip install tensorflow-gpu==2.8.0 scipy greenlet pycddlib Cython pyopencl pycuda cupy-cuda112 mpmath && \
-    pip install "jax[cuda11_cudnn805]" -f https://storage.googleapis.com/jax-releases/jax_releases.html
+    python3.9 -m pip install "jax[cuda11_cudnn805]" -f https://storage.googleapis.com/jax-releases/jax_releases.html
 RUN git clone https://github.com/UIUC-PPL/charm4py && \
     cd charm4py && \
     sed -i -E -e "s/(\s+)(args\ \+\=)/\1args\.remove('\+\+interactive')\n\1\2/" ./charmrun/start.py && \
