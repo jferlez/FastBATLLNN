@@ -10,8 +10,12 @@ RUN apt-get update && \
     python3.9 -m pip install "jax[cuda11_cudnn805]" -f https://storage.googleapis.com/jax-releases/jax_releases.html
 RUN git clone https://github.com/UIUC-PPL/charm4py && \
     cd charm4py && \
+    git checkout 0aa892b7e09dc0c0b22b75f84103b1bfa7ed3ae3 && \
     sed -i -E -e "s/(\s+)(args\ \+\=)/\1args\.remove('\+\+interactive')\n\1\2/" ./charmrun/start.py && \
-    git clone https://github.com/UIUC-PPL/charm charm_src/charm
+    git clone https://github.com/UIUC-PPL/charm charm_src/charm && \
+    cd charm_src/charm && \
+    git checkout 4fd8c4b81b800d706bb5ee6ac5399ad61aeaa0f9 && \
+    cd ../..
 WORKDIR /tmp/docker_build
 # Build Fast BATLLNN dependencies
 RUN wget https://ftp.gnu.org/gnu/glpk/glpk-5.0.tar.gz && \
@@ -21,6 +25,7 @@ RUN wget https://ftp.gnu.org/gnu/glpk/glpk-5.0.tar.gz && \
     cd .. && \
     git clone https://github.com/cvxopt/cvxopt.git && \
     cd cvxopt && \
+    git checkout f236615e5bd326daeb6cda511c31d86bcc354747 && \
     CVXOPT_BUILD_FFTW=1 CVXOPT_BUILD_GSL=1 CVXOPT_BUILD_GLPK=1 CVXOPT_GLPK_LIB_DIR=/usr/local/lib CVXOPT_GLPK_INC_DIR=/usr/local/include CC=/usr/bin/clang-12 CXX=/usr/bin/clang++-12 CPP=/usr/bin/clang-cpp-12 python3.9 setup.py install && \
     cd .. && \
     wget https://raw.githubusercontent.com/coin-or/coinbrew/master/coinbrew && \
@@ -35,8 +40,10 @@ RUN wget https://ftp.gnu.org/gnu/glpk/glpk-5.0.tar.gz && \
     git clone https://github.com/numba/numba && \
     git clone https://github.com/numba/llvmlite && \
     cd llvmlite && \
+    git checkout 409cd6d37fe1ba76438aa1a3a9c6a8adcd0ddb9d && \
     LLVM_CONFIG=llvm-config-11 python3.9 setup.py install && \
     cd ../numba && \
+    git checkout 553a7d7cc757107ac1491763d3dabfaddab299e4 && \
     python3.9 setup.py install && \
     cd .. && \
     rm -rf *
