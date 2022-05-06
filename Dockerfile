@@ -12,13 +12,13 @@ RUN mkdir -p /home/${USER_NAME}/.ssh
 RUN mkdir -p /home/${USER_NAME}/results
 
 # switch to unpriviledged user, and configure remote access
-WORKDIR /home/${USER_NAME}/tools/FastBATLLNN
+WORKDIR /home/${USER_NAME}/tools
 RUN chown -R ${UID}:${GID} /home/${USER_NAME}
 
 USER ${USER_NAME}
 RUN ssh-keygen -t rsa -q -f /home/${USER_NAME}/.ssh/id_rsa -N ""
 # Now copy over code
-COPY --chown=${UID}:${GID} . .
+RUN git clone --recursive https://github.com/jferlez/FastBATLLNN
 
 WORKDIR /home/${USER_NAME}/tools/FastBATLLNN/HyperplaneRegionEnum
 RUN python3.9 posetFastCharm_numba.py
