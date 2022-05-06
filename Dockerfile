@@ -29,7 +29,7 @@ WORKDIR /home/${USER_NAME}/tools/FastBATLLNN/HyperplaneRegionEnum
 RUN python3.9 posetFastCharm_numba.py
 
 WORKDIR /home/${USER_NAME}
-RUN echo "export PYTHONPATH=/home/${USER_NAME}/tools/FastBATLLNN:/home/${USER_NAME}/tools/FastBATLLNN/HyperplaneRegionEnum:/home/${USER_NAME}/tools/FastBATLLNN/Simple2xHRep" >> /home/${USER_NAME}/.bashrc
+RUN echo "export PYTHONPATH=/home/${USER_NAME}/tools/FastBATLLNN:/home/${USER_NAME}/tools/FastBATLLNN/HyperplaneRegionEnum:/home/${USER_NAME}/tools/FastBATLLNN/TLLnet" >> /home/${USER_NAME}/.bashrc
 WORKDIR /home/${USER_NAME}/tools/FastBATLLNN
 
 USER root
