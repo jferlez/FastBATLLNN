@@ -15,6 +15,7 @@ import posetFastCharm_numba
 import itertools
 import random
 import region_helpers
+import TLLnet
 
 try:
     from simple2xSuccessorWorker import simple2xSuccessorWorker
@@ -238,21 +239,30 @@ class TLLHypercubeReach(Chare):
         charm.awaitCreation(self.ubCheckerGroup)
 
     @coro
-    def initialize(self, localLinearFns, selectorMats, inputConstraints, maxIts, useQuery, useBounding):
+    def initialize(self, tll, inputConstraints, maxIts, useQuery, useBounding):
         self.maxIts = maxIts
         self.useQuery = useQuery
         self.useBounding = useBounding
 
         # Transpose local linear function kernels and selector matrices to correct for
         # Keras' multiply-on-the-right convention
-        self.localLinearFns = list(map( lambda x: [np.array(x[0]).T, np.array(x[1]).reshape( (len(x[1]),1) )] ,  localLinearFns))
-        self.selectorMats = [ list(map( lambda x: np.array(x).T, selectorMats[k] )) for k in range(len(selectorMats)) ]
+        # self.localLinearFns = list(map( lambda x: [np.array(x[0]).T, np.array(x[1]).reshape( (len(x[1]),1) )] ,  localLinearFns))
+        # self.selectorMats = [ list(map( lambda x: np.array(x).T, selectorMats[k] )) for k in range(len(selectorMats)) ]
 
-        self.numOutputs = len(localLinearFns)
-        self.n = len(localLinearFns[0][0])
-        self.N = len(localLinearFns[0][0][0])
-        self.M = len(selectorMats[0])
-        self.m = len(localLinearFns)
+        # self.numOutputs = len(localLinearFns)
+        # self.n = len(localLinearFns[0][0])
+        # self.N = len(localLinearFns[0][0][0])
+        # self.M = len(selectorMats[0])
+        # self.m = len(localLinearFns)
+
+        self.localLinearFns = tll.localLinearFns
+        self.selectorMats = tll.selectorSets
+
+        self.numOutputs = tll.m
+        self.n = tll.n
+        self.N = tll.N
+        self.M = tll.M
+        self.m = tll.m
 
         self.inputConstraintsA = np.array(inputConstraints[0])
         self.inputConstraintsb = np.array(inputConstraints[1]).reshape( (len(inputConstraints[1]),1) )
