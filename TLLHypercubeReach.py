@@ -425,10 +425,10 @@ class minGroupFeasibleUB(Chare):
 
     def initialize(self, AbPairs, pt, fixedA, fixedb, selectorSets):
         self.constraints = None
-        self.AbPairs = AbPairs
+        self.AbPairs = deepcopy(AbPairs)
         self.pt = pt
-        self.fixedA = fixedA
-        self.fixedb = fixedb
+        self.fixedA = fixedA.copy()
+        self.fixedb = fixedb.copy()
         self.N = len(self.AbPairs[0][0])
         self.n = len(self.AbPairs[0][0][0])
         self.selectorSetsFull = selectorSets
