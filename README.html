@@ -2,7 +2,7 @@
     <html>
     <head>
         <meta charset="UTF-8">
-        <title>FastBATLLNN</title>
+        <title>FastBATLLNN&colon; Fast Box Analysis of Two-Level Lattice Neural Networks</title>
         <style>
 /* From extension vscode.github */
 /*---------------------------------------------------------------------------------------------
@@ -28,7 +28,8 @@
 }
 
 </style>
-        
+        <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.10.2/dist/katex.min.css" integrity="sha384-yFRtMMDnQtDRO8rLpMIKrtPCD5jdktao2TV19YiZYWMDkUR5GQZR/NOVTdquEx1j" crossorigin="anonymous">
+<link href="https://cdn.jsdelivr.net/npm/katex-copytex@latest/dist/katex-copytex.min.css" rel="stylesheet" type="text/css">
         <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/Microsoft/vscode/extensions/markdown-language-features/media/markdown.css">
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/Microsoft/vscode/extensions/markdown-language-features/media/highlight.css">
 <style>
@@ -44,10 +45,78 @@
         
     </head>
     <body class="vscode-body vscode-light">
-        <h1 id="fastbatllnn">FastBATLLNN</h1>
-<p>Documentation imminent! (i.e. today, 05/06/2022)</p>
+        <h1 id="fastbatllnn-fast-box-analysis-of-two-level-lattice-neural-networks">FastBATLLNN: Fast Box Analysis of Two-Level Lattice Neural Networks</h1>
+<p>FastBATLLNN is a fast verifier of box-like (hyper-rectangle) output properties for Two-Level Lattice (TLL) Neural Networks (NN). In particular, FastBATLLNN can formally verify whether the output of a TLL NN is confined to a specified hyper-rectangle whenever its inputs are confined to a specified closed, convex polytope.</p>
+<p>This work appeared in <a href="https://hscc.acm.org/2022/">HSCC 2022</a>. Please refer to/cite the following publication:</p>
+<blockquote>
+<p><em>Fast BATLLNN: Fast Box Analysis of Two-Level Lattice Neural Networks.</em><br>
+James Ferlez, Haitham Khedr and Yasser Shoukry. HSCC '22: 25th ACM International Conference on Hybrid Systems: Computation and Control, May 2022. Article No.: 23. Pages 1–11. <a href="https://doi.org/10.1145/3501710.3519533">https://doi.org/10.1145/3501710.3519533</a></p>
+</blockquote>
+<p><em>Please contact <a href="mailto:jferlez@uci.edu">jferlez@uci.edu</a> with any questions/bug reports.</em></p>
+<h2 id="1-prerequisites">1) Prerequisites</h2>
+<p>FastBATLLNN is written in Python, and it depends on the following packages/libraries (and their dependencies):</p>
+<pre><code>charm4py, glpk, cylp, cvxopt, numba and pycddlib
+</code></pre>
+<p>These dependencies can be burdensome to install, so we have provided facilities for running FastBATLLNN in a <a href="https://docker.com">Docker</a> container.</p>
+<p><strong>NOTE: A Docker container is the preferred means of running FastBATLLNN; the rest of this document assumes this run environment.</strong></p>
+<h3 id="docker-prerequisites">(Docker) Prerequisites:</h3>
+<ol>
+<li>A Linux or MacOS host (Windows hosts <em>may</em> work via WSL, but this is untested.)</li>
+<li>A recent version of <a href="https://docker.com">Docker</a></li>
+<li>Approximately 25Gb of free disk space; however, the final Docker image only requires ~13Gb (MacOS users should allocate &gt;=30Gb to the Docker VM to be safe)</li>
+<li>The ability to run a Docker container with the <code>--priviledged</code> switch</li>
+</ol>
+<h2 id="2-quick-start">2) Quick Start</h2>
+<pre><code class="language-Bash"><div>LOCATION=/path/to/someplace/convenient
+<span class="hljs-built_in">cd</span> <span class="hljs-string">&quot;<span class="hljs-variable">$LOCATION</span>&quot;</span>
+git <span class="hljs-built_in">clone</span> --recursive https://github.com/jferlez/FastBATLLNN <span class="hljs-comment"># --recurisve is optional if using Docker</span>
+./dockerbuild.sh
+./dockerrun.sh
+</div></code></pre>
+<p>This should place you at a Bash shell inside a container with FastBATLLNN installed. If these scripts execute successfully, then you can skip to <strong>4) Running FastBATLLNN</strong>.</p>
+<blockquote>
+<p><strong>NOTE:</strong> The Docker images/container have a number of features that are documented in Section <strong>3)</strong>. <strong>I ADVISE YOU NOT TO SKIP THAT SECTION!</strong></p>
+</blockquote>
+<h2 id="3-creating-the-docker-imagescontainer">3) Creating the Docker Images/Container</h2>
+<h3 id="i-creating-the-docker-images">(i) Creating the Docker Images</h3>
+<p>The first step is to obtain the FastBATLLNN code by cloning this Git repository:</p>
+<pre><code class="language-Bash"><div>LOCATION=/path/to/someplace/convenient
+<span class="hljs-built_in">cd</span> <span class="hljs-string">&quot;<span class="hljs-variable">$LOCATION</span>&quot;</span>
+git <span class="hljs-built_in">clone</span> --recursive https://github.com/jferlez/FastBATLLNN <span class="hljs-comment"># --recurisve is optional if using Docker</span>
+</div></code></pre>
+<blockquote>
+<p><strong>NOTE:</strong> <code>$LOCATION</code> will refer to the FastBATLLNN install location henceforth.</p>
+</blockquote>
+<p>Now, FastBATLLNN comes with the Bash script <code>dockerbuild.sh</code> that should automatically build all of the necessary Docker images:</p>
+<pre><code class="language-Bash"><div>./dockerbuild.sh
+</div></code></pre>
+<blockquote>
+<p><strong>WARNING:</strong> The first run of <code>dockerbuild.sh</code> may take <strong>AN HOUR OR MORE</strong> to download and compile all of the dependencies.</p>
+</blockquote>
+<p><code>dockerbuild.sh</code> should create two docker images that appear in the output of <code>docker image ls</code> as follows:</p>
+<pre><code>REPOSITORY                 TAG                               IMAGE ID       CREATED          SIZE
+fastbatllnn-run            USER                              123456789abc   31 minutes ago   12.5GB
+fastbatllnn                deps                              def123456789   32 minutes ago   12.5GB
+</code></pre>
+<p>Where <code>USER</code> is the <strong>host</strong> log-in name of the user who ran <code>dockerbuild.sh</code>; it will be automatically detected by <code>dockerbuild.sh</code>.</p>
+<blockquote>
+<p><strong>NOTE:</strong> Henceforth <code>USER</code> will refer to the login name of the current host user.</p>
+</blockquote>
+<p>These images are described as follows:</p>
+<ol>
+<li><code>fastbatllnn:deps</code> contains all of the runtime dependencies of FastBATLLNN; it is a separate image to facilitate re-use (originally I intended to host this image on DockerHub, but decided against it due to licensing issues.)</li>
+<li><code>fastbatllnn-run:USER</code> is the image that adds the FastBATLLNN code by cloning this repository; it is the one that will ultimately be run in a container.</li>
+</ol>
+<blockquote>
+<p><strong>WARNING:</strong> <code>fastbatllnn-run:USER</code> is derived from <code>fastbatllnn:deps</code> with a <code>FROM</code> directive in its <code>Dockerfile</code>. Thus, <strong>DO NOT DELETE <code>fastbatllnn:deps</code></strong>! Because of the way Docker works, its contents are not duplicated in <code>fastbatllnn-run:USER</code> anyway.</p>
+</blockquote>
+<blockquote>
+<p><strong>NOTE:</strong> A subsequent call to <code>dockerbuild.sh</code> will use the <strong>cached</strong> version of <code>fastbatllnn:deps</code> but will <strong>rebuild</strong> <code>fastbatllnn-run:USER</code> from scratch -- <em>i.e., re-clone this repository</em>; <code>fastbatllnn:deps</code> is the only image that requires significant time to create.</p>
+</blockquote>
+<h3 id="ii-running-a-docker-container">(ii) Running a Docker Container</h3>
+<h2 id="4-running-fastbatllnn">4) Running FastBATLLNN</h2>
 
-        
+        <script async src="https://cdn.jsdelivr.net/npm/katex-copytex@latest/dist/katex-copytex.min.js"></script>
         
     </body>
     </html>
