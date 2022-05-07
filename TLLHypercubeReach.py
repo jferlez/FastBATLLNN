@@ -222,6 +222,8 @@ class TLLHypercubeReach(Chare):
             self.poset = Chare(PosetSimple2x,args=[],onPE=charm.myPe())
         else:
             self.poset = Chare(posetFastCharm.Poset,args=[],onPE=charm.myPe())
+        
+        charm.awaitCreation(self.poset)
 
         if self.usePosetChecking:
              # For poset checking:    
@@ -230,7 +232,6 @@ class TLLHypercubeReach(Chare):
             # For node checking;
             self.poset.init(pes, PosetNodeTLLVer, self.checkerLocalVars, (simple2xSuccessorWorker if simple2xAvailable else None),awaitable=True).get()
        
-        charm.awaitCreation(self.poset)
 
         succGroupProxy = self.poset.getSuccGroupProxy(ret=True).get()
         self.checkerLocalVars.init(succGroupProxy,self.posetPElist)
