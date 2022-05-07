@@ -255,8 +255,8 @@ class TLLHypercubeReach(Chare):
         # self.M = len(selectorMats[0])
         # self.m = len(localLinearFns)
 
-        self.localLinearFns = tll.localLinearFns
-        self.selectorMats = tll.selectorSets
+        self.localLinearFns = [ [kernBias[0].copy(), kernBias[1].copy().reshape( (-1,1) )] for kernBias in tll.localLinearFns ]
+        self.selectorSetsFull = deepcopy(tll.selectorSets)
 
         self.numOutputs = tll.m
         self.n = tll.n
@@ -273,18 +273,6 @@ class TLLHypercubeReach(Chare):
             raise ValueError('Input polytope has empty interior!')
         # self.pt = np.full(self.n,0,dtype=np.float64).reshape(-1,1)
 
-        self.selectorSetsFull = [[] for k in range(len(selectorMats))]
-        # Convert the matrices to sets of 'used' hyperplanes
-        for k in range(len(self.selectorMats)):
-            self.selectorSetsFull[k] = list( \
-                    map( \
-                        lambda x: set(np.flatnonzero(np.count_nonzero(x, axis=0)>0)), \
-                        self.selectorMats[k] \
-                    ) \
-                )
-        self.selectorMats = None
-        # Defunct
-        # self.poset.setSuccessorCommonProperty('selectorSetsFull',self.selectorSetsFull,awaitable=True).get()
         if self.usePosetChecking:
             # For poset checking:
             self.checkerLocalVars.initialize(self.selectorSetsFull)
