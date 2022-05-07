@@ -8,13 +8,19 @@ SCRIPT_DIR=$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )
 
 SYSTEM_TYPE=$(uname)
 
+for arg in "$@"; do
+    case "$arg" in
+        --gpu) GPUS="--gpus all";;
+    esac
+done
+
 if [ "$SYSTEM_TYPE" = "Darwin" ]; then
     SHMSIZE=$(( `sysctl hw.memsize | sed -e 's/[^0-9]//g'` / 2097152 ))
+    # Never enable GPUs on MacOS
+    GPUS=""
 else
     SHMSIZE=$(( `grep MemTotal /proc/meminfo | sed -e 's/[^0-9]//g'` / 2097152 ))
-    GPUS="--gpus all"
 fi
-GPUS=""
 
 if [ ! -d "$SCRIPT_DIR/container_results" ]
 then
