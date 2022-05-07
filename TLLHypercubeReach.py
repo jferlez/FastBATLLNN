@@ -17,12 +17,12 @@ import random
 import region_helpers
 import TLLnet
 
-try:
-    from simple2xSuccessorWorker import simple2xSuccessorWorker
-    from simple2xPosetFastCharm import PosetSimple2x
-    simple2xAvailable = True
-except ImportError:
-    simple2xAvailable = False
+# try:
+#     from simple2xSuccessorWorker import simple2xSuccessorWorker
+#     from simple2xPosetFastCharm import PosetSimple2x
+#     simple2xAvailable = True
+# except ImportError:
+simple2xAvailable = False
 
 
 cvxopt.solvers.options['show_progress'] = False
