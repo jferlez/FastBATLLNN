@@ -37,6 +37,7 @@ These dependencies can be burdensome to install, so we have provided facilities 
 LOCATION=/path/to/someplace/convenient
 cd "$LOCATION"
 git clone --recursive https://github.com/jferlez/FastBATLLNN # --recurisve is optional if using Docker
+cd FastBATLLNN
 ./dockerbuild.sh
 ./dockerrun.sh
 ```
@@ -63,6 +64,7 @@ git clone --recursive https://github.com/jferlez/FastBATLLNN # --recurisve is op
 Now, FastBATLLNN comes with the Bash script `dockerbuild.sh`, which should automatically build all of the necessary Docker images:
 
 ```Bash
+cd FastBATLLNN
 ./dockerbuild.sh
 ```
 
