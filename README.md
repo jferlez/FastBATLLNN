@@ -28,7 +28,7 @@ These dependencies can be burdensome to install, so we have provided facilities 
 1. A Linux or MacOS host (Windows hosts _may_ work via WSL, but this is untested.)
 2. A recent version of [Docker](https://docker.com)
 3. Approximately 25Gb of free disk space; however, the final Docker image only requires ~13Gb (MacOS users should allocate >=30Gb to the Docker VM to be safe)
-4. The ability to run a Docker container with the `--priviledged` switch
+4. The ability to run a Docker container with the [`--priviledged` switch](https://docs.docker.com/engine/reference/run/#runtime-privilege-and-linux-capabilities).
 
 
 ## 2) Quick Start
