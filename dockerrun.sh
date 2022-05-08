@@ -59,5 +59,6 @@ done
 if [ "$EXISTING_CONTAINER" = "" ]; then
     docker run --privileged $GPUS --shm-size=${SHMSIZE}gb -it -p $PORT:22 -v "$(pwd)"/container_results:/home/${user}/results fastbatllnn-run:${user} ${user}
 else
+    echo "Restarting container $EXISTING_CONTAINER (command line options ignored)..."
     docker start $EXISTING_CONTAINER
 fi
