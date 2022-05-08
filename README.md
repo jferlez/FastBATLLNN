@@ -152,7 +152,7 @@ This section assumes that you have successfully reached a prompt inside a `fastb
 USER@0123456789ab:~$
 ```
 
-where is a container id for a `fastbatllnn-run:USER` derived container. Please go back to Section **3)** if this is not the case.
+where `0123456789ab` is the container id for a `fastbatllnn-run:USER` derived container. Please go back to Section **3)** if this is not the case.
 
 > **WARNING:** in this section, we will assume that the host has at least 4 physical (i.e. non-hyperthreading) cores. See below for information about how to proceed if this is not the case.
 
