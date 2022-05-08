@@ -145,6 +145,9 @@ fastbatllnn                deps                              def123456789   32 m
 <blockquote>
 <p><strong>WARNING:</strong> if you exit the container's Bash shell, then the container will stop. Restarting the container with <code>dockerrun.sh</code> (see above) will not return you to a Bash shell, but it will restart the SSH daemon: you will have to interact with the restarted container via SSH.</p>
 </blockquote>
+<blockquote>
+<p><strong>NOTE:</strong> You can specify that the container should listen on a different port by calling <code>dockerrun.sh</code> with the option <code>--port=1234</code> where <code>1234</code> can be replaced with a valid port for the container to listen on. That is, by default, <code>dockerrun.sh</code> infers <code>--port=3000</code>.</p>
+</blockquote>
 <p>SSH is the best way to run code in the container:</p>
 <ul>
 <li>It allows the container to run in the background without occupying a terminal on the host;</li>

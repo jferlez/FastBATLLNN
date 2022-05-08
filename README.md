@@ -110,6 +110,8 @@ You can interact with the resultant container in three ways:
 
 > **WARNING:** if you exit the container's Bash shell, then the container will stop. Restarting the container with `dockerrun.sh` (see above) will not return you to a Bash shell, but it will restart the SSH daemon: you will have to interact with the restarted container via SSH.
 
+> **NOTE:** You can specify that the container should listen on a different port by calling `dockerrun.sh` with the option `--port=1234` where `1234` can be replaced with a valid port for the container to listen on. That is, by default, `dockerrun.sh` infers `--port=3000`.
+
 SSH is the best way to run code in the container:
 
 * It allows the container to run in the background without occupying a terminal on the host;

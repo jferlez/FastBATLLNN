@@ -7,12 +7,21 @@ gid=`id -g`
 SCRIPT_DIR=$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )
 
 SYSTEM_TYPE=$(uname)
-
-for arg in "$@"; do
+PORT=3000
+for argwhole in "$@"; do
+    IFS='=' read -r -a array <<< "$argwhole"
+    arg="${array[0]}"
+    val="${array[1]}"
     case "$arg" in
         --gpu) GPUS="--gpus all";;
+        --port) PORT=`echo "$val" | sed -e 's/[^0-9]//g'`
     esac
 done
+
+re='^[0-9]+$'
+if ! [[ $PORT =~ $re ]] ; then
+    echo "error: Invalid port specified" >&2; exit 1
+fi
 
 if [ "$SYSTEM_TYPE" = "Darwin" ]; then
     SHMSIZE=$(( `sysctl hw.memsize | sed -e 's/[^0-9]//g'` / 2097152 ))
@@ -48,7 +57,7 @@ for CONT in $CONTAINERS; do
 done
 
 if [ "$EXISTING_CONTAINER" = "" ]; then
-    docker run --privileged $GPUS --shm-size=${SHMSIZE}gb -it -p 3000:22 -v "$(pwd)"/container_results:/home/${user}/results fastbatllnn-run:${user} ${user}
+    docker run --privileged $GPUS --shm-size=${SHMSIZE}gb -it -p $PORT:22 -v "$(pwd)"/container_results:/home/${user}/results fastbatllnn-run:${user} ${user}
 else
     docker start $EXISTING_CONTAINER
 fi
