@@ -38,7 +38,7 @@ LOCATION=/path/to/someplace/convenient
 cd "$LOCATION"
 git clone --recursive https://github.com/jferlez/FastBATLLNN # --recurisve is optional if using Docker
 cd FastBATLLNN
-./dockerbuild.sh
+./dockerbuild.sh # Warning: may take > 1 hour!
 ./dockerrun.sh
 ```
 This should place you at a Bash shell inside a container with FastBATLLNN installed. If these scripts execute successfully, then you can skip to **4) Running FastBATLLNN**.
