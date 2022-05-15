@@ -34,13 +34,17 @@ class PosetNodeTLLVer(DistributedHash.Node):
     def init(self):
         self.constraints, self.selectorSetsFull, self.nodeIntMask, self.out = self.localProxy[self.storePe].getConstraints(ret=True).get()
     def check(self):
+        if type(self.nodeBytes) == bytearray:
+            nodeBytes = tuple(posetFastCharm.bytesToList(self.nodeBytes,self.constraints.wholeBytes,self.constraints.tailBits))
+        else:
+            nodeBytes = self.nodeBytes
         regSet = np.full(self.constraints.allN, True, dtype=bool)
         regSet[tuple(self.constraints.flipMapSet),] = np.full(len(self.constraints.flipMapSet),False,dtype=bool)
         if self.constraints.N == self.constraints.allN:
-            regSet[self.nodeBytes,] = np.full(len(self.nodeBytes),False,dtype=bool)
-            unflipped = posetFastCharm_numba.is_in_set(self.constraints.flipMapSetNP,list(self.nodeBytes))
+            regSet[self.nodeBytes,] = np.full(len(nodeBytes),False,dtype=bool)
+            unflipped = posetFastCharm_numba.is_in_set(self.constraints.flipMapSetNP,list(nodeBytes))
         else:
-            sel = self.constraints.nonRedundantHyperplanes[self.nodeBytes,]
+            sel = self.constraints.nonRedundantHyperplanes[nodeBytes,]
             regSet[sel,] = np.full(len(sel),False,dtype=bool)
             unflipped = posetFastCharm_numba.is_in_set(self.constraints.flipMapSetNP,sel.tolist())
         regSet[unflipped,] = np.full(len(unflipped),True,dtype=bool)
@@ -171,6 +175,8 @@ class setupCheckerVarsOriginCheck(Chare):
     def checkNode(self,nodeBytes):
         temp = self.skip
         if not temp:
+            if type(nodeBytes) == bytearray:
+                nodeBytes = tuple(posetFastCharm.bytesToList(nodeBytes,self.flippedConstraints.wholeBytes,self.flippedConstraints.tailBits))
             regSet = np.full(self.allN, True, dtype=bool)
             regSet[tuple(self.flippedConstraints.flipMapSet),] = np.full(len(self.flippedConstraints.flipMapSet),False,dtype=bool)
             if self.N == self.allN:
