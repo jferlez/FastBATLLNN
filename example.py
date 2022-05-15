@@ -102,7 +102,7 @@ class Main(Chare):
         print('\n\n----------------- VERIFYING LOWER BOUND:  -----------------')
         t = time.time()
         a = 0.299
-        lbFut = tllReach.verifyLB(a,ret=True) # verify NN >= a: True/1 == SAT; False/0 == UNSAT
+        lbFut = tllReach.verifyLB(a,opts={'hashStoreUseBits':True,'prefilter':True},ret=True) # verify NN >= a: True/1 == SAT; False/0 == UNSAT
         lb = lbFut.get()
         t = time.time()-t
         print('TLL always >= ' + str(a) + ' on constraints? ' + str(bool(lb)))
@@ -122,7 +122,7 @@ class Main(Chare):
         print('\n\n--------------- FINDING TIGHT LOWER BOUND:  ---------------')
 
         t = time.time()
-        lbFut = tllReach.searchBound(-0.135,lb=True,verbose=True,awaitable=True,ret=True)
+        lbFut = tllReach.searchBound(-0.135,lb=True,verbose=True,awaitable=True,opts={'hashStoreUseBits':True,'prefilter':True},ret=True)
         lb = lbFut.get()
         t = time.time()-t
 

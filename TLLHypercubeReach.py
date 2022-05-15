@@ -309,7 +309,7 @@ class TLLHypercubeReach(Chare):
         return self.hypercube
 
     @coro
-    def searchBound(self,seedBd,out=0,lb=True,tol=1e-3,verbose=False):
+    def searchBound(self,seedBd,out=0,lb=True,tol=1e-3,verbose=False,opts={}):
         if out >= self.m:
             raise ValueError('Output ' + str(out) + ' is greater than m = ' + str(self.m))
         # lb2ub = 1
@@ -324,7 +324,7 @@ class TLLHypercubeReach(Chare):
         
         while itCnt > 0:
             bdToCheck = windUB if windLB==-np.inf else 0.5*(windLB + windUB)
-            ver = self.verifyLB( bdToCheck, out=out) if lb else self.verifyUB( bdToCheck,out=out)
+            ver = self.verifyLB( bdToCheck, out=out, opts=opts) if lb else self.verifyUB( bdToCheck,out=out)
             
             if verbose:
                 print( 'Iteration ' + str(itCnt) +  ': ' + str(bdToCheck) + ' is ' + ('a VALID' if ver else 'an INVALID') + ' lower bound!')
@@ -392,9 +392,13 @@ class TLLHypercubeReach(Chare):
         if out >= self.m:
             raise ValueError('Output ' + str(out) + ' is greater than m = ' + str(self.m))
 
+        self.prefilter = True
+        if 'prefilter' in opts:
+            self.prefilter = opts['prefilter']
+
         t = time.time()
         
-        stat = self.poset.setConstraint(lb, out=out, timeout=timeout, awaitable=True)
+        stat = self.poset.setConstraint(lb, out=out, timeout=timeout, prefilter=self.prefilter, awaitable=True)
         stat.get()
         self.checkerLocalVars.setConstraint(self.poset.getConstraintsObject(ret=True).get(),out,awaitable=True).get()
 
