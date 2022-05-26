@@ -29,7 +29,7 @@ WORKDIR /home/${USER_NAME}/tools/FastBATLLNN/HyperplaneRegionEnum
 RUN python3.9 posetFastCharm_numba.py
 
 WORKDIR /home/${USER_NAME}
-RUN git clone git clone https://github.com/jferlez/FastBATLLNN_Experiments_HSCC2022
+RUN git clone https://github.com/jferlez/FastBATLLNN_Experiments_HSCC2022
 RUN echo "export PYTHONPATH=/home/${USER_NAME}/tools/FastBATLLNN:/home/${USER_NAME}/tools/FastBATLLNN/HyperplaneRegionEnum:/home/${USER_NAME}/tools/FastBATLLNN/TLLnet" >> /home/${USER_NAME}/.bashrc
 WORKDIR /home/${USER_NAME}/tools/FastBATLLNN
 
