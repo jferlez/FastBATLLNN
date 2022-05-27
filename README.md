@@ -257,21 +257,28 @@ That's it! You have verified a simple TLL NN!
 
 <br>
 <br>
-<br>
 
-## If your host has fewer than 4 physical cores:
+> <span style="font-size:14pt;">**If your host has fewer than 4 physical cores:**</span>
+>
+> If your host has fewer than 4 physical (non-hyperthreading) cores, then you must make two modifications in order to run `example.py`.
+> 
+> First, edit line 94 of `example.py` (`vim` and `emacs` are installed in the container, or you can used VS Code or SFTP to alter this file):
+> 
+> ```Python
+> pes = {'poset':[(0,4,1)],'hash':[(0,4,1)]}
+> ```
+>
+> Replace both `4`'s with the total number of physical cores on your host, then save the file.
+> 
+> Second, change the `4` in the command:
+> 
+> ```Bash
+> cd ~/tools/FastBATLLNN
+> charmrun +p4 example.py
+> ```
+> 
+> to the total number of physical cores.
 
-If your host has fewer than 4 physical (non-hyperthreading) cores, then you must make two modifications in order to run `example.py`.
-
-First, edit line 94 of `example.py` (`vim` and `emacs` are installed in the container, or you can used VS Code or SFTP to alter this file):
-
-```Python
-pes = {'poset':[(0,4,1)],'hash':[(0,4,1)]}
-```
-
-Replace both `4`'s with the total number of physical cores on your host, then save the file.
-
-Second, change the `4` in the command:
 
 ```Bash
 cd ~/tools/FastBATLLNN

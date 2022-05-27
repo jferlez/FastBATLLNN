@@ -27,6 +27,41 @@
 	color: var(--vscode-editorError-foreground);
 }
 
+/* From extension ms-toolsai.jupyter */
+/* These classnames are inherited from bootstrap, but are present in most notebook renderers */
+
+.alert {
+    width: auto;
+    padding: 1em;
+    margin-top: 1em;
+    margin-bottom: 1em;
+}
+.alert > *:last-child {
+    margin-bottom: 0;
+}
+#preview > .alert:last-child {
+    /* Prevent this being set to zero by the default notebook stylesheet */
+    padding-bottom: 1em;
+}
+
+.alert-success {
+    /* Note there is no suitable color available, so we just copy "info" */
+    background-color: var(--theme-info-background);
+    color: var(--theme-info-foreground);
+}
+.alert-info {
+    background-color: var(--theme-info-background);
+    color: var(--theme-info-foreground);
+}
+.alert-warning {
+    background-color: var(--theme-warning-background);
+    color: var(--theme-warning-foreground);
+}
+.alert-danger {
+    background-color: var(--theme-error-background);
+    color: var(--theme-error-foreground);
+}
+
 </style>
         <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.10.2/dist/katex.min.css" integrity="sha384-yFRtMMDnQtDRO8rLpMIKrtPCD5jdktao2TV19YiZYWMDkUR5GQZR/NOVTdquEx1j" crossorigin="anonymous">
 <link href="https://cdn.jsdelivr.net/npm/katex-copytex@latest/dist/katex-copytex.min.css" rel="stylesheet" type="text/css">
@@ -282,8 +317,8 @@ Maximum of samples: 4.524217171074326
 </blockquote>
 <br>
 <br>
-<br>
-<h2 id="if-your-host-has-fewer-than-4-physical-cores">If your host has fewer than 4 physical cores:</h2>
+<blockquote>
+<p><span style="font-size:14pt;"><strong>If your host has fewer than 4 physical cores:</strong></span></p>
 <p>If your host has fewer than 4 physical (non-hyperthreading) cores, then you must make two modifications in order to run <code>example.py</code>.</p>
 <p>First, edit line 94 of <code>example.py</code> (<code>vim</code> and <code>emacs</code> are installed in the container, or you can used VS Code or SFTP to alter this file):</p>
 <pre><code class="language-Python"><div>pes = {<span class="hljs-string">&#x27;poset&#x27;</span>:[(<span class="hljs-number">0</span>,<span class="hljs-number">4</span>,<span class="hljs-number">1</span>)],<span class="hljs-string">&#x27;hash&#x27;</span>:[(<span class="hljs-number">0</span>,<span class="hljs-number">4</span>,<span class="hljs-number">1</span>)]}
@@ -294,7 +329,10 @@ Maximum of samples: 4.524217171074326
 charmrun +p4 example.py
 </div></code></pre>
 <p>to the total number of physical cores.</p>
+</blockquote>
+<!-- ## 5) Running the Experiments from the [FastBATLLNN HSCC2022 Paper](https://doi.org/10.1145/3501710.3519533) (FastBATLLNN only)
 
+Each `fastbatllnn-run:USER` container includes a copy of all three experiments from the [FastBATLLNN HSCC2022 paper](https://doi.org/10.1145/3501710.3519533) (see above). -->
         <script async src="https://cdn.jsdelivr.net/npm/katex-copytex@latest/dist/katex-copytex.min.js"></script>
         
     </body>
