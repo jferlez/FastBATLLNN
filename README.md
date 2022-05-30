@@ -280,9 +280,31 @@ That's it! You have verified a simple TLL NN!
 > to the total number of physical cores.
 
 
+## 5) Running the Experiments from the [FastBATLLNN Paper](https://doi.org/10.1145/3501710.3519533) (FastBATLLNN only)
+
+Each `fastbatllnn-run:USER` container includes a copy of all three experiments from the [FastBATLLNN HSCC2022 paper](https://doi.org/10.1145/3501710.3519533) (see citation above) in folder `/home/USER/FastBATLLNN_Experiments_HSCC2022`. The FastBATLLNN paper describes three experiments, denoted Experiment 1, Experiment 2 and Experiment 3; each of these experiments can be run using its own shell script `run_exp1.sh`, `run_exp2.sh` and `run_exp3.sh`, respectively. For example, executing the following code in the container will run all three experiments:
+
 ```Bash
-cd ~/tools/FastBATLLNN
-charmrun +p4 example.py
+cd ~/FastBATLLNN_Experiments_HSCC2022
+./run_exp1.sh
+./run_exp2.sh
+./run_exp3.sh
 ```
 
-to the total number of physical cores.
+Each script takes the same three optional arguments:
+<dl>
+	<dt><tt>--timeout=123</tt></dt>
+    <dd>is a user-chosen timeout in seconds that is enforced on each verification problem; if omitted the default is 300 seconds;</dd>
+	<dt><tt>--logdir=/path/to/log/dir</tt></dt>
+    <dd>specifies a location to store the output of the experiment; if omitted, the default is <tt>~/results</tt>, which is bind-mounted to the host directory <tt>$LOCATION/container_results</tt>;</dd>
+	<dt><tt>--cores=1</tt></dt>
+    <dd>specifies the maximum number of CPU cores to use, which should be less than or equal to the number of <b>physical</b> CPU cores on the system (i.e. not threads); if omitted, all physical CPU cores are used.</dd>
+</dl>
+
+The output of each script is a pair of text files whose filenames indicate the corresponding experiment number and timeout used:
+<dl>
+	<dt><tt>experiment1__300sec.txt</tt></dt>
+    <dd>CSV file containing the result of each verification and its execution time, where each line has the format <br>&emsp;&emsp;<tt>NETWORK</tt>, <tt>INSTANCE_NUMBER</tt>, <tt>RESULT</tt>, <tt>EXECUTION_TIME</tt></dd>
+	<dt><tt>experiment1__300sec_log.txt</tt></dt>
+    <dd>contains a log of everything the script outputs to the standard output (i.e. via <tt>print</tt> statements).</dd>
+</dl>
