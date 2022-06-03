@@ -294,7 +294,7 @@ cd ~/FastBATLLNN_Experiments_HSCC2022
 Each script takes the same three optional arguments:
 <dl>
 	<dt><tt>--timeout=123</tt></dt>
-    <dd>is a user-chosen timeout in seconds that is enforced on each verification problem; if omitted the default is 300 seconds;</dd>
+    <dd>is a user-chosen timeout in seconds that is enforced on each verification problem, with <tt>--timeout=0</tt> specifying no timeout (i.e. FastBATLLNN is run until SAT or UNSAT is obtained); if omitted, the default is 300 seconds;</dd>
 	<dt><tt>--logdir=/path/to/log/dir</tt></dt>
     <dd>specifies a location to store the output of the experiment; if omitted, the default is <tt>~/results</tt>, which is bind-mounted to the host directory <tt>$LOCATION/container_results</tt>;</dd>
 	<dt><tt>--cores=1</tt></dt>
