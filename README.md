@@ -296,7 +296,7 @@ Each script takes the same three optional arguments:
 	<dt><tt>--timeout=123</tt></dt>
     <dd>is a user-chosen timeout in seconds that is enforced on each verification problem, with <tt>--timeout=0</tt> specifying no timeout (i.e. FastBATLLNN is run until SAT or UNSAT is obtained); if omitted, the default is 300 seconds;</dd>
 	<dt><tt>--logdir=/path/to/log/dir</tt></dt>
-    <dd>specifies a location to store the output of the experiment; if omitted, the default is <tt>~/results</tt>, which is bind-mounted to the host directory <tt>$LOCATION/container_results</tt>;</dd>
+    <dd>specifies a location to store the output of the experiment; if omitted, the default is <tt>~/results</tt>, which is bind-mounted to the host directory <tt>$LOCATION/FastBATLLNN/container_results</tt>;</dd>
 	<dt><tt>--cores=1</tt></dt>
     <dd>specifies the maximum number of CPU cores to use, which should be less than or equal to the number of <b>physical</b> CPU cores on the system (i.e. not threads); if omitted, all physical CPU cores are used.</dd>
 </dl>
