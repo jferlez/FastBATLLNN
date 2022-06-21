@@ -29,6 +29,10 @@ if [ "$TOKEN" != "" ]; then
         fi
     fi
     docker pull jferlez/fastbatllnn-deps:$BUILD
+    if [ $? != 0 ]; then
+        echo "ERROR: docker pull command failed! Quitting..."
+        exit 1
+    fi
     PROCESSING="s/fastbatllnn-deps:local/jferlez\/fastbatllnn-deps:$BUILD/"
     cd "$SCRIPT_DIR"
     echo "$TOKEN" > .hub_token
