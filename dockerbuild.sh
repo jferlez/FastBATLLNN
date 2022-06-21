@@ -21,10 +21,12 @@ for argwhole in "$@"; do
 done
 
 if [ "$TOKEN" != "" ]; then
-    echo "$TOKEN" | docker login -u jferlez --password-stdin
-    if [ $? != 0 ]; then
-        echo "ERROR: Unable to login to DockerHub using available access token! Quitting..."
-        exit 1
+    if [ "$TOKEN" != "public" ]; then
+        echo "$TOKEN" | docker login -u jferlez --password-stdin
+        if [ $? != 0 ]; then
+            echo "ERROR: Unable to login to DockerHub using available access token! Quitting..."
+            exit 1
+        fi
     fi
     docker pull jferlez/fastbatllnn-deps:$BUILD
     PROCESSING="s/fastbatllnn-deps:local/jferlez\/fastbatllnn-deps:$BUILD/"
