@@ -25,8 +25,8 @@ RUN ssh-keygen -t rsa -q -f /home/${USER_NAME}/.ssh/id_rsa -N ""
 # Now copy over code
 RUN git clone --recursive https://github.com/jferlez/FastBATLLNN
 
-WORKDIR /home/${USER_NAME}/tools/FastBATLLNN/HyperplaneRegionEnum
-RUN python3.9 posetFastCharm_numba.py
+# WORKDIR /home/${USER_NAME}/tools/FastBATLLNN/HyperplaneRegionEnum
+# RUN python3.9 posetFastCharm_numba.py
 
 WORKDIR /home/${USER_NAME}
 RUN git clone https://github.com/jferlez/FastBATLLNN_Experiments_HSCC2022
