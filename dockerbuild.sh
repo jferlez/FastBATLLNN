@@ -5,7 +5,7 @@ GID=`id -g`
 
 SCRIPT_DIR=$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )
 if [ -e "$SCRIPT_DIR/.hub_token" ]; then
-    TOKEN=`cat $SCRIPT_DIR/.hub_token`
+    TOKEN=`cat "$SCRIPT_DIR/.hub_token"`
 else
     TOKEN=""
 fi
