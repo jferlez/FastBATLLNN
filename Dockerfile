@@ -1,4 +1,4 @@
-FROM fastbatllnn:deps
+FROM fastbatllnn-deps:local
 
 ARG USER_NAME
 ARG UID
