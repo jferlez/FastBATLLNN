@@ -6,7 +6,7 @@ RUN apt-get update && \
     apt-get -y upgrade && \
     apt -y install clang-12 python3-pip python3.9 python3.9-dev libopenmpi-dev cmake gcc-10 libgsl-dev libfftw3-3 libfftw3-dev libsuitesparse-dev git clang-11 libgmp-dev vim emacs nano screen tmux ipython3 openssh-server sudo && \
     python3.9 -m pip install --upgrade pip && \
-    python3.9 -m pip install protobuf==3.19.3 tensorflow-gpu==2.9.1 scipy greenlet pycddlib Cython pyopencl pycuda cupy-cuda112==10.4.0 mpmath matplotlib onnx onnxruntime tf2onnx && \
+    python3.9 -m pip install protobuf==3.19.3 tensorflow-gpu==2.9.1 scipy greenlet pycddlib Cython pyopencl pycuda cupy-cuda112==10.5.0 mpmath matplotlib onnx onnxruntime tf2onnx torch torchvision torchaudio && \
     python3.9 -m pip install "jax[cuda11_cudnn805]" -f https://storage.googleapis.com/jax-releases/jax_releases.html
 RUN git clone https://github.com/UIUC-PPL/charm4py && \
     cd charm4py && \
@@ -14,7 +14,7 @@ RUN git clone https://github.com/UIUC-PPL/charm4py && \
     sed -i -E -e "s/(\s+)(args\ \+\=)/\1args\.remove('\+\+interactive')\n\1\2/" ./charmrun/start.py && \
     git clone https://github.com/UIUC-PPL/charm charm_src/charm && \
     cd charm_src/charm && \
-    git checkout 4fd8c4b81b800d706bb5ee6ac5399ad61aeaa0f9 && \
+    git checkout d4d22039271486e7e42c77d3fea90937be4071e5 && \
     cd ../..
 WORKDIR /tmp/docker_build
 # Build Fast BATLLNN dependencies
@@ -40,10 +40,10 @@ RUN wget https://ftp.gnu.org/gnu/glpk/glpk-5.0.tar.gz && \
     git clone https://github.com/numba/numba && \
     git clone https://github.com/numba/llvmlite && \
     cd llvmlite && \
-    git checkout 409cd6d37fe1ba76438aa1a3a9c6a8adcd0ddb9d && \
+    git checkout b9c748c6dc786857e8ba09382cfdce03533b7c03 && \
     LLVM_CONFIG=llvm-config-11 python3.9 setup.py install && \
     cd ../numba && \
-    git checkout 553a7d7cc757107ac1491763d3dabfaddab299e4 && \
+    git checkout 63d0c471410063b716797425aeaf244b9fa8b2b7 && \
     python3.9 setup.py install && \
     cd .. && \
     rm -rf *
