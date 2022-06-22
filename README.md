@@ -74,7 +74,7 @@ cd FastBATLLNN
 
     REPOSITORY                 TAG                               IMAGE ID       CREATED          SIZE
     fastbatllnn-run            USER                              123456789abc   31 minutes ago   12.5GB
-    fastbatllnn                deps                              def123456789   32 minutes ago   12.5GB
+    fastbatllnn-deps           local                             def123456789   32 minutes ago   12.5GB
 
 Where `USER` is the **host** log-in name of the user who ran `dockerbuild.sh`; it will be automatically detected by `dockerbuild.sh`.
 
@@ -82,12 +82,12 @@ Where `USER` is the **host** log-in name of the user who ran `dockerbuild.sh`; i
 
 These images are described as follows:
 
-1. `fastbatllnn:deps` contains all of the runtime dependencies of FastBATLLNN; it is a separate image to facilitate re-use (originally I intended to host this image on DockerHub, but decided against it due to licensing issues.)
+1. `fastbatllnn-deps:local` contains all of the runtime dependencies of FastBATLLNN; it is a separate image to facilitate re-use (originally I intended to host this image on DockerHub, but decided against it due to licensing issues.)
 2. `fastbatllnn-run:USER` is the image that adds the FastBATLLNN code by cloning this repository; it is the one that will ultimately be run in a container. **It is configured to have a user with same user name, user id and group id as the creating host user** (placeholder `USER`).
 
-> **WARNING:** `fastbatllnn-run:USER` is derived from `fastbatllnn:deps` with a `FROM` directive in its `Dockerfile`. Thus, **DO NOT DELETE `fastbatllnn:deps`**! Because of the way Docker works, its contents are not duplicated in `fastbatllnn-run:USER` anyway.
+> **WARNING:** `fastbatllnn-run:USER` is derived from `fastbatllnn-deps:local` with a `FROM` directive in its `Dockerfile`. Thus, **DO NOT DELETE `fastbatllnn-deps:local`**! Because of the way Docker works, its contents are not duplicated in `fastbatllnn-run:USER` anyway.
 
-> **NOTE:** A subsequent call to `dockerbuild.sh` will use the **cached** version of `fastbatllnn:deps` but will **rebuild** `fastbatllnn-run:USER` from scratch -- _i.e., re-clone this repository_; `fastbatllnn:deps` is the only image that requires significant time to create.
+> **NOTE:** A subsequent call to `dockerbuild.sh` will use the **cached** version of `fastbatllnn-deps:local` but will **rebuild** `fastbatllnn-run:USER` from scratch -- _i.e., re-clone this repository_; `fastbatllnn-deps:local` is the only image that requires significant time to create.
 ### (ii) Running a Docker Container
 
 Once a user has created the above Docker images (only `fastbatllnn-run:USER` is user specific), a suitable container can be started using the command:
