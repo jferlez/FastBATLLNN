@@ -115,7 +115,7 @@ James Ferlez, Haitham Khedr and Yasser Shoukry. HSCC '22: 25th ACM International
 git <span class="hljs-built_in">clone</span> --recursive https://github.com/jferlez/FastBATLLNN <span class="hljs-comment"># --recurisve is optional if using Docker</span>
 <span class="hljs-built_in">cd</span> FastBATLLNN
 ./dockerbuild.sh <span class="hljs-comment"># Warning: may take &gt; 1 hour!</span>
-./dockerrun.sh
+./dockerrun.sh --interactive
 </div></code></pre>
 <p>This should place you at a Bash shell inside a container with FastBATLLNN installed. If these scripts execute successfully, then you can skip to <strong>4) Running FastBATLLNN</strong>.</p>
 <blockquote>
@@ -163,9 +163,9 @@ fastbatllnn-deps           local                             def123456789   32 m
 </blockquote>
 <h3 id="ii-running-a-docker-container">(ii) Running a Docker Container</h3>
 <p>Once a user has created the above Docker images (only <code>fastbatllnn-run:USER</code> is user specific), a suitable container can be started using the command:</p>
-<pre><code class="language-Bash"><div>./dockerrun.sh
+<pre><code class="language-Bash"><div>./dockerrun.sh [--interactive]
 </div></code></pre>
-<p><code>dockerrun.sh</code> infers the current host user name (placeholder <code>USER</code>), and launches a relevant container in one of two ways:</p>
+<p>Where the <code>--interactive</code> flag is optional. <code>dockerrun.sh</code> infers the current host user name (placeholder <code>USER</code>), and launches a relevant container in one of two ways:</p>
 <ol>
 <li>If <em>there <strong>EXISTS NO</strong> container</em> derived from <code>fastbatllnn-run:USER</code>, then <code>dockerrun.sh</code> starts a new container from that image, using the appropriate options; or</li>
 <li>If <em>there <strong>EXISTS</strong> a container</em> derived from <code>fastbatllnn-run:USER</code>, then <code>dockerrun.sh</code> simply attempts to (re-)start that container.</li>
@@ -173,15 +173,15 @@ fastbatllnn-deps           local                             def123456789   32 m
 <p>This should allow you to stop a container (say by restarting your computer), without having to figure out which container to restart.</p>
 <p>You can interact with the resultant container in three ways:</p>
 <ol>
-<li>When the container is first started by <code>dockerrun.sh</code>, you will be placed in a Bash shell in the container (i.e. option <code>-it</code> for <a href="https://docs.docker.com/engine/reference/run/"><code>docker run</code></a>);</li>
-<li>The container starts an SSH daemon listening on <em>localhost</em>, port 3000; it also attempts to copy the current user's <strong>public</strong> ssh keys for password-less login (i.e. it adds these keys to <code>./ssh/authorized_keys</code> in the container);</li>
+<li>If the container is started by the command <code>dockerrun.sh --interactive</code>, you will be placed in a Bash shell in the container (i.e. option <code>-it</code> for <a href="https://docs.docker.com/engine/reference/run/"><code>docker run</code></a>); otherwise, the container will operate in daemon mode;</li>
+<li>The container <strong>always</strong> starts an SSH daemon listening on <em>localhost</em>, port 3000; it also attempts to copy the current user's <strong>public</strong> ssh keys for password-less login (i.e. it adds these keys to <code>./ssh/authorized_keys</code> in the container);</li>
 <li>The host directory <code>$LOCATION/container_results</code> is bind-mounted to <code>/home/USER/results</code> in the container (the host directory will be created if it doesn't exist).</li>
 </ol>
 <blockquote>
 <p><strong>WARNING:</strong> if you exit the container's Bash shell, then the container will stop. Restarting the container with <code>dockerrun.sh</code> (see above) will not return you to a Bash shell, but it will restart the SSH daemon: you will have to interact with the restarted container via SSH.</p>
 </blockquote>
 <blockquote>
-<p><strong>NOTE:</strong> You can specify that the container should listen on a different port by calling <code>dockerrun.sh</code> with the option <code>--port=1234</code> where <code>1234</code> can be replaced with a valid port for the container to listen on. That is, by default, <code>dockerrun.sh</code> infers <code>--port=3000</code>.</p>
+<p><strong>NOTE:</strong> You can specify that the container should listen on a different port by calling <code>dockerrun.sh</code> with the option <code>--ssh-port=1234</code> where <code>1234</code> can be replaced with a valid port for the container to listen on. That is, by default, <code>dockerrun.sh</code> infers <code>--ssh-port=3000</code>.</p>
 </blockquote>
 <p>SSH is the best way to run code in the container:</p>
 <ul>

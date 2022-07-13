@@ -39,7 +39,7 @@ cd "$LOCATION"
 git clone --recursive https://github.com/jferlez/FastBATLLNN # --recurisve is optional if using Docker
 cd FastBATLLNN
 ./dockerbuild.sh # Warning: may take > 1 hour!
-./dockerrun.sh
+./dockerrun.sh --interactive
 ```
 This should place you at a Bash shell inside a container with FastBATLLNN installed. If these scripts execute successfully, then you can skip to **4) Running FastBATLLNN**.
 
@@ -93,10 +93,10 @@ These images are described as follows:
 Once a user has created the above Docker images (only `fastbatllnn-run:USER` is user specific), a suitable container can be started using the command:
 
 ```Bash
-./dockerrun.sh
+./dockerrun.sh [--interactive]
 ```
 
-`dockerrun.sh` infers the current host user name (placeholder `USER`), and launches a relevant container in one of two ways:
+Where the `--interactive` flag is optional. `dockerrun.sh` infers the current host user name (placeholder `USER`), and launches a relevant container in one of two ways:
 1. If _there **EXISTS NO** container_ derived from `fastbatllnn-run:USER`, then `dockerrun.sh` starts a new container from that image, using the appropriate options; or
 2. If _there **EXISTS** a container_ derived from `fastbatllnn-run:USER`, then `dockerrun.sh` simply attempts to (re-)start that container.
 
@@ -104,13 +104,13 @@ This should allow you to stop a container (say by restarting your computer), wit
 
 You can interact with the resultant container in three ways:
 
-1. When the container is first started by `dockerrun.sh`, you will be placed in a Bash shell in the container (i.e. option `-it` for [`docker run`](https://docs.docker.com/engine/reference/run/));
-2. The container starts an SSH daemon listening on _localhost_, port 3000; it also attempts to copy the current user's **public** ssh keys for password-less login (i.e. it adds these keys to `./ssh/authorized_keys` in the container);
+1. If the container is started by the command `dockerrun.sh --interactive`, you will be placed in a Bash shell in the container (i.e. option `-it` for [`docker run`](https://docs.docker.com/engine/reference/run/)); otherwise, the container will operate in daemon mode;
+2. The container **always** starts an SSH daemon listening on _localhost_, port 3000; it also attempts to copy the current user's **public** ssh keys for password-less login (i.e. it adds these keys to `./ssh/authorized_keys` in the container);
 3. The host directory `$LOCATION/container_results` is bind-mounted to `/home/USER/results` in the container (the host directory will be created if it doesn't exist).
 
 > **WARNING:** if you exit the container's Bash shell, then the container will stop. Restarting the container with `dockerrun.sh` (see above) will not return you to a Bash shell, but it will restart the SSH daemon: you will have to interact with the restarted container via SSH.
 
-> **NOTE:** You can specify that the container should listen on a different port by calling `dockerrun.sh` with the option `--port=1234` where `1234` can be replaced with a valid port for the container to listen on. That is, by default, `dockerrun.sh` infers `--port=3000`.
+> **NOTE:** You can specify that the container should listen on a different port by calling `dockerrun.sh` with the option `--ssh-port=1234` where `1234` can be replaced with a valid port for the container to listen on. That is, by default, `dockerrun.sh` infers `--ssh-port=3000`.
 
 SSH is the best way to run code in the container:
 
