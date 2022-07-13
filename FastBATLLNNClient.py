@@ -88,14 +88,13 @@ def getResult(onnxFile=None,tllFile=None,vnnlibFile=None,inputProperty=None,outp
     elif onnxFile is not None:
         fileID = onnxFile
     if vnnlibFile is not None:
-        if availableVNNLIB:
-            propertyID = vnnlibFile
+        propertyID = vnnlibFile
     elif inputProperty is not None and outputProperty is not None:
         propertyID = str(inputProperty) + str(outputProperty)
     else:
         raise ValueError('Please supply both an input property and an output property')
     
-    
+
     tllDict = {}
     tllDict['id'] = '[' + fileID + '][' + propertyID + ']'
     tllDict['COMMAND'] = 'GO'
@@ -133,8 +132,7 @@ if __name__ == '__main__':
         sys.exit()
     elif command == 'getResult':
         if len(sys.argv) >= 4:
-            result = getResult(sys.argv[2], sys.argv[3])
-            result = json.loads(result)
+            result = getResult(onnxFile=sys.argv[2], vnnlibFile=sys.argv[3]).json()
             if 'RESULT' in result:
                 print(result['RESULT'])
                 sys.exit(0)
@@ -144,7 +142,7 @@ if __name__ == '__main__':
             sys.exit(1)
     elif command == 'setProblem':
         if len(sys.argv) >= 4:
-            result = setProblem(sys.argv[2], sys.argv[3])
+            result = setProblem(onnxFile=sys.argv[2], vnnlibFile=sys.argv[3])
         else:
             sys.exit(1)
     else:
