@@ -199,7 +199,7 @@ class FastBATLLNNServer(Chare):
                     else:
                         result = not bool(tllReach.verifyUB(b_out,ret=True).get()) # verify NN <= b: True/1 == UNSAT; False/0 == SAT
 
-                    toServerChannel.send({'id':problemID,'RESULT':'SAT' if result else 'UNSAT'})
+                    toServerChannel.send({'id':problemID,'RESULT':'UNSAT' if result else 'SAT'})
             
             # Now wait for either a "GO" or "SHUTDOWN" command
             msg = fromServerChannel.recv()
