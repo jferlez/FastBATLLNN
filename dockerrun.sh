@@ -11,6 +11,7 @@ PORT=3000
 HTTPPORT=8000
 INTERACTIVE="-d"
 SERVER="run"
+ATTACH=""
 for argwhole in "$@"; do
     IFS='=' read -r -a array <<< "$argwhole"
     arg="${array[0]}"
@@ -19,7 +20,7 @@ for argwhole in "$@"; do
         --gpu) GPUS="--gpus all";;
         --ssh-port) PORT=`echo "$val" | sed -e 's/[^0-9]//g'`;;
         --http-port) HTTPPORT=`echo "$val" | sed -e 's/[^0-9]//g'`;;
-        --interactive) INTERACTIVE="-it";;
+        --interactive) INTERACTIVE="-it" && ATTACH="-ai";;
         --server) SERVER="server"
     esac
 done
@@ -79,5 +80,5 @@ if [ "$EXISTING_CONTAINER" = "" ]; then
     docker run --privileged $GPUS --shm-size=${SHMSIZE}gb $INTERACTIVE $PORT $HTTPPORT --label server=${SERVER} -v "$(pwd)"/container_results:/home/${user}/results fastbatllnn-run:${user} ${user} $INTERACTIVE $SERVER
 else
     echo "Restarting container $EXISTING_CONTAINER (command line options except \"--server\" ignored)..."
-    docker start $EXISTING_CONTAINER
+    docker start $ATTACH $EXISTING_CONTAINER
 fi
