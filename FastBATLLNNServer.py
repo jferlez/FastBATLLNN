@@ -194,26 +194,12 @@ class FastBATLLNNServer(Chare):
                 else:
                     # Here is where we will actually run FastBATLLNN
                     
-                    # print('\n\n----------------- VERIFYING LOWER BOUND:  -----------------')
-                    # t = time.time()
-                    # a = 0.299
-                    # lbFut = tllReach.verifyLB(a,opts={'hashStoreUseBits':True,'prefilter':True},ret=True) # verify NN >= a: True/1 == SAT; False/0 == UNSAT
-                    # lb = lbFut.get()
-                    # t = time.time()-t
-                    # print('TLL always >= ' + str(a) + ' on constraints? ' + str(bool(lb)))
-                    # print('-----------------------------------------------------------')
+                    if A_out < 0:
+                        result = bool(tllReach.verifyLB(b_out,ret=True).get()) # verify NN >= a: True/1 == SAT; False/0 == UNSAT
+                    else:
+                        result = not bool(tllReach.verifyUB(b_out,ret=True).get()) # verify NN <= b: True/1 == UNSAT; False/0 == SAT
 
-
-                    # print('\n\n----------------- VERIFYING UPPER BOUND:  -----------------')
-                    # t = time.time()
-                    # b = 4.51
-                    # ubFut = tllReach.verifyUB(b,ret=True) # verify NN <= b: True/1 == UNSAT; False/0 == SAT
-                    # ub = ubFut.get()
-                    # t = time.time()-t
-                    # print('TLL always <= ' + str(b) + ' on constraints? ' + str(not bool(ub)))
-                    # print('-----------------------------------------------------------')
-                    toServerChannel.send({'id':problemID,'RESULT':'SAT'})
-                    pass
+                    toServerChannel.send({'id':problemID,'RESULT':'SAT' if result else 'UNSAT'})
             
             # Now wait for either a "GO" or "SHUTDOWN" command
             msg = fromServerChannel.recv()
