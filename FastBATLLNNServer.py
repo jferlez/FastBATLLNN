@@ -152,7 +152,7 @@ class FastBATLLNNServer(Chare):
 
                 validProc = True
                 problemID = 'NULL'
-                for k in ['A_in','b_in','A_out','b_out','n','N','M','m','localLinearFns','selectorSets','TLLFormatVersion','id']:
+                for k in ['A_in','b_in','A_out','b_out','n','N','M','m','localLinearFns','selectorSets','TLLFormatVersion','id','timeout']:
                     if not k in msg:
                         validProc = False
                 
@@ -168,6 +168,7 @@ class FastBATLLNNServer(Chare):
                     problemID = msg['id']
                     A_out = msg['A_out']
                     b_out = msg['b_out']
+                    timeout = msg['timeout']
                 
                     tllReach.initialize(tll , constraints, 100, useQuery, useBounding,awaitable=True).get()
                 
@@ -195,9 +196,9 @@ class FastBATLLNNServer(Chare):
                     # Here is where we will actually run FastBATLLNN
                     
                     if A_out < 0:
-                        result = bool(tllReach.verifyLB(b_out,ret=True).get()) # verify NN >= a: True/1 == SAT; False/0 == UNSAT
+                        result = bool(tllReach.verifyLB(b_out,timeout=timeout,ret=True).get()) # verify NN >= a: True/1 == SAT; False/0 == UNSAT
                     else:
-                        result = not bool(tllReach.verifyUB(b_out,ret=True).get()) # verify NN <= b: True/1 == UNSAT; False/0 == SAT
+                        result = not bool(tllReach.verifyUB(b_out,timeout=timeout,ret=True).get()) # verify NN <= b: True/1 == UNSAT; False/0 == SAT
 
                     toServerChannel.send({'id':problemID,'RESULT':'UNSAT' if result else 'SAT'})
             
