@@ -8,19 +8,36 @@ SCRIPT_DIR=$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )
 
 SYSTEM_TYPE=$(uname)
 PORT=3000
+HTTPPORT=8000
+INTERACTIVE="-d"
+SERVER="run"
 for argwhole in "$@"; do
     IFS='=' read -r -a array <<< "$argwhole"
     arg="${array[0]}"
     val="${array[1]}"
     case "$arg" in
         --gpu) GPUS="--gpus all";;
-        --port) PORT=`echo "$val" | sed -e 's/[^0-9]//g'`
+        --ssh-port) PORT=`echo "$val" | sed -e 's/[^0-9]//g'`;;
+        --http-port) HTTPPORT=`echo "$val" | sed -e 's/[^0-9]//g'`;;
+        --interactive) INTERACTIVE="-it";;
+        --server) SERVER="server"
     esac
 done
 
 re='^[0-9]+$'
 if ! [[ $PORT =~ $re ]] ; then
     echo "error: Invalid port specified" >&2; exit 1
+fi
+PORT="-p $PORT:22"
+
+if ! [[ $HTTPPORT =~ $re ]] ; then
+    echo "error: Invalid port specified" >&2; exit 1
+fi
+
+if [ "$SERVER" = "server" ]; then
+    HTTPPORT="-p ${HTTPPORT}:8080"
+else
+    HTTPPORT=""
 fi
 
 if [ "$SYSTEM_TYPE" = "Darwin" ]; then
@@ -52,13 +69,15 @@ cd ..
 CONTAINERS=`docker container ls -a | grep fastbatllnn-run:$user | sed -e "s/[ ].*//"`
 EXISTING_CONTAINER=""
 for CONT in $CONTAINERS; do
-    EXISTING_CONTAINER=$CONT
-    break
+    if [ `docker inspect --format='{{.Config.Labels.server}}' $CONT` = "${SERVER}" ]; then
+        EXISTING_CONTAINER=$CONT
+        break
+    fi
 done
 
 if [ "$EXISTING_CONTAINER" = "" ]; then
-    docker run --privileged $GPUS --shm-size=${SHMSIZE}gb -it -p $PORT:22 -v "$(pwd)"/container_results:/home/${user}/results fastbatllnn-run:${user} ${user}
+    docker run --privileged $GPUS --shm-size=${SHMSIZE}gb $INTERACTIVE $PORT $HTTPPORT --label server=${SERVER} -v "$(pwd)"/container_results:/home/${user}/results fastbatllnn-run:${user} ${user} $INTERACTIVE $SERVER
 else
-    echo "Restarting container $EXISTING_CONTAINER (command line options ignored)..."
+    echo "Restarting container $EXISTING_CONTAINER (command line options except \"--server\" ignored)..."
     docker start $EXISTING_CONTAINER
 fi

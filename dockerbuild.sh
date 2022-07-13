@@ -1,5 +1,5 @@
 #!/bin/bash
-
+SYSTEM_TYPE=$(uname)
 user=`id -n -u`
 GID=`id -g`
 
@@ -45,4 +45,15 @@ fi
 
 cd "$SCRIPT_DIR"
 
-cat Dockerfile | sed -u -e $PROCESSING | docker build --no-cache --build-arg USER_NAME=$user --build-arg UID=$UID --build-arg GID=$GID -t fastbatllnn-run:${user} -
+if [ $SYSTEM_TYPE = "Darwin" ];
+then
+    CORES=$(( `sysctl -n hw.ncpu` / 2 ))
+    PYTHON="python3.10"
+else
+    CORES_PER_SOCKET=`lscpu | grep "Core(s) per socket:" | sed -e 's/[^0-9]//g'`
+    SOCKETS=`lscpu | grep "Socket(s):" | sed -e 's/[^0-9]//g'`
+    CORES=$(( $CORES_PER_SOCKET * $SOCKETS ))
+    PYTHON=""
+fi
+
+cat Dockerfile | sed -u -e $PROCESSING | docker build --no-cache --build-arg USER_NAME=$user --build-arg UID=$UID --build-arg GID=$GID --build-arg CORES=$CORES -t fastbatllnn-run:${user} -
