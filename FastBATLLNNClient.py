@@ -16,7 +16,7 @@ if len(sys.argv) >= 2 and sys.argv[1] == 'setProblem' or sys.argv[0][-min(20,len
     except ImportError:
         print('Unable to import module vnnlib -- VNNLIB import will be disabled. Install vnnlib.py via nnenum https://github.com/stanleybak/nnenum to enable VNNLIB properties.')
 
-    def setProblem(onnxFile=None,tllFile=None,vnnlibFile=None,inputProperty=None,outputProperty=None,timeout=300):
+    def setProblem(onnxFile=None,tllFile=None,vnnlibFile=None,inputProperty=None,outputProperty=None):
         
         if tllFile is not None:
             if type(tllFile) is dict:
@@ -34,7 +34,6 @@ if len(sys.argv) >= 2 and sys.argv[1] == 'setProblem' or sys.argv[0][-min(20,len
             fileID = onnxFile
 
         n = tllDict['n']
-        tllDict['timeout'] = timeout
 
         if vnnlibFile is not None:
             if availableVNNLIB:
@@ -80,7 +79,7 @@ if len(sys.argv) >= 2 and sys.argv[1] == 'setProblem' or sys.argv[0][-min(20,len
         r = requests.post(serverURL + 'post', json=tllDict)
         return tllDict
 
-def getResult(onnxFile=None,tllFile=None,vnnlibFile=None,inputProperty=None,outputProperty=None):
+def getResult(onnxFile=None,tllFile=None,vnnlibFile=None,inputProperty=None,outputProperty=None,timeout=300):
     if tllFile is not None:
         if type(tllFile) is dict:
             fileID = str(id(tllDict))
@@ -97,6 +96,7 @@ def getResult(onnxFile=None,tllFile=None,vnnlibFile=None,inputProperty=None,outp
     
 
     tllDict = {}
+    tllDict['timeout'] = timeout
     tllDict['id'] = '[' + fileID + '][' + propertyID + ']'
     tllDict['COMMAND'] = 'GO'
     r = requests.post(serverURL + 'post', json=tllDict)
@@ -133,7 +133,7 @@ if __name__ == '__main__':
         sys.exit()
     elif command == 'getResult':
         if len(sys.argv) >= 4:
-            result = getResult(onnxFile=sys.argv[2], vnnlibFile=sys.argv[3]).json()
+            result = getResult(onnxFile=sys.argv[2], vnnlibFile=sys.argv[3], timeout=sys.argv[4]).json()
             if 'RESULT' in result:
                 print(result['RESULT'])
                 sys.exit(0)
@@ -143,7 +143,7 @@ if __name__ == '__main__':
             sys.exit(1)
     elif command == 'setProblem':
         if len(sys.argv) >= 5:
-            result = setProblem(onnxFile=sys.argv[2], vnnlibFile=sys.argv[3], timeout=sys.argv[4])
+            result = setProblem(onnxFile=sys.argv[2], vnnlibFile=sys.argv[3])
         else:
             sys.exit(1)
     else:

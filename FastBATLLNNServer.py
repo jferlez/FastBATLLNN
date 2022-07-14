@@ -137,6 +137,8 @@ class FastBATLLNNServer(Chare):
         # Get the first command via HTTP
         msg = fromServerChannel.recv()
 
+        timeout=300
+
         while msg and type(msg) is dict:
 
             if not 'COMMAND' in msg:
@@ -152,7 +154,7 @@ class FastBATLLNNServer(Chare):
 
                 validProc = True
                 problemID = 'NULL'
-                for k in ['A_in','b_in','A_out','b_out','n','N','M','m','localLinearFns','selectorSets','TLLFormatVersion','id','timeout']:
+                for k in ['A_in','b_in','A_out','b_out','n','N','M','m','localLinearFns','selectorSets','TLLFormatVersion','id']:
                     if not k in msg:
                         validProc = False
                 
@@ -168,8 +170,7 @@ class FastBATLLNNServer(Chare):
                     problemID = msg['id']
                     A_out = msg['A_out']
                     b_out = msg['b_out']
-                    timeout = msg['timeout']
-                
+
                     tllReach.initialize(tll , constraints, 100, useQuery, useBounding,awaitable=True).get()
                 
                 # Now wait for either a "GO" or "SHUTDOWN" command
@@ -188,7 +189,8 @@ class FastBATLLNNServer(Chare):
                 # If we got a GO command for some other problem, then return an invalid result
                 if not 'id' in msg or msg['id'] != problemID:
                     validProc = False
-                
+                if 'timeout' in msg:
+                    timeout = msg['timeout']
                 # We recieved a GO command
                 if not validProc:
                     toServerChannel.send({'id':problemID,'RESULT':'INVALID'})
