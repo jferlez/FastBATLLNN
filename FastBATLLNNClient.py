@@ -133,7 +133,7 @@ if __name__ == '__main__':
         sys.exit()
     elif command == 'getResult':
         if len(sys.argv) >= 5:
-            result = getResult(onnxFile=sys.argv[2], vnnlibFile=sys.argv[3], timeout=sys.argv[4]).json()
+            result = getResult(onnxFile=sys.argv[2], vnnlibFile=sys.argv[3], timeout=int(sys.argv[4])).json()
             if 'RESULT' in result:
                 print(result['RESULT'])
                 sys.exit(0)
