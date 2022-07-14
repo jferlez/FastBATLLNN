@@ -197,7 +197,7 @@ class FastBATLLNNServer(Chare):
                 else:
                     # Here is where we will actually run FastBATLLNN
                     
-                    if A_out < 0:
+                    if A_out > 0:
                         result = bool(tllReach.verifyLB(b_out,timeout=(timeout if timeout > 0 else None),ret=True).get()) # verify NN >= a: True/1 == SAT; False/0 == UNSAT
                     else:
                         result = not bool(tllReach.verifyUB(b_out,timeout=(timeout if timeout > 0 else None),ret=True).get()) # verify NN <= b: True/1 == UNSAT; False/0 == SAT
