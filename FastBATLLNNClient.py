@@ -132,7 +132,7 @@ if __name__ == '__main__':
         result = shutdown()
         sys.exit()
     elif command == 'getResult':
-        if len(sys.argv) >= 4:
+        if len(sys.argv) >= 5:
             result = getResult(onnxFile=sys.argv[2], vnnlibFile=sys.argv[3], timeout=sys.argv[4]).json()
             if 'RESULT' in result:
                 print(result['RESULT'])
@@ -142,7 +142,7 @@ if __name__ == '__main__':
         else:
             sys.exit(1)
     elif command == 'setProblem':
-        if len(sys.argv) >= 5:
+        if len(sys.argv) >= 4:
             result = setProblem(onnxFile=sys.argv[2], vnnlibFile=sys.argv[3])
         else:
             sys.exit(1)
