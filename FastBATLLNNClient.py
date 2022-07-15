@@ -28,7 +28,7 @@ if len(sys.argv) >= 2 and sys.argv[1] == 'setProblem' or sys.argv[0][-min(20,len
                 fileID = str(tllFile)
         elif onnxFile is not None:
             t = time.time()
-            tll = TLLnet.TLLnet.fromONNX(onnxFile)
+            tll = TLLnet.TLLnet.fromONNX(onnxFile,validateLayers=False)
             tllDict = tll.save()
             print(f'Used {time.time()-t} seconds to import ONNX file...')
             fileID = onnxFile
