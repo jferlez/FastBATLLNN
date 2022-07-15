@@ -16,7 +16,9 @@ import json
 class ShutdownServer(Exception):
     pass
 
-
+charm.options.local_msg_buf_size = 10000
+# Enable profiling
+charm.options.profiling = False
 
 class Server(Chare):
     def __init__(self,processorRemote):
