@@ -4,10 +4,13 @@ WORKDIR /tmp/docker_build
 RUN ln -snf /usr/share/zoneinfo/$CONTAINER_TIMEZONE /etc/localtime && echo $CONTAINER_TIMEZONE > /etc/timezone
 RUN apt-get update && \
     apt-get -y upgrade && \
-    apt -y install clang-12 python3-pip python3.9 python3.9-dev libopenmpi-dev cmake gcc-10 libgsl-dev libfftw3-3 libfftw3-dev libsuitesparse-dev git clang-11 libgmp-dev vim emacs nano screen tmux ipython3 openssh-server sudo && \
+    apt -y install clang-12 python3-pip python3.9 python3.9-dev libopenmpi-dev cmake gcc-10 libgsl-dev libfftw3-3 libfftw3-dev libsuitesparse-dev git clang-11 libgmp-dev vim emacs nano screen tmux ipython3 openssh-server sudo curl universal-ctags ripgrep psmisc locales clangd libpython3.9-dev && \
+    curl -sL https://deb.nodesource.com/setup_16.x | bash - && \
+    apt -y install nodejs && \
     python3.9 -m pip install --upgrade pip && \
-    python3.9 -m pip install protobuf==3.19.3 tensorflow-gpu==2.9.1 scipy greenlet pycddlib Cython pyopencl pycuda cupy-cuda112==10.5.0 mpmath matplotlib onnx onnxruntime tf2onnx torch torchvision torchaudio && \
+    python3.9 -m pip install protobuf==3.19.3 tensorflow-gpu==2.9.1 scipy greenlet pycddlib Cython pyopencl pycuda cupy-cuda112==10.5.0 mpmath matplotlib onnx onnxruntime tf2onnx torch torchvision torchaudio pylint flake8 vim-vint 'python-lsp-server[all]' pylsp-mypy pyls-isort pynvim cdifflib tree_sitter && \
     python3.9 -m pip install "jax[cuda11_cudnn805]" -f https://storage.googleapis.com/jax-releases/jax_releases.html
+RUN npm install -g vim-language-server node-gyp tree-sitter tree-sitter-cli
 RUN git clone https://github.com/UIUC-PPL/charm4py && \
     cd charm4py && \
     git checkout 0aa892b7e09dc0c0b22b75f84103b1bfa7ed3ae3 && \
@@ -17,6 +20,10 @@ RUN git clone https://github.com/UIUC-PPL/charm4py && \
     git checkout d4d22039271486e7e42c77d3fea90937be4071e5 && \
     cd ../..
 WORKDIR /tmp/docker_build
+# Install latest neovim
+RUN wget https://github.com/neovim/neovim/releases/download/v0.7.2/nvim-linux64.deb
+RUN apt install ./nvim-linux64.deb
+RUN rm ./nvim-linux64.deb
 # Build Fast BATLLNN dependencies
 RUN wget https://ftp.gnu.org/gnu/glpk/glpk-5.0.tar.gz && \
     tar -xf glpk-5.0.tar.gz && \
@@ -53,8 +60,14 @@ RUN sed -i -E -e 's/(\s*self\.options\.local_msg_optim\s*=\s*)False/\1True/' /us
 # RUN useradd -rm -d /home/ubuntu -s /bin/bash -g root -G sudo -u 1000 ubuntu
 # RUN echo 'ubuntu:ubuntu' | chpasswd
 RUN /usr/bin/ssh-keygen -A
-RUN echo "#!/bin/bash\nnohup /usr/sbin/sshd -D &> /root/nohup.out &\nif [ -e /etc/ssh/ssh_host_rsa_key.pub ]\nthen\n echo \"\n****** SSH host key ******\"\ncat /etc/ssh/ssh_host_rsa_key.pub\necho \"**************************\n\"\nsudo -u \$1 cp /etc/ssh/ssh_host_rsa_key.pub /home/\$1/results\nfi\nif [ -e /home/\$1/results/authorized_keys ] && [ -d /home/\$1/.ssh ]\nthen\ncp /home/\$1/results/authorized_keys /home/\$1/.ssh\nchmod 600 /home/\$1/.ssh/authorized_keys && chown \$1:\$1 /home/\$1/.ssh/authorized_keys && rm /home/\$1/results/authorized_keys\nfi\nsudo -u \$1 /bin/bash" > /usr/local/bin/startup.sh
+
+# To get nohup with mpirun... not needed, though https://stackoverflow.com/questions/48296285/nohup-does-not-work-mpirun
+RUN echo "#!/bin/sh\n(\necho \"Date: \`date\`\"\necho \"Command: \$*\"\nPYTHONPATH=/home/${USER_NAME}/tools/FastBATLLNN:/home/${USER_NAME}/tools/FastBATLLNN/HyperplaneRegionEnum:/home/${USER_NAME}/tools/FastBATLLNN/TLLnet:/home/${USER_NAME}/tools/nnenum/src/nnenum nohup \"\$@\"\necho \"Completed: \`date\`\"\necho\n) >>\${LOGFILE:=log.out} 2>&1 &" > /usr/local/bin/bk
+RUN chmod 755 /usr/local/bin/bk
+
+RUN echo "#!/bin/bash\n/usr/sbin/sshd -D &> /root/sshd_log.out &\nif [ -e /etc/ssh/ssh_host_rsa_key.pub ]\nthen\n echo \"\n****** SSH host key ******\"\ncat /etc/ssh/ssh_host_rsa_key.pub\necho \"**************************\n\"\nsudo -u \$1 cp /etc/ssh/ssh_host_rsa_key.pub /home/\$1/results\nfi\nif [ -e /home/\$1/results/authorized_keys ] && [ -d /home/\$1/.ssh ]\nthen\ncp /home/\$1/results/authorized_keys /home/\$1/.ssh\nchmod 600 /home/\$1/.ssh/authorized_keys && chown \$1:\$1 /home/\$1/.ssh/authorized_keys && rm /home/\$1/results/authorized_keys\nfi\nif [ \"\$2\" = \"-d\" ]; then\nwait -n\nelse\nsudo -u \$1 /bin/bash\nkillall sshd\nfi" > /usr/local/bin/startup.sh
 RUN chmod 755 /usr/local/bin/startup.sh
+
 RUN echo "export PATH=/usr/local/bin:\$PATH\nexport LD_LIBRARY_PATH=/usr/local/lib\nexport COIN_INSTALL_DIR=/usr/local" >> /etc/bash.bashrc
 # RUN chown ubuntu:root /home/ubuntu/.bashrc
 # RUN rm /etc/ssh/ssh_host_rsa_key /etc/ssh/ssh_host_ecdsa_key && \
@@ -66,3 +79,7 @@ RUN sed -i -E -e 's/\s*#\s*PasswordAuthentication\s+(yes|no)/PasswordAuthenticat
 RUN service ssh start
 EXPOSE 22
 # CMD ["/bin/bash"]
+
+# Thsese are related to neovim; in future builds, they will be incorporated into earlier layers
+RUN locale-gen en_US.UTF-8
+

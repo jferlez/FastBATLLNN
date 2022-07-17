@@ -56,4 +56,4 @@ else
     PYTHON=""
 fi
 
-cat Dockerfile | sed -u -e $PROCESSING | docker build --no-cache --build-arg USER_NAME=$user --build-arg UID=$UID --build-arg GID=$GID --build-arg CORES=$CORES -t fastbatllnn-run:${user} -
+cat Dockerfile | sed -u -e $PROCESSING | docker build --no-cache --build-arg USER_NAME=$user --build-arg UID=$UID --build-arg GID=$GID --build-arg CORES=$CORES -t fastbatllnn-run:${user} -f- .
