@@ -144,7 +144,7 @@ if __name__ == '__main__':
                         resultStr += f'(X_{i} {cePoint[i]})\n'
                     for i in range(len(ceVal)):
                         resultStr += f'(Y_{i} {ceVal[i]})\n'
-                    resultStr[-1] = ')'
+                    resultStr = resultStr[:-1] + ')'
                 else:
                     resultStr = ''
                 print(result['RESULT'] + resultStr)
