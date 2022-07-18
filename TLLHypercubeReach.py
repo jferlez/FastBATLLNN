@@ -132,9 +132,11 @@ class setupCheckerVarsOriginCheck(Chare):
         self.posetPElist = posetPElist
         self.schedCount = 0
         self.skip = False
+        self.counterExample = None
 
     def initialize(self,selectorSetsFull):
         self.selectorSetsFull = selectorSetsFull
+        self.counterExample = None
 
     def getPosetSuccGroupProxy(self):
         return (self.posetSuccGroupProxy, self.posetPElist)
@@ -154,8 +156,12 @@ class setupCheckerVarsOriginCheck(Chare):
     @coro
     def getSchedCount(self):
         return self.schedCount
+    @coro
+    def getCounterExample(self):
+        return self.counterExample
     
     # Legacy methods
+    @coro
     def setConstraint(self,constraints, out):
         self.out = out
         # self.posetSuccGroupProxy.setProperty('out',out)
@@ -166,6 +172,7 @@ class setupCheckerVarsOriginCheck(Chare):
         self.nodeIntMask = [(2**(self.N+1))-1]
         self.schedCount = 0
         self.skip = False
+        self.counterExample = None
     def getConstraints(self):
         return (self.flippedConstraints, self.selectorSetsFull, self.nodeIntMask, self.out)
 
@@ -200,6 +207,7 @@ class setupCheckerVarsOriginCheck(Chare):
                 # This behavior is totally inexplicable: for some reason, it will fail with the infamous: "No pending future with fid= ... 
                 # A common reason is sending to a future that already received its value(s)" message.
                 self.thisProxy.setSkip(True)
+                self.counterExample = copy(regSet)
                 self.posetSuccGroupProxy[self.thisIndex].sendAll(-4,ret=True).get()
 
         self.schedCount -= 1
@@ -244,6 +252,8 @@ class TLLHypercubeReach(Chare):
 
         self.ubCheckerGroup = Group(minGroupFeasibleUB)
         charm.awaitCreation(self.ubCheckerGroup)
+        self.lpObj = encapsulateLP.encapsulateLP()
+        # self.lpObj.initSolver(solver='glpk')
 
     @coro
     def initialize(self, tll, inputConstraints, maxIts, useQuery, useBounding):
@@ -261,6 +271,7 @@ class TLLHypercubeReach(Chare):
         # self.N = len(localLinearFns[0][0][0])
         # self.M = len(selectorMats[0])
         # self.m = len(localLinearFns)
+        self.tll = tll
 
         self.localLinearFns = [ [kernBias[0].copy(), kernBias[1].copy().reshape( (-1,1) )] for kernBias in tll.localLinearFns ]
         self.selectorSetsFull = deepcopy(tll.selectorSets)
@@ -297,6 +308,7 @@ class TLLHypercubeReach(Chare):
         self.copyTime = 0
         self.posetTime = 0
         self.workerInitTime = 0
+        self.cePoint = None
         
 
     @coro
@@ -411,6 +423,15 @@ class TLLHypercubeReach(Chare):
         retVal = self.poset.populatePoset(opts, ret=True).get() # specify retChannelEndPoint=self.thisProxy to send to a channel as follows
         self.posetTime += time.time() - t
 
+        if not retVal:
+            ceList = self.checkerLocalVars.getCounterExample(ret=True).get()
+            self.cePoint = None
+            for ce in ceList:
+                if ce is not None:
+                    # ce is now a list of flipped hyperplanes corresponding to a counterexample region (w.r.t. the ORIGINAL constraints)
+                    self.cePoint = self.poset.getConstraintsObject(ret=True).get().regionInteriorPoint(ce)
+                    print(f'Found counterexample TLL({self.cePoint}) = {self.tll.pointEval(self.cePoint)}')
+                    break
         return retVal
     
     @coro
@@ -428,7 +449,19 @@ class TLLHypercubeReach(Chare):
         if timedOut:
             retVal = None
             print('Upper bound verification timed out.')
+        if retVal:
+            ceList = self.ubCheckerGroup.getCounterExample(ret=True).get()
+            self.cePoint = None
+            for ce in ceList:
+                if ce is not None:
+                    self.cePoint = np.array(ce,dtype=np.float64).reshape(self.n,1)
+                    print(f'Found counterexample TLL({self.cePoint}) = {self.tll.pointEval(self.cePoint)}')
+                    break
         return retVal
+
+    @coro
+    def getCounterExamplePoint(self):
+        return copy(self.cePoint)
 
 
 class minGroupFeasibleUB(Chare):
@@ -463,6 +496,7 @@ class minGroupFeasibleUB(Chare):
         pes.pop(charm.myPe())
         self.otherProxies = [self.thisProxy[k] for k in pes]
         self.tol = 1e-10
+        self.cePoint = None
     @coro
     def reset(self,timeout):
         self.workDone = False
@@ -470,7 +504,7 @@ class minGroupFeasibleUB(Chare):
     @coro
     def checkMinGroup(self, ub, out):
         self.status = Future()
-
+        self.cePoint = None
         for mySelector in range(charm.myPe(),len(self.selectorSetsFull[out]),charm.numPes()):
             self.loopback.send(1)
             self.loopback.recv()
@@ -542,6 +576,7 @@ class minGroupFeasibleUB(Chare):
                             np.all((selHypers @ newSol + ubShift.flatten()) + self.tol >= 0):
                             # This feasible set has a nonempty interior, so we have a violation
                             # print('sending true')
+                            self.cePoint = interiorPoint.copy()
                             for pxy in self.otherProxies:
                                 pxy.setDone()
                             self.status.send(True)
@@ -558,6 +593,9 @@ class minGroupFeasibleUB(Chare):
     @coro
     def setDone(self):
         self.workDone = True
+    @coro
+    def getCounterExample(self):
+        return self.cePoint
 
 
 
