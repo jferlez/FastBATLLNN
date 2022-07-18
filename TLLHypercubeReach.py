@@ -404,7 +404,8 @@ class TLLHypercubeReach(Chare):
     def verifyLB(self,lb, out=0, timeout=None, opts={}):
         if out >= self.m:
             raise ValueError('Output ' + str(out) + ' is greater than m = ' + str(self.m))
-
+        self.cePoint = None
+        self.cePointVal = None
         self.prefilter = True
         if 'prefilter' in opts:
             self.prefilter = opts['prefilter']
@@ -426,8 +427,6 @@ class TLLHypercubeReach(Chare):
 
         if not retVal:
             ceList = self.checkerLocalVars.getCounterExample(ret=True).get()
-            self.cePoint = None
-            self.cePointVal = None
             for ce in ceList:
                 if ce is not None:
                     # ce is now a list of flipped hyperplanes corresponding to a counterexample region (w.r.t. the ORIGINAL constraints)
@@ -441,6 +440,8 @@ class TLLHypercubeReach(Chare):
     def verifyUB(self,ub,out=0, timeout=None, **kwargs):
         if out >= self.m:
             raise ValueError('Output ' + str(out) + ' is greater than m = ' + str(self.m))
+        self.cePoint = None
+        self.cePointVal = None
         self.ubCheckerGroup.reset(timeout,awaitable=True).get()
         timedOut = self.ubCheckerGroup.checkMinGroup(ub,out, ret=True)
         minCheckFut = Future()
