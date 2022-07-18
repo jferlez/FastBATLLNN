@@ -426,12 +426,18 @@ class TLLHypercubeReach(Chare):
         self.posetTime += time.time() - t
 
         if not retVal:
+            t = time.time()
             ceList = self.checkerLocalVars.getCounterExample(ret=True).get()
+            print(f'Waited {time.time() - t} seconds to receive counterexample.')
             for ce in ceList:
                 if ce is not None:
                     # ce is now a list of flipped hyperplanes corresponding to a counterexample region (w.r.t. the ORIGINAL constraints)
+                    t = time.time()
                     self.cePoint = self.poset.getConstraintsObject(ret=True).get().regionInteriorPoint(ce)
+                    print(f'Used {time.time()-t} seconds to find an interior point.')
+                    t = time.time()
                     self.cePointVal = self.tll.pointEval(self.cePoint)
+                    print(f'Used {time.time() - t} seconds to evaluate TLL at interior point.')
                     print(f'Found counterexample TLL({self.cePoint}) = {self.cePointVal}')
                     break
         return retVal
