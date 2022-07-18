@@ -309,6 +309,7 @@ class TLLHypercubeReach(Chare):
         self.posetTime = 0
         self.workerInitTime = 0
         self.cePoint = None
+        self.cePointVal = None
         
 
     @coro
@@ -426,11 +427,13 @@ class TLLHypercubeReach(Chare):
         if not retVal:
             ceList = self.checkerLocalVars.getCounterExample(ret=True).get()
             self.cePoint = None
+            self.cePointVal = None
             for ce in ceList:
                 if ce is not None:
                     # ce is now a list of flipped hyperplanes corresponding to a counterexample region (w.r.t. the ORIGINAL constraints)
                     self.cePoint = self.poset.getConstraintsObject(ret=True).get().regionInteriorPoint(ce)
-                    print(f'Found counterexample TLL({self.cePoint}) = {self.tll.pointEval(self.cePoint)}')
+                    self.cePointVal = self.tll.pointEval(self.cePoint)
+                    print(f'Found counterexample TLL({self.cePoint}) = {self.cePointVal}')
                     break
         return retVal
     
@@ -452,16 +455,18 @@ class TLLHypercubeReach(Chare):
         if retVal:
             ceList = self.ubCheckerGroup.getCounterExample(ret=True).get()
             self.cePoint = None
+            self.cePointVal = None
             for ce in ceList:
                 if ce is not None:
                     self.cePoint = np.array(ce,dtype=np.float64).reshape(self.n,1)
-                    print(f'Found counterexample TLL({self.cePoint}) = {self.tll.pointEval(self.cePoint)}')
+                    self.cePointVal = self.tll.pointEval(self.cePoint)
+                    print(f'Found counterexample TLL({self.cePoint}) = {self.cePointVal}')
                     break
         return retVal
 
     @coro
     def getCounterExamplePoint(self):
-        return copy(self.cePoint)
+        return [copy(self.cePoint), copy(self.cePointVal)]
 
 
 class minGroupFeasibleUB(Chare):
