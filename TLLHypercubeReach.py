@@ -460,13 +460,17 @@ class TLLHypercubeReach(Chare):
             retVal = None
             print('Upper bound verification timed out.')
         if retVal:
+            t = time.time()
             ceList = self.ubCheckerGroup.getCounterExample(ret=True).get()
+            print(f'Used {time.time()-t} seconds to receive counterexample.')
             self.cePoint = None
             self.cePointVal = None
             for ce in ceList:
                 if ce is not None:
                     self.cePoint = np.array(ce,dtype=np.float64).reshape(self.n,1)
+                    t = time.time()
                     self.cePointVal = self.tll.pointEval(self.cePoint)
+                    print(f'Used {time.time() - t} seconds to evaluate TLL at interior point.')
                     print(f'Found counterexample TLL({self.cePoint}) = {self.cePointVal}')
                     break
         return retVal
