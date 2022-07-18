@@ -135,11 +135,18 @@ if __name__ == '__main__':
         if len(sys.argv) >= 5:
             result = getResult(onnxFile=sys.argv[2], vnnlibFile=sys.argv[3], timeout=int(sys.argv[4])).json()
             if 'RESULT' in result:
-                print(result['RESULT'])
-                if 'counterExample' in result:
-                    print(result['counterExample'])
-                if 'counterExampleVal' in result:
-                    print(result['counterExampleVal'])
+                if 'counterExample' in result and 'counterExampleVal' in result:
+                    resultStr = '\n('
+                    cePoint = np.array(result['counterExample']).flatten()
+                    ceVal = np.array(result['counterExampleVal']).flatten()
+                    for i in range(len(cePoint)):
+                        resultStr += f'(X_{i} {cePoint[i]})\n'
+                    for i in range(len(ceVal)):
+                        resultStr += f'(Y_{i} {ceVal[i]})\n'
+                    resultStr[-1] = ')'
+                else:
+                    resultStr = ''
+                print(result['RESULT'] + resultStr)
                 sys.exit(0)
             else:
                 sys.exit(1)
