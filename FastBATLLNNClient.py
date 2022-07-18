@@ -136,6 +136,10 @@ if __name__ == '__main__':
             result = getResult(onnxFile=sys.argv[2], vnnlibFile=sys.argv[3], timeout=int(sys.argv[4])).json()
             if 'RESULT' in result:
                 print(result['RESULT'])
+                if 'counterExample' in result:
+                    print(result['counterExample'])
+                if 'counterExampleVal' in result:
+                    print(result['counterExampleVal'])
                 sys.exit(0)
             else:
                 sys.exit(1)

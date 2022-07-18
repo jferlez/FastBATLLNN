@@ -203,8 +203,12 @@ class FastBATLLNNServer(Chare):
                         result = bool(tllReach.verifyLB(b_out,timeout=(timeout if timeout > 0 else None),ret=True).get()) # verify NN >= a: True/1 == SAT; False/0 == UNSAT
                     else:
                         result = not bool(tllReach.verifyUB(-b_out,timeout=(timeout if timeout > 0 else None),ret=True).get()) # verify NN <= b: True/1 == UNSAT; False/0 == SAT
-
-                    toServerChannel.send({'id':problemID,'RESULT':'UNSAT' if result else 'SAT'})
+                    retDict = {'id':problemID,'RESULT':'UNSAT' if result else 'SAT'}
+                    if not result:
+                        ce = tllReach.getCounterExamplePoint(ret=True).get()
+                        retDict['counterExample'] = ce[0].flatten().tolist()
+                        retDict['counterExampleVal'] = ce[1].flatten().tolist()
+                    toServerChannel.send(retDict)
             
             # Now wait for either a "GO" or "SHUTDOWN" command
             msg = fromServerChannel.recv()
