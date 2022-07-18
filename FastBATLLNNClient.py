@@ -2,6 +2,7 @@ import sys
 import requests
 import json
 import time
+import numpy as np
 serverURL = 'http://localhost:8000/'
 availableVNNLIB = False
 
