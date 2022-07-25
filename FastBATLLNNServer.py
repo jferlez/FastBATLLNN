@@ -41,7 +41,7 @@ class Server(Chare):
 
             working = workingBase
             problem_set = problem_setBase
-            
+
             def _set_response(self,content=None):
                 self.send_response(200)
                 self.send_header('Content-type', 'text/html')
@@ -70,7 +70,7 @@ class Server(Chare):
                 data = json.loads(post_data.decode('utf-8'))
                 logging.info("POST request,\nPath: %s\nHeaders:\n%s\n\nBody:\n%s\n",
                         str(self.path), str(self.headers), data)
-                
+
                 self._set_response()
                 self.wfile.write("POST request for {}".format(self.path).encode('utf-8'))
                 if 'COMMAND' in data:
@@ -116,7 +116,7 @@ def selectorsToSet(selectorSets):
     ]
 
 class FastBATLLNNServer(Chare):
-    
+
     def __init__(self,args):
 
         # Instantiate HTTP server
@@ -134,7 +134,7 @@ class FastBATLLNNServer(Chare):
         charm.awaitCreation(tllReach)
 
         # Start listening for HTTP connnections
-        serverDone = serverTask.run(awaitable=True)    
+        serverDone = serverTask.run(awaitable=True)
 
         # Get the first command via HTTP
         msg = fromServerChannel.recv()
@@ -147,11 +147,11 @@ class FastBATLLNNServer(Chare):
                 # ignore this message, and get the next
                 msg = fromServerChannel.recv()
                 continue
-            
+
             if msg['COMMAND'] == 'SHUTDOWN':
                 toServerChannel.send({})
                 break
-            
+
             if msg['COMMAND'] == 'NEW_PROBLEM':
 
                 validProc = True
@@ -159,7 +159,7 @@ class FastBATLLNNServer(Chare):
                 for k in ['A_in','b_in','A_out','b_out','n','N','M','m','localLinearFns','selectorSets','TLLFormatVersion','id']:
                     if not k in msg:
                         validProc = False
-                
+
                 # We got a valid new problem (more or less), so set things up to run FastBATLLNN
                 if validProc:
                     msg['localLinearFns'] = localLinToNumpy(msg['localLinearFns'])
@@ -174,7 +174,7 @@ class FastBATLLNNServer(Chare):
                     b_out = msg['b_out']
 
                     tllReach.initialize(tll , constraints, 100, useQuery, useBounding,awaitable=True).get()
-                
+
                 # Now wait for either a "GO" or "SHUTDOWN" command
                 msg = fromServerChannel.recv()
                 while msg:
@@ -183,7 +183,7 @@ class FastBATLLNNServer(Chare):
                             break
                     else:
                         msg = fromServerChannel.recv()
-                
+
                 if msg['COMMAND'] == 'SHUTDOWN':
                     toServerChannel.send({})
                     break
@@ -209,12 +209,13 @@ class FastBATLLNNServer(Chare):
                             retDict['counterExample'] = ce[0].flatten().tolist()
                             retDict['counterExampleVal'] = ce[1].flatten().tolist()
                     toServerChannel.send(retDict)
-            
+
             # Now wait for either a "GO" or "SHUTDOWN" command
             msg = fromServerChannel.recv()
 
         serverDone.get()
 
         charm.exit()
-        
+
 charm.start(FastBATLLNNServer,modules=['posetFastCharm','TLLHypercubeReach','DistributedHash'])
+

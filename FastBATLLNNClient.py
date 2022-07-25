@@ -18,7 +18,7 @@ if len(sys.argv) >= 2 and sys.argv[1] == 'setProblem' or sys.argv[0][-min(20,len
         print('Unable to import module vnnlib -- VNNLIB import will be disabled. Install vnnlib.py via nnenum https://github.com/stanleybak/nnenum to enable VNNLIB properties.')
 
     def setProblem(onnxFile=None,tllFile=None,vnnlibFile=None,inputProperty=None,outputProperty=None):
-        
+
         if tllFile is not None:
             if type(tllFile) is dict:
                 tllDict = tllFile
@@ -54,7 +54,7 @@ if len(sys.argv) >= 2 and sys.argv[1] == 'setProblem' or sys.argv[0][-min(20,len
                 b_in = np.ones((2*n,))
                 b_in[:n] = np.array([inputConst[0] for inputConst in spec[0][0]])
                 b_in[n:] = np.array([-inputConst[1] for inputConst in spec[0][0]])
-                
+
                 tllDict['A_in'] = A_in.tolist()
                 tllDict['b_in'] = b_in.tolist()
 
@@ -94,7 +94,7 @@ def getResult(onnxFile=None,tllFile=None,vnnlibFile=None,inputProperty=None,outp
         propertyID = str(inputProperty) + str(outputProperty)
     else:
         raise ValueError('Please supply both an input property and an output property')
-    
+
 
     tllDict = {}
     tllDict['timeout'] = timeout
@@ -126,7 +126,7 @@ def selectorsToList(selectorSets):
 if __name__ == '__main__':
     if len(sys.argv) <= 1:
         sys.exit(1)
-    
+
     command = sys.argv[1]
 
     if command == 'shutdown':
@@ -160,3 +160,4 @@ if __name__ == '__main__':
             sys.exit(1)
     else:
         sys.exit(1)
+
