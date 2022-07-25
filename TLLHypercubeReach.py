@@ -144,7 +144,7 @@ class setupCheckerVarsOriginCheck(Chare):
     def schedRandomPosetPe(self):
         self.schedCount += 1
         return random.choice(self.posetPElist)
-    
+
     def setSkip(self,val):
         # print('Executing setSkip on PE ' + str(charm.myPe()))
         self.skip = val
@@ -159,7 +159,7 @@ class setupCheckerVarsOriginCheck(Chare):
     @coro
     def getCounterExample(self):
         return self.counterExample
-    
+
     # Legacy methods
     @coro
     def setConstraint(self,constraints, out):
@@ -177,7 +177,7 @@ class setupCheckerVarsOriginCheck(Chare):
         return (self.flippedConstraints, self.selectorSetsFull, self.nodeIntMask, self.out)
 
 # class successorWorkerCheck(posetFastCharm.successorWorker,Chare):
-    
+
     @coro
     def checkNode(self,nodeBytes):
         temp = self.skip
@@ -204,14 +204,14 @@ class setupCheckerVarsOriginCheck(Chare):
             # print('Done check; val = ' + str(val))
             if not val:
                 # This **MUST** be an ordinary method: if it's a @coro, the entire system will fail, even with suitable .get() calls
-                # This behavior is totally inexplicable: for some reason, it will fail with the infamous: "No pending future with fid= ... 
+                # This behavior is totally inexplicable: for some reason, it will fail with the infamous: "No pending future with fid= ...
                 # A common reason is sending to a future that already received its value(s)" message.
                 self.thisProxy.setSkip(True)
                 self.counterExample = copy(regSet)
                 self.posetSuccGroupProxy[self.thisIndex].sendAll(-4,ret=True).get()
 
         self.schedCount -= 1
-    
+
 class TLLHypercubeReach(Chare):
     # @coro
     def __init__(self,pes):
@@ -222,30 +222,30 @@ class TLLHypercubeReach(Chare):
         self.hashPElist = list(itertools.chain.from_iterable( \
                [list(range(r[0],r[1],r[2])) for r in pes['hash']] \
             ))
-        
+
         if self.usePosetChecking:
             # For poset checking
             self.checkerLocalVars = Group(setupCheckerVarsOriginCheck,args=[])
         else:
             # For node checking
             self.checkerLocalVars = Group(setupCheckerVars,args=[])
-        
+
         charm.awaitCreation(self.checkerLocalVars)
 
         if simple2xAvailable and 'gpu' in pes:
             self.poset = Chare(PosetSimple2x,args=[],onPE=charm.myPe())
         else:
             self.poset = Chare(posetFastCharm.Poset,args=[],onPE=charm.myPe())
-        
+
         charm.awaitCreation(self.poset)
 
         if self.usePosetChecking:
-             # For poset checking:    
+             # For poset checking:
             self.poset.init(pes, PosetNodeTLLVerOriginCheck, self.checkerLocalVars, (simple2xSuccessorWorker if simple2xAvailable else None),awaitable=True).get()
         else:
             # For node checking;
             self.poset.init(pes, PosetNodeTLLVer, self.checkerLocalVars, (simple2xSuccessorWorker if simple2xAvailable else None),awaitable=True).get()
-       
+
 
         succGroupProxy = self.poset.getSuccGroupProxy(ret=True).get()
         self.checkerLocalVars.init(succGroupProxy,self.posetPElist)
@@ -297,11 +297,11 @@ class TLLHypercubeReach(Chare):
         else:
             # For node checking:
             self.checkerLocalVars.init(self.selectorSetsFull,self.hashPElist)
-        
-        
+
+
         stat = self.poset.initialize(self.localLinearFns, self.pt, self.inputConstraintsA, self.inputConstraintsb, awaitable=True)
         stat.get()
-        
+
         stat = self.ubCheckerGroup.initialize(self.localLinearFns, self.pt, self.inputConstraintsA, self.inputConstraintsb, self.selectorSetsFull, awaitable=True)
         stat.get()
 
@@ -310,7 +310,7 @@ class TLLHypercubeReach(Chare):
         self.workerInitTime = 0
         self.cePoint = None
         self.cePointVal = None
-        
+
 
     @coro
     def computeReach(self, lbSeed=-1, ubSeed=1, tol=1e-3):
@@ -334,11 +334,11 @@ class TLLHypercubeReach(Chare):
         searchDir = 0
         prevBD = seedBd
         itCnt = self.maxIts
-        
+
         while itCnt > 0:
             bdToCheck = windUB if windLB==-np.inf else 0.5*(windLB + windUB)
             ver = self.verifyLB( bdToCheck, out=out, opts=opts) if lb else self.verifyUB( bdToCheck,out=out)
-            
+
             if verbose:
                 print( 'Iteration ' + str(itCnt) +  ': ' + str(bdToCheck) + ' is ' + ('a VALID' if ver else 'an INVALID') + ' lower bound!')
             if windLB == -np.inf:
@@ -378,7 +378,7 @@ class TLLHypercubeReach(Chare):
                     windUB = bdToCheck
                 if np.abs(windUB-windLB) < tol:
                     break
-            
+
             itCnt -= 1
         if not straddle:
             if lb:
@@ -411,7 +411,7 @@ class TLLHypercubeReach(Chare):
             self.prefilter = opts['prefilter']
 
         t = time.time()
-        
+
         stat = self.poset.setConstraint(lb, out=out, timeout=timeout, prefilter=self.prefilter, awaitable=True)
         stat.get()
         self.checkerLocalVars.setConstraint(self.poset.getConstraintsObject(ret=True).get(),out,awaitable=True).get()
@@ -441,7 +441,7 @@ class TLLHypercubeReach(Chare):
                     print(f'Found counterexample TLL({self.cePoint}) = {self.cePointVal}')
                     break
         return retVal
-    
+
     @coro
     def verifyUB(self,ub,out=0, timeout=None, **kwargs):
         if out >= self.m:
@@ -452,7 +452,7 @@ class TLLHypercubeReach(Chare):
         timedOut = self.ubCheckerGroup.checkMinGroup(ub,out, ret=True)
         minCheckFut = Future()
         self.ubCheckerGroup.collectMinGroupStats(minCheckFut,ret=True)
-        
+
         retVal = minCheckFut.get()
         timedOut = any(timedOut.get())
         print('Upper Bound verifiction used ' + str(sum(self.ubCheckerGroup.getLPcount(ret=True).get())) + ' total LPs.')
@@ -492,7 +492,7 @@ class minGroupFeasibleUB(Chare):
         self.n = len(self.AbPairs[0][0][0])
         self.selectorSetsFull = selectorSets
         # self.selectorMatsFull = selectorMats
-        
+
         # self.selectorSetsFull = [[] for k in range(len(selectorMats))]
         # # Convert the matrices to sets of 'used' hyperplanes
         # for k in range(len(selectorMats)):
@@ -502,7 +502,7 @@ class minGroupFeasibleUB(Chare):
         #                 self.selectorMatsFull[k] \
         #             ) \
         #         )
-        
+
         self.lp = encapsulateLP.encapsulateLP()
 
         self.selectorIndex = -1
@@ -543,7 +543,7 @@ class minGroupFeasibleUB(Chare):
                 )
             # TO DO: account for intersections that are on the boundary of the input polytope
             if status == 'optimal':
-                full = np.vstack([ selHypers, self.fixedA ]) 
+                full = np.vstack([ selHypers, self.fixedA ])
                 actHypers = np.nonzero(np.abs( full @ sol + bVec) <= self.tol)[0]
                 # print('actHypers = ' + str(actHypers))
                 # print(sol)
@@ -616,3 +616,4 @@ class minGroupFeasibleUB(Chare):
 
 
 # Helper functions:
+
