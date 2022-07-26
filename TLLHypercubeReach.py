@@ -58,7 +58,7 @@ class PosetNodeTLLVer(DistributedHash.Node):
 
         return val
 
-# NUMBA jit-able versions of the functions used above; they are slower then the compiled versions
+# NUMBA jit-able versions of the functions used above; they are slower than the compiled versions
 # @nb.cfunc(nb.int64[:](nb.int64[:],nb.int64[:]) )
 # def is_in_set_idx(a, b):
 #     a = a.ravel()
