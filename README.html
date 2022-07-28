@@ -220,13 +220,12 @@ Are you sure you want to continue connecting (yes/no/[fingerprint])?
 <pre><code class="language-Bash"><div>USER@0123456789ab:~$
 </div></code></pre>
 <p>where <code>0123456789ab</code> is the container id for a <code>fastbatllnn-run:USER</code> derived container. Please go back to Section <strong>3)</strong> if this is not the case.</p>
-<blockquote>
-<p><strong>WARNING:</strong> in this section, we will assume that the host has at least 4 physical (i.e. non-hyperthreading) cores. See below for information about how to proceed if this is not the case.</p>
-</blockquote>
 <p>FastBATLLNN is already configured to run inside the container, and there is a simple example to make sure everything is working. To test this, execute the following in the container (i.e. at the prompt above):</p>
 <pre><code class="language-Bash"><div><span class="hljs-built_in">cd</span> ~/tools/FastBATLLNN
-charmrun +p4 example.py
+<span class="hljs-built_in">export</span> CORES=1
+charmrun +p<span class="hljs-variable">$CORES</span> example.py
 </div></code></pre>
+<p>The shell variable <code>CORES</code> can be changed to any integer up to the number of <em>physical</em> CPU cores on your system (e.g. for a CPU with 4 cores and 8 threads, <code>CORES=4</code> is the largest permissible value).</p>
 <p>This command should produce the following output (abbreviated here):</p>
 <pre><code>Running as 4 OS processes: /usr/bin/python3.9 example.py
 charmrun&gt; /usr/bin/setarch x86_64 -R mpirun -np 4 /usr/bin/python3.9 example.py
@@ -314,21 +313,6 @@ Maximum of samples: 4.524217171074326
 <p>That's it! You have verified a simple TLL NN!</p>
 <blockquote>
 <p><strong>NOTE:</strong> The file <code>example.py</code> is (somewhat) commented to further document how to use FastBATLLNN. More documentation will be published as time permits.</p>
-</blockquote>
-<br>
-<br>
-<blockquote>
-<p><span style="font-size:14pt;"><strong>If your host has fewer than 4 physical cores:</strong></span></p>
-<p>If your host has fewer than 4 physical (non-hyperthreading) cores, then you must make two modifications in order to run <code>example.py</code>.</p>
-<p>First, edit line 94 of <code>example.py</code> (<code>vim</code> and <code>emacs</code> are installed in the container, or you can used VS Code or SFTP to alter this file):</p>
-<pre><code class="language-Python"><div>pes = {<span class="hljs-string">&#x27;poset&#x27;</span>:[(<span class="hljs-number">0</span>,<span class="hljs-number">4</span>,<span class="hljs-number">1</span>)],<span class="hljs-string">&#x27;hash&#x27;</span>:[(<span class="hljs-number">0</span>,<span class="hljs-number">4</span>,<span class="hljs-number">1</span>)]}
-</div></code></pre>
-<p>Replace both <code>4</code>'s with the total number of physical cores on your host, then save the file.</p>
-<p>Second, change the <code>4</code> in the command:</p>
-<pre><code class="language-Bash"><div><span class="hljs-built_in">cd</span> ~/tools/FastBATLLNN
-charmrun +p4 example.py
-</div></code></pre>
-<p>to the total number of physical cores.</p>
 </blockquote>
 <h2 id="5-running-the-experiments-from-the-fastbatllnn-paper-fastbatllnn-only">5) Running the Experiments from the <a href="https://doi.org/10.1145/3501710.3519533">FastBATLLNN Paper</a> (FastBATLLNN only)</h2>
 <p>Each <code>fastbatllnn-run:USER</code> container includes a copy of all three experiments from the <a href="https://doi.org/10.1145/3501710.3519533">FastBATLLNN HSCC2022 paper</a> (see citation above) in folder <code>/home/USER/FastBATLLNN_Experiments_HSCC2022</code>. The FastBATLLNN paper describes three experiments, denoted Experiment 1, Experiment 2 and Experiment 3; each of these experiments can be run using its own shell script <code>run_exp1.sh</code>, <code>run_exp2.sh</code> and <code>run_exp3.sh</code>, respectively. For example, executing the following code in the container will run all three experiments:</p>

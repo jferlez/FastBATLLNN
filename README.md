@@ -156,14 +156,15 @@ USER@0123456789ab:~$
 
 where `0123456789ab` is the container id for a `fastbatllnn-run:USER` derived container. Please go back to Section **3)** if this is not the case.
 
-> **WARNING:** in this section, we will assume that the host has at least 4 physical (i.e. non-hyperthreading) cores. See below for information about how to proceed if this is not the case.
-
 FastBATLLNN is already configured to run inside the container, and there is a simple example to make sure everything is working. To test this, execute the following in the container (i.e. at the prompt above):
 
 ```Bash
 cd ~/tools/FastBATLLNN
-charmrun +p4 example.py
+export CORES=1
+charmrun +p$CORES example.py
 ```
+
+The shell variable `CORES` can be changed to any integer up to the number of _physical_ CPU cores on your system (e.g. for a CPU with 4 cores and 8 threads, `CORES=4` is the largest permissible value).
 
 This command should produce the following output (abbreviated here):
 
@@ -253,32 +254,6 @@ This command should produce the following output (abbreviated here):
 That's it! You have verified a simple TLL NN!
 
 > **NOTE:** The file `example.py` is (somewhat) commented to further document how to use FastBATLLNN. More documentation will be published as time permits.
-
-
-<br>
-<br>
-
-> <span style="font-size:14pt;">**If your host has fewer than 4 physical cores:**</span>
->
-> If your host has fewer than 4 physical (non-hyperthreading) cores, then you must make two modifications in order to run `example.py`.
-> 
-> First, edit line 94 of `example.py` (`vim` and `emacs` are installed in the container, or you can used VS Code or SFTP to alter this file):
-> 
-> ```Python
-> pes = {'poset':[(0,4,1)],'hash':[(0,4,1)]}
-> ```
->
-> Replace both `4`'s with the total number of physical cores on your host, then save the file.
-> 
-> Second, change the `4` in the command:
-> 
-> ```Bash
-> cd ~/tools/FastBATLLNN
-> charmrun +p4 example.py
-> ```
-> 
-> to the total number of physical cores.
-
 
 ## 5) Running the Experiments from the [FastBATLLNN Paper](https://doi.org/10.1145/3501710.3519533) (FastBATLLNN only)
 

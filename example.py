@@ -91,7 +91,7 @@ class Main(Chare):
 
         # Instantiate FastBATLLNN
         # Assume 4 cores (PEs) -- i.e. called with "charmrun +p4"
-        pes = {'poset':[(0,4,1)],'hash':[(0,4,1)]}
+        pes = {'poset':[(0,charm.numPes(),1)],'hash':[(0,charm.numPes(),1)]}
         useQuery = False
         useBounding = False
         tllReach = Chare(TLLHypercubeReach.TLLHypercubeReach, args=[pes])
