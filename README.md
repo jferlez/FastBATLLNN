@@ -32,6 +32,7 @@ These dependencies can be burdensome to install, so we have provided facilities 
 
 <sup>*</sup> _In my tests, both Docker and FastBATLLNN were slow and unstable on Windows, but my test configuration involved running Windows 11 inside a [Parallels Virtual Machine](https://www.parallels.com) on a MacOS host. I suspect most of these issues are a result of this configuration, and in particular the necessity of using the buggier Parallels hypervisor (Apple's hypervisor doesn't support nested virtualization, which is required for WSL2). So you will hopefully have better luck running Windows 11 on bare metal. Your mileage may vary, though._
 ## 2) Quick Start
+Exectute the following in a Bash shell on the host (a WSL2 Bash shell on Windows):
 
 ```Bash
 LOCATION=/path/to/someplace/convenient
