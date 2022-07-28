@@ -30,7 +30,7 @@ These dependencies can be burdensome to install, so we have provided facilities 
 3. Approximately 25Gb of free disk space; however, the final Docker image only requires ~13Gb (MacOS users should allocate >=30Gb to the Docker VM to be safe)
 4. The ability to run a Docker container with the [`--priviledged` switch](https://docs.docker.com/engine/reference/run/#runtime-privilege-and-linux-capabilities).
 
-<sup>*</sup> _In my tests, both Docker and FastBATLLNN were slow and unstable on Windows, but my test configuration involved running Windows 11 inside a [Parallels Virtual Machine](https://www.parallels.com) on a MacOS host. I suspect most of these issues are a result of this configuration, and in particular the necessity of using the buggier Parallels hypervisor (Apple's hypervisor doesn't support nested virtualization, which is required for WSL2). So you will hopefully have better luck running Windows 11 on bare metal._
+<sup>*</sup> _In my tests, both Docker and FastBATLLNN were slow and unstable on Windows, but my test configuration involved running Windows 11 inside a [Parallels Virtual Machine](https://www.parallels.com) on a MacOS host. I suspect most of these issues are a result of this configuration, and in particular the necessity of using the buggier Parallels hypervisor (Apple's hypervisor doesn't support nested virtualization, which is required for WSL2). So you will hopefully have better luck running Windows 11 on bare metal. Your mileage may vary, though._
 ## 2) Quick Start
 
 ```Bash
