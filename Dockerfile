@@ -26,6 +26,7 @@ RUN chown -R ${UID}:${GID} /home/${USER_NAME}
 
 USER ${USER_NAME}
 RUN ssh-keygen -t rsa -q -f /home/${USER_NAME}/.ssh/id_rsa -N ""
+RUN cat /home/${USER_NAME}/.ssh/id_rsa.pub >> /home/${USER_NAME}/.ssh/authorized_keys
 
 # Install neovim stuff:
 RUN mkdir -p /home/${USER_NAME}/.local/share/nvim/site/pack/packer/opt/
