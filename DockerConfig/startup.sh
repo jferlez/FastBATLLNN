@@ -4,7 +4,10 @@ INTERACTIVE=$2
 SERVER=$3
 CORES=$4
 /usr/sbin/sshd -D &> /root/sshd_log.out &
-sudo -u $USER mkdir /home/$USER/.ssh
+if [ ! -d /home/$USER/.ssh ]
+then
+    sudo -u $USER mkdir /home/$USER/.ssh
+fi
 if [ -e /etc/ssh/ssh_host_rsa_key.pub ]; then
 	echo "
 ****** SSH host key ******"
