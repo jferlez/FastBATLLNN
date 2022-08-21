@@ -70,6 +70,11 @@ then
     echo "Copying public keys from ~/.ssh/authorized_keys to container authorized_keys"
     cat ~/.ssh/authorized_keys >> authorized_keys
 fi
+if [ -e ~/.ssh/known_hosts ]
+then
+    echo "Copying known hosts from ~/.ssh/known_hosts to container known_hosts"
+    cat ~/.ssh/known_hosts > known_hosts
+fi
 cd ..
 
 CONTAINERS=`docker container ls -a | grep fastbatllnn-run:$user | sed -e "s/[ ].*//"`
