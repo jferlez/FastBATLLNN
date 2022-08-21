@@ -13,6 +13,7 @@ INTERACTIVE="-d"
 SERVER="run"
 ATTACH=""
 HOSTS=""
+RESET=""
 for argwhole in "$@"; do
     IFS='=' read -r -a array <<< "$argwhole"
     arg="${array[0]}"
@@ -23,7 +24,8 @@ for argwhole in "$@"; do
         --http-port) HTTPPORT=`echo "$val" | sed -e 's/[^0-9]//g'`;;
         --interactive) INTERACTIVE="-it" && ATTACH="-ai";;
         --server) SERVER="server";;
-        --known_hosts) HOSTS="yes"
+        --known_hosts) HOSTS="yes";;
+        --reset) RESET="yes"
     esac
 done
 
@@ -87,6 +89,12 @@ for CONT in $CONTAINERS; do
         break
     fi
 done
+
+if [ "$RESET" = "yes" ] && [ "$EXISTING_CONTAINER" != "" ]
+then
+    docker container rm $EXISTING_CONTAINER
+    EXISTING_CONTAINER=""
+fi
 
 if [ "$EXISTING_CONTAINER" = "" ]; then
     docker run --privileged $GPUS --shm-size=${SHMSIZE}gb $INTERACTIVE $PORT $HTTPPORT --label server=${SERVER} -v "$(pwd)"/container_results:/home/${user}/results fastbatllnn-run:${user} ${user} $INTERACTIVE $SERVER $CORES
