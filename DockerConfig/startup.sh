@@ -11,7 +11,8 @@ if [ -e /etc/ssh/ssh_host_rsa_key.pub ]; then
 	echo "**************************
 "
     mkdir -p /home/$USER/results/ssh_keys
-	sudo -u $USER cp /etc/ssh/ssh_host_rsa_key.pub /home/$USER/results/ssh_keys
+    sudo -u $USER chown -R $USER:$USER /home/$USER/results/ssh_keys
+    sudo -u $USER cp /etc/ssh/ssh_host_rsa_key.pub /home/$USER/results/ssh_keys
 fi
 if [ -e /home/$USER/.ssh/id_rsa.pub ]; then
 	echo "
@@ -20,6 +21,7 @@ if [ -e /home/$USER/.ssh/id_rsa.pub ]; then
     echo "***************************************
 "
     mkdir -p /home/$USER/results/ssh_keys
+    sudo -u $USER chown -R $USER:$USER /home/$USER/results/ssh_keys
     sudo -u $USER cp /home/$USER/.ssh/id_rsa.pub /home/$USER/results/ssh_keys/id_rsa_${USER}.pub
 fi
 if [ -e /home/$USER/results/authorized_keys ] && [ -d /home/$USER/.ssh ]
