@@ -12,6 +12,7 @@ HTTPPORT=8000
 INTERACTIVE="-d"
 SERVER="run"
 ATTACH=""
+HOSTS=""
 for argwhole in "$@"; do
     IFS='=' read -r -a array <<< "$argwhole"
     arg="${array[0]}"
@@ -21,7 +22,8 @@ for argwhole in "$@"; do
         --ssh-port) PORT=`echo "$val" | sed -e 's/[^0-9]//g'`;;
         --http-port) HTTPPORT=`echo "$val" | sed -e 's/[^0-9]//g'`;;
         --interactive) INTERACTIVE="-it" && ATTACH="-ai";;
-        --server) SERVER="server"
+        --server) SERVER="server";;
+        --known_hosts) HOSTS="yes"
     esac
 done
 
@@ -70,7 +72,7 @@ then
     echo "Copying public keys from ~/.ssh/authorized_keys to container authorized_keys"
     cat ~/.ssh/authorized_keys >> authorized_keys
 fi
-if [ -e ~/.ssh/known_hosts ]
+if [ "$HOSTS" = "yes" ] && [ -e ~/.ssh/known_hosts ]
 then
     echo "Copying known hosts from ~/.ssh/known_hosts to container known_hosts"
     cat ~/.ssh/known_hosts > known_hosts
