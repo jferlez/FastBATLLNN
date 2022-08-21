@@ -3,6 +3,7 @@ USER=$1
 INTERACTIVE=$2
 SERVER=$3
 CORES=$4
+PORTNUM=$5
 /usr/sbin/sshd -D &> /root/sshd_log.out &
 if [ ! -d /home/$USER/.ssh ]
 then
@@ -18,7 +19,7 @@ if [ -e /etc/ssh/ssh_host_rsa_key.pub ]; then
     sudo -u $USER chown -R $USER:$USER /home/$USER/results/ssh_keys
     sudo -u $USER cp /etc/ssh/ssh_host_rsa_key.pub /home/$USER/results/ssh_keys
     HOSTKEY=`cat /etc/ssh/ssh_host_rsa_key.pub`
-    sudo -u $USER sh -c "echo \"* $HOSTKEY\" > /home/$USER/.ssh/known_hosts"
+    sudo -u $USER sh -c "echo \"*:$PORTNUM $HOSTKEY\" > /home/$USER/.ssh/known_hosts"
 fi
 if [ -e /home/$USER/.ssh/id_rsa.pub ]; then
 	echo "

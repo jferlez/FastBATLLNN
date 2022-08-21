@@ -33,6 +33,7 @@ re='^[0-9]+$'
 if ! [[ $PORT =~ $re ]] ; then
     echo "error: Invalid port specified" >&2; exit 1
 fi
+PORTNUM=$PORT
 PORT="-p $PORT:22"
 
 if ! [[ $HTTPPORT =~ $re ]] ; then
@@ -97,7 +98,7 @@ then
 fi
 
 if [ "$EXISTING_CONTAINER" = "" ]; then
-    docker run --privileged $GPUS --shm-size=${SHMSIZE}gb $INTERACTIVE $PORT $HTTPPORT --label server=${SERVER} -v "$(pwd)"/container_results:/home/${user}/results fastbatllnn-run:${user} ${user} $INTERACTIVE $SERVER $CORES
+    docker run --privileged $GPUS --shm-size=${SHMSIZE}gb $INTERACTIVE $PORT $HTTPPORT --label server=${SERVER} -v "$(pwd)"/container_results:/home/${user}/results fastbatllnn-run:${user} ${user} $INTERACTIVE $SERVER $CORES $PORTNUM
 else
     echo "Restarting container $EXISTING_CONTAINER (command line options except \"--server\" ignored)..."
     docker start $ATTACH $EXISTING_CONTAINER
