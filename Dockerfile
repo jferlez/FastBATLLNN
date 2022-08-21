@@ -49,6 +49,9 @@ RUN echo "export PYTHONPATH=/home/${USER_NAME}/tools/FastBATLLNN:/home/${USER_NA
 RUN echo "export TERM=xterm-256color" >> /home/${USER_NAME}/.bashrc
 RUN echo "export COLORTERM=truecolor" >> /home/${USER_NAME}/.bashrc
 RUN echo "export TERM_PROGRAM=iTerm2.app" >> /home/${USER_NAME}/.bashrc
+RUN echo "set-option -gs default-terminal \"tmux-256color\" # Optional" >> /home/${USER_NAME}/.tmux.conf
+RUN echo "set-option -gas terminal-overrides \"*:Tc\"" >> /home/${USER_NAME}/.tmux.conf
+RUN echo "set-option -gas terminal-overrides \"*:RGB\"" >> /home/${USER_NAME}/.tmux.conf
 WORKDIR /home/${USER_NAME}/tools/FastBATLLNN
 
 USER root
