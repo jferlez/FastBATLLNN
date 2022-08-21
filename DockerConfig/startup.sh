@@ -14,7 +14,8 @@ if [ -e /etc/ssh/ssh_host_rsa_key.pub ]; then
     mkdir -p /home/$USER/results/ssh_keys
     sudo -u $USER chown -R $USER:$USER /home/$USER/results/ssh_keys
     sudo -u $USER cp /etc/ssh/ssh_host_rsa_key.pub /home/$USER/results/ssh_keys
-    sudo -u $USER sh -c "cat /etc/ssh/ssh_host_rsa_key.pub > /home/$USER/.ssh/known_hosts"
+    HOSTKEY=`cat /etc/ssh/ssh_host_rsa_key.pub`
+    sudo -u $USER sh -c "echo \"* $HOSTKEY\" > /home/$USER/.ssh/known_hosts"
 fi
 if [ -e /home/$USER/.ssh/id_rsa.pub ]; then
 	echo "
