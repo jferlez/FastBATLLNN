@@ -38,7 +38,7 @@ for fname in authorized_keys known_hosts; do
     fi
     if [ -e /home/$USER/.ssh/${fname}_base ]
     then
-        sudo -u $USER sh -c "cat /home/$USER/results/${fname}_base >> /home/$USER/.ssh/${fname}"
+        sudo -u $USER sh -c "cat /home/$USER/.ssh/${fname}_base >> /home/$USER/.ssh/${fname}"
     fi
     if [ -e /home/$USER/.ssh/${fname} ]
     then
