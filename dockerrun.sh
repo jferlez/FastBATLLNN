@@ -54,18 +54,24 @@ if [ "$MPIHOSTS" != "" ] || [ "$SYSTEM_TYPE" = "Darwin" ]; then
     HOSTNETWORK=""
 fi
 
+# Configure SHM size
+if [ "$SYSTEM_TYPE" = "Darwin" ]; then
+    SHMSIZE=$(( `sysctl hw.memsize | sed -e 's/[^0-9]//g'` / 2097152 ))
+    # Never enable GPUs on MacOS
+    GPUS=""
+else
+    SHMSIZE=$(( `grep MemTotal /proc/meminfo | sed -e 's/[^0-9]//g'` / 2097152 ))
+    PYTHON=""
+fi
+
+# Configure core count
 if [ "$CORES" = "" ]; then
     if [ "$SYSTEM_TYPE" = "Darwin" ]; then
-        SHMSIZE=$(( `sysctl hw.memsize | sed -e 's/[^0-9]//g'` / 2097152 ))
-        # Never enable GPUs on MacOS
-        GPUS=""
         CORES=$(( `sysctl -n hw.ncpu` / 2 ))
     else
-        SHMSIZE=$(( `grep MemTotal /proc/meminfo | sed -e 's/[^0-9]//g'` / 2097152 ))
         CORES_PER_SOCKET=`lscpu | grep "Core(s) per socket:" | sed -e 's/[^0-9]//g'`
         SOCKETS=`lscpu | grep "Socket(s):" | sed -e 's/[^0-9]//g'`
         CORES=$(( $CORES_PER_SOCKET * $SOCKETS ))
-        PYTHON=""
     fi
 else
     if ! [[ $CORES =~ $re ]] ; then
