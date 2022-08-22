@@ -93,6 +93,7 @@ done
 
 if [ "$RESET" = "yes" ] && [ "$EXISTING_CONTAINER" != "" ]
 then
+    docker container stop $EXISTING_CONTAINER
     docker container rm $EXISTING_CONTAINER
     EXISTING_CONTAINER=""
 fi
