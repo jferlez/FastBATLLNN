@@ -14,6 +14,8 @@ SERVER="run"
 ATTACH=""
 HOSTS=""
 RESET=""
+MPIHOSTS=""
+CORES=""
 for argwhole in "$@"; do
     IFS='=' read -r -a array <<< "$argwhole"
     arg="${array[0]}"
@@ -25,7 +27,9 @@ for argwhole in "$@"; do
         --interactive) INTERACTIVE="-it" && ATTACH="-ai";;
         --server) SERVER="server";;
         --known_hosts) HOSTS="yes";;
-        --reset) RESET="yes"
+        --reset) RESET="yes";;
+        --mpi) MPIHOSTS="$val";;
+        --cores) CORES="$val"
     esac
 done
 
@@ -34,7 +38,7 @@ if ! [[ $PORT =~ $re ]] ; then
     echo "error: Invalid port specified" >&2; exit 1
 fi
 PORTNUM=$PORT
-PORT="-p $PORT:22"
+PORT="-p $PORT:3000"
 
 if ! [[ $HTTPPORT =~ $re ]] ; then
     echo "error: Invalid port specified" >&2; exit 1
@@ -45,18 +49,28 @@ if [ "$SERVER" = "server" ]; then
 else
     HTTPPORT=""
 fi
+HOSTNETWORK="--network host"
+if [ "$MPIHOSTS" != "" ] || [ "$SYSTEM_TYPE" = "Darwin" ]; then
+    HOSTNETWORK=""
+fi
 
-if [ "$SYSTEM_TYPE" = "Darwin" ]; then
-    SHMSIZE=$(( `sysctl hw.memsize | sed -e 's/[^0-9]//g'` / 2097152 ))
-    # Never enable GPUs on MacOS
-    GPUS=""
-    CORES=$(( `sysctl -n hw.ncpu` / 2 ))
+if [ "$CORES" = "" ]; then
+    if [ "$SYSTEM_TYPE" = "Darwin" ]; then
+        SHMSIZE=$(( `sysctl hw.memsize | sed -e 's/[^0-9]//g'` / 2097152 ))
+        # Never enable GPUs on MacOS
+        GPUS=""
+        CORES=$(( `sysctl -n hw.ncpu` / 2 ))
+    else
+        SHMSIZE=$(( `grep MemTotal /proc/meminfo | sed -e 's/[^0-9]//g'` / 2097152 ))
+        CORES_PER_SOCKET=`lscpu | grep "Core(s) per socket:" | sed -e 's/[^0-9]//g'`
+        SOCKETS=`lscpu | grep "Socket(s):" | sed -e 's/[^0-9]//g'`
+        CORES=$(( $CORES_PER_SOCKET * $SOCKETS ))
+        PYTHON=""
+    fi
 else
-    SHMSIZE=$(( `grep MemTotal /proc/meminfo | sed -e 's/[^0-9]//g'` / 2097152 ))
-    CORES_PER_SOCKET=`lscpu | grep "Core(s) per socket:" | sed -e 's/[^0-9]//g'`
-    SOCKETS=`lscpu | grep "Socket(s):" | sed -e 's/[^0-9]//g'`
-    CORES=$(( $CORES_PER_SOCKET * $SOCKETS ))
-    PYTHON=""
+    if ! [[ $CORES =~ $re ]] ; then
+        echo "error: Invalid core count specified" >&2; exit 1
+    fi
 fi
 
 if [ ! -d "$SCRIPT_DIR/container_results" ]
@@ -99,7 +113,7 @@ then
 fi
 
 if [ "$EXISTING_CONTAINER" = "" ]; then
-    docker run --privileged $GPUS --shm-size=${SHMSIZE}gb $INTERACTIVE $PORT $HTTPPORT --label server=${SERVER} -v "$(pwd)"/container_results:/home/${user}/results fastbatllnn-run:${user} ${user} $INTERACTIVE $SERVER $CORES $PORTNUM
+    docker run --privileged $GPUS --shm-size=${SHMSIZE}gb $INTERACTIVE $HOSTNETWORK $PORT $HTTPPORT --label server=${SERVER} -v "$(pwd)"/container_results:/home/${user}/results fastbatllnn-run:${user} ${user} $INTERACTIVE $SERVER $CORES $PORTNUM $MPIHOSTS
 else
     echo "Restarting container $EXISTING_CONTAINER (command line options except \"--server\" ignored)..."
     docker start $ATTACH $EXISTING_CONTAINER

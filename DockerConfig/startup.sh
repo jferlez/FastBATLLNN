@@ -4,6 +4,7 @@ INTERACTIVE=$2
 SERVER=$3
 CORES=$4
 PORTNUM=$5
+MPIHOSTS=$6
 /usr/sbin/sshd -D &> /root/sshd_log.out &
 if [ ! -d /home/$USER/.ssh ]
 then
@@ -50,9 +51,23 @@ for fname in authorized_keys known_hosts; do
     fi
 done
 
+PYPATH="/home/$USER/tools/FastBATLLNN:/home/$USER/tools/FastBATLLNN/HyperplaneRegionEnum:/home/$USER/tools/FastBATLLNN/TLLnet:/home/$USER/tools/nnenum/src/nnenum"
+
+if [ "$MPIHOSTS" != "" ]; then
+    echo "$MPIHOSTS" | sed -e 's/,/\
+/g' -e 's/:/    /g' >> /etc/hosts
+    HOSTLIST=`echo "$MPIHOSTS" | sed -E -e 's/[0-9.]+://g'`
+    echo "#!/bin/bash
+mpirun -mca plm_rsh_args \"-p 3000\" --mca oob_tcp_if_include eth0 --mca btl_tcp_if_include eth0 -np $CORES -host $HOSTLIST -x PYTHONPATH=\"$PYPATH:\$PYTHONPATH\" /usr/bin/python3.9 \"\$@\"" > /usr/local/bin/charming.sh
+else
+    echo "#!/bin/bash
+PYTHONPATH=\"$PYPATH:\$PYTHONPATH\"
+charmrun +p$CORES \"\$@\"" >> /usr/local/bin/charming.sh
+fi
+chmod 755 /usr/local/bin/charming.sh
 
 if [ "$SERVER" = "server" ]; then
-	sudo -u $USER PYTHONPATH="/home/$USER/tools/FastBATLLNN:/home/$USER/tools/FastBATLLNN/HyperplaneRegionEnum:/home/$USER/tools/FastBATLLNN/TLLnet:/home/$USER/tools/nnenum/src/nnenum" charmrun +p$CORES /home/$USER/tools/FastBATLLNN/FastBATLLNNServer.py &> "/home/$USER/results/FastBATLLNN_server_log.out" &
+	sudo -u $USER /usr/local/bin/charming.sh /home/$USER/tools/FastBATLLNN/FastBATLLNNServer.py &> "/home/$USER/results/FastBATLLNN_server_log.out" &
 fi
 if [ "$INTERACTIVE" = "-d" ]; then
 	wait -n
