@@ -50,7 +50,7 @@ else
     HTTPPORT=""
 fi
 HOSTNETWORK="--network host"
-if [ "$MPIHOSTS" != "" ] || [ "$SYSTEM_TYPE" = "Darwin" ]; then
+if [ "$MPIHOSTS" = "" ] || [ "$SYSTEM_TYPE" = "Darwin" ]; then
     HOSTNETWORK=""
 fi
 
