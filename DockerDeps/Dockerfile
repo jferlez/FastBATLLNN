@@ -24,26 +24,7 @@ WORKDIR /tmp/docker_build
 RUN wget -q "https://packages.microsoft.com/config/ubuntu/$(lsb_release -rs)/packages-microsoft-prod.deb"
 RUN sudo dpkg -i packages-microsoft-prod.deb && rm packages-microsoft-prod.deb
 RUN sudo apt-get update && sudo apt-get install -y powershell
-# Install HPC-X and UCX
-#RUN wget "https://content.mellanox.com/hpc/hpc-x/v2.12/hpcx-v2.12-gcc-MLNX_OFED_LINUX-5-ubuntu20.04-cuda11-gdrcopy2-nccl2.12-x86_64.tbz"  && \
-#    tar -xvf hpcx-v2.12-gcc-MLNX_OFED_LINUX-5-ubuntu20.04-cuda11-gdrcopy2-nccl2.12-x86_64.tbz && \
-#    mv hpcx-v2.12-gcc-MLNX_OFED_LINUX-5-ubuntu20.04-cuda11-gdrcopy2-nccl2.12-x86_64 /usr/local/ && \
-#    HPCX_PATH=hpcx-v2.12-gcc-MLNX_OFED_LINUX-5-ubuntu20.04-cuda11-gdrcopy2-nccl2.12-x86_64.tbz
-RUN wget "https://content.mellanox.com/ofed/MLNX_OFED-5.7-1.0.2.0/MLNX_OFED_LINUX-5.7-1.0.2.0-ubuntu20.04-x86_64.tgz" && \
-    tar -xf MLNX_OFED_LINUX-5.7-1.0.2.0-ubuntu20.04-x86_64.tgz && \
-    cd MLNX_OFED_LINUX-5.7-1.0.2.0-ubuntu20.04-x86_64 && \
-    sudo apt -y install autoconf debhelper kmod ethtool libpci3 flex libfuse2 m4 libelf1 lsof libnl-route-3-dev autotools-dev libnuma1 libnl-route-3-200 libusb-1.0-0 tk libnl-3-dev swig tcl libnl-3-200 pciutils udev libltdl-dev libmnl0 bison graphviz automake pkg-config chrpath dpatch && \
-    ./mlnxofedinstall --user-space-only --force && \
-    cd ..
-#RUN wget "https://github.com/openucx/ucx/releases/download/v1.4.0/ucx-1.4.0.tar.gz" && \
-#    tar -xvf ucx-1.4.0.tar.gz && \
-#    cd ucx-1.4.0 && \
-#    ./configure --prefix=/usr/local && \
-#    make -j 2 && make install
-#RUN wget --retry-connrefused --tries=3 --waitretry=5 "https://download.open-mpi.org/release/open-mpi/v4.1/openmpi-4.1.4.tar.gz" && \
-#    tar -xvf openmpi-4.1.4.tar.gz && \
-#    cd openmpi-4.1.4 && \
-#    ./configure --prefix=/usr/local/openmpi-4.1.4 --with-ucx=/usr/local --with-hcoll=/usr/local/hpcx-v2.12-gcc-MLNX_OFED_LINUX-5-ubuntu20.04-cuda11-gdrcopy2-nccl2.12-x86_64 --enable-mpirun-prefix-by-default --with-platform=contrib/platform/mellanox/optimized && make -j2 && make install
+
 # Install latest neovim
 RUN wget https://github.com/neovim/neovim/releases/download/v0.7.2/nvim-linux64.deb
 RUN apt install ./nvim-linux64.deb
@@ -65,6 +46,13 @@ RUN wget https://ftp.gnu.org/gnu/glpk/glpk-5.0.tar.gz && \
     ./coinbrew --latest-release --no-prompt build Cbc --prefix=/usr/local && \
     COIN_INSTALL_DIR=/usr/local && \
     COIN_INSTALL_DIR=/usr/local python3.9 -m pip install cylp
+# Installl OpenMPI with UCX support
+RUN wget "https://content.mellanox.com/ofed/MLNX_OFED-5.7-1.0.2.0/MLNX_OFED_LINUX-5.7-1.0.2.0-ubuntu20.04-x86_64.tgz" && \
+    tar -xf MLNX_OFED_LINUX-5.7-1.0.2.0-ubuntu20.04-x86_64.tgz && \
+    cd MLNX_OFED_LINUX-5.7-1.0.2.0-ubuntu20.04-x86_64 && \
+    sudo apt -y install autoconf debhelper kmod ethtool libpci3 flex libfuse2 m4 libelf1 lsof libnl-route-3-dev autotools-dev libnuma1 libnl-route-3-200 libusb-1.0-0 tk libnl-3-dev swig tcl libnl-3-200 pciutils udev libltdl-dev libmnl0 bison graphviz automake pkg-config chrpath dpatch && \
+    ./mlnxofedinstall --user-space-only --force && \
+    cd ..
 RUN cd charm4py && \
     PATH="/usr/mpi/gcc/openmpi-4.1.5a1/bin:$PATH" && \
     python3.9 setup.py install --mpi && \
