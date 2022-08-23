@@ -143,8 +143,22 @@ then
     AZUREBIND="-v /media/azuredata:/media/azuredata"
 fi
 
+INFINIDEVICES=""
+for i in `sudo ls /dev/infiniband/uverbs*`
+do
+    INFINIDEVICES="$INFINIDEVICES --device=$i"
+done
+if [ -e /dev/infiniband/rdma_cm ]
+then
+    INFINIDEVICES="$INFINIDEVICES --device=/dev/infiniband/rdma_cm"
+fi
+if [ "$INFINIDEVICES" != "" ]
+then
+   INFINIDEVICES="$INFINIDEVICES --cap-add CAP_SYS_PTRACE"
+fi
+
 if [ "$EXISTING_CONTAINER" = "" ]; then
-    docker run --privileged $GPUS --shm-size=${SHMSIZE}gb $INTERACTIVE $HOSTNETWORK $PORT $HTTPPORT --label server=${SERVER} $AZUREBIND -v "$(pwd)"/container_results:/home/${user}/results fastbatllnn-run:${user} ${user} $INTERACTIVE $SERVER $CORES $PORTNUM $MPIHOSTS "$MPIARGS"
+    docker run --privileged $GPUS --shm-size=${SHMSIZE}gb $INFINIDEVICES $INTERACTIVE $HOSTNETWORK $PORT $HTTPPORT --label server=${SERVER} $AZUREBIND -v "$(pwd)"/container_results:/home/${user}/results fastbatllnn-run:${user} ${user} $INTERACTIVE $SERVER $CORES $PORTNUM $MPIHOSTS "$MPIARGS"
 else
     echo "Restarting container $EXISTING_CONTAINER (command line options except \"--server\" ignored)..."
     docker start $ATTACH $EXISTING_CONTAINER
