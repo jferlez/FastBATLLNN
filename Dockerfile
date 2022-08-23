@@ -21,6 +21,8 @@ RUN echo "${USER_NAME}:${USER_NAME}" | chpasswd
 RUN mkdir -p /home/${USER_NAME}/.ssh
 
 RUN mkdir -p /home/${USER_NAME}/results
+RUN mkdir -p /media/azuredata
+RUN chown -R ${UID}:${UID} /media/azuredata
 
 # switch to unpriviledged user, and configure remote access
 WORKDIR /home/${USER_NAME}/tools
