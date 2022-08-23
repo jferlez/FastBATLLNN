@@ -16,6 +16,7 @@ HOSTS=""
 RESET=""
 MPIHOSTS=""
 CORES=""
+STOP=""
 for argwhole in "$@"; do
     IFS='=' read -r -a array <<< "$argwhole"
     arg="${array[0]}"
@@ -29,7 +30,8 @@ for argwhole in "$@"; do
         --known_hosts) HOSTS="yes";;
         --reset) RESET="yes";;
         --mpi) MPIHOSTS="$val";;
-        --cores) CORES="$val"
+        --cores) CORES="$val";;
+        --stop) STOP="yes"
     esac
 done
 
@@ -111,10 +113,25 @@ for CONT in $CONTAINERS; do
     fi
 done
 
+if [ "$STOP" = "yes" ]
+then
+    if [ "$EXISTING_CONTAINER" != "" ]
+    then
+        docker container stop $EXISTING_CONTAINER
+        docker container rm $EXISTING_CONTAINER
+        echo "Stopping container $EXISTING_CONTAINER ..."
+        exit 0
+    else
+        echo "No container to stop..."
+        exit 1
+    fi
+fi
+
 if [ "$RESET" = "yes" ] && [ "$EXISTING_CONTAINER" != "" ]
 then
     docker container stop $EXISTING_CONTAINER
     docker container rm $EXISTING_CONTAINER
+    echo "Restarting container $EXISTING_CONTAINER ..."
     EXISTING_CONTAINER=""
 fi
 
