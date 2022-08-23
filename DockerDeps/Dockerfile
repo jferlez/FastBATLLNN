@@ -4,7 +4,7 @@ WORKDIR /tmp/docker_build
 RUN ln -snf /usr/share/zoneinfo/$CONTAINER_TIMEZONE /etc/localtime && echo $CONTAINER_TIMEZONE > /etc/timezone
 RUN apt-get update && \
     apt-get -y upgrade && \
-    apt -y install clang-12 python3-pip python3.9 python3.9-dev libopenmpi-dev cmake gcc-10 libgsl-dev libfftw3-3 libfftw3-dev libsuitesparse-dev git clang-11 libgmp-dev vim emacs nano screen tmux ipython3 openssh-server sudo curl universal-ctags ripgrep psmisc locales clangd libpython3.9-dev && \
+    apt -y install clang-12 python3-pip python3.9 python3.9-dev cmake gfortran gfortran-10 gcc-10 libgsl-dev libfftw3-3 libfftw3-dev libsuitesparse-dev git clang-11 libgmp-dev vim emacs nano screen tmux ipython3 openssh-server sudo curl universal-ctags ripgrep psmisc locales clangd libpython3.9-dev && \
     curl -sL https://deb.nodesource.com/setup_16.x | bash - && \
     apt -y install nodejs && \
     python3.9 -m pip install --upgrade pip && \
@@ -20,9 +20,24 @@ RUN git clone https://github.com/UIUC-PPL/charm4py && \
     git checkout d4d22039271486e7e42c77d3fea90937be4071e5 && \
     cd ../..
 WORKDIR /tmp/docker_build
+# Install MS PowerShell
 RUN wget -q "https://packages.microsoft.com/config/ubuntu/$(lsb_release -rs)/packages-microsoft-prod.deb"
 RUN sudo dpkg -i packages-microsoft-prod.deb && rm packages-microsoft-prod.deb
 RUN sudo apt-get update && sudo apt-get install -y powershell
+# Install HPC-X and UCX
+RUN wget "https://content.mellanox.com/hpc/hpc-x/v2.12/hpcx-v2.12-gcc-MLNX_OFED_LINUX-5-ubuntu20.04-cuda11-gdrcopy2-nccl2.12-x86_64.tbz"  && \
+    tar -xvf hpcx-v2.12-gcc-MLNX_OFED_LINUX-5-ubuntu20.04-cuda11-gdrcopy2-nccl2.12-x86_64.tbz && \
+    mv hpcx-v2.12-gcc-MLNX_OFED_LINUX-5-ubuntu20.04-cuda11-gdrcopy2-nccl2.12-x86_64 /usr/local/ && \
+    HPCX_PATH=hpcx-v2.12-gcc-MLNX_OFED_LINUX-5-ubuntu20.04-cuda11-gdrcopy2-nccl2.12-x86_64.tbz
+#RUN wget "https://github.com/openucx/ucx/releases/download/v1.4.0/ucx-1.4.0.tar.gz" && \
+#    tar -xvf ucx-1.4.0.tar.gz && \
+#    cd ucx-1.4.0 && \
+#    ./configure --prefix=/usr/local && \
+#    make -j 2 && make install
+#RUN wget --retry-connrefused --tries=3 --waitretry=5 "https://download.open-mpi.org/release/open-mpi/v4.1/openmpi-4.1.4.tar.gz" && \
+#    tar -xvf openmpi-4.1.4.tar.gz && \
+#    cd openmpi-4.1.4 && \
+#    ./configure --prefix=/usr/local/openmpi-4.1.4 --with-ucx=/usr/local --with-hcoll=/usr/local/hpcx-v2.12-gcc-MLNX_OFED_LINUX-5-ubuntu20.04-cuda11-gdrcopy2-nccl2.12-x86_64 --enable-mpirun-prefix-by-default --with-platform=contrib/platform/mellanox/optimized && make -j2 && make install
 # Install latest neovim
 RUN wget https://github.com/neovim/neovim/releases/download/v0.7.2/nvim-linux64.deb
 RUN apt install ./nvim-linux64.deb
@@ -43,9 +58,11 @@ RUN wget https://ftp.gnu.org/gnu/glpk/glpk-5.0.tar.gz && \
     ./coinbrew --latest-release --no-prompt build Clp --prefix=/usr/local && \
     ./coinbrew --latest-release --no-prompt build Cbc --prefix=/usr/local && \
     COIN_INSTALL_DIR=/usr/local && \
-    COIN_INSTALL_DIR=/usr/local python3.9 -m pip install cylp && \
-    cd charm4py && \
-    python3.9 setup.py install --mpi && \
+    COIN_INSTALL_DIR=/usr/local python3.9 -m pip install cylp
+RUN cd charm4py && \
+    /bin/bash -c "source /usr/local/hpcx-v2.12-gcc-MLNX_OFED_LINUX-5-ubuntu20.04-cuda11-gdrcopy2-nccl2.12-x86_64/hpcx-init-ompi.sh && \
+    hpcx_load && \
+    python3.9 setup.py install --mpi" && \
     cd .. && \
     git clone https://github.com/numba/numba && \
     git clone https://github.com/numba/llvmlite && \
@@ -71,7 +88,7 @@ RUN chmod 755 /usr/local/bin/bk
 RUN echo "#!/bin/bash\n/usr/sbin/sshd -D &> /root/sshd_log.out &\nif [ -e /etc/ssh/ssh_host_rsa_key.pub ]\nthen\n echo \"\n****** SSH host key ******\"\ncat /etc/ssh/ssh_host_rsa_key.pub\necho \"**************************\n\"\nsudo -u \$1 cp /etc/ssh/ssh_host_rsa_key.pub /home/\$1/results\nfi\nif [ -e /home/\$1/results/authorized_keys ] && [ -d /home/\$1/.ssh ]\nthen\ncp /home/\$1/results/authorized_keys /home/\$1/.ssh\nchmod 600 /home/\$1/.ssh/authorized_keys && chown \$1:\$1 /home/\$1/.ssh/authorized_keys && rm /home/\$1/results/authorized_keys\nfi\nif [ \"\$2\" = \"-d\" ]; then\nwait -n\nelse\nsudo -u \$1 /bin/bash\nkillall sshd\nfi" > /usr/local/bin/startup.sh
 RUN chmod 755 /usr/local/bin/startup.sh
 
-RUN echo "export PATH=/usr/local/bin:\$PATH\nexport LD_LIBRARY_PATH=/usr/local/lib\nexport COIN_INSTALL_DIR=/usr/local" >> /etc/bash.bashrc
+RUN echo "export PATH=/usr/local/bin:\$PATH\nexport LD_LIBRARY_PATH=/usr/local/lib\nexport COIN_INSTALL_DIR=/usr/local\nif [ -e /usr/local/hpcx-v2.12-gcc-MLNX_OFED_LINUX-5-ubuntu20.04-cuda11-gdrcopy2-nccl2.12-x86_64/hpcx-init-ompi.sh ]; then source /usr/local/hpcx-v2.12-gcc-MLNX_OFED_LINUX-5-ubuntu20.04-cuda11-gdrcopy2-nccl2.12-x86_64/hpcx-init-ompi.sh && hpcx_load; fi" >> /etc/bash.bashrc
 # RUN chown ubuntu:root /home/ubuntu/.bashrc
 # RUN rm /etc/ssh/ssh_host_rsa_key /etc/ssh/ssh_host_ecdsa_key && \
 #     ssh-keygen -f /etc/ssh/ssh_host_rsa_key -N '' -t rsa && \
