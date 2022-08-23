@@ -16,7 +16,7 @@ HOSTS=""
 RESET=""
 MPIHOSTS=""
 CORES=""
-STOP=""
+REMOVE=""
 for argwhole in "$@"; do
     IFS='=' read -r -a array <<< "$argwhole"
     arg="${array[0]}"
@@ -31,7 +31,7 @@ for argwhole in "$@"; do
         --reset) RESET="yes";;
         --mpi) MPIHOSTS="$val";;
         --cores) CORES="$val";;
-        --stop) STOP="yes"
+        --remove) REMOVE="yes"
     esac
 done
 
@@ -113,16 +113,16 @@ for CONT in $CONTAINERS; do
     fi
 done
 
-if [ "$STOP" = "yes" ]
+if [ "$REMOVE" = "yes" ]
 then
     if [ "$EXISTING_CONTAINER" != "" ]
     then
         docker container stop $EXISTING_CONTAINER
         docker container rm $EXISTING_CONTAINER
-        echo "Stopping container $EXISTING_CONTAINER ..."
+        echo "Stopping and removing container $EXISTING_CONTAINER ..."
         exit 0
     else
-        echo "No container to stop..."
+        echo "No container to remove..."
         exit 1
     fi
 fi
@@ -131,7 +131,7 @@ if [ "$RESET" = "yes" ] && [ "$EXISTING_CONTAINER" != "" ]
 then
     docker container stop $EXISTING_CONTAINER
     docker container rm $EXISTING_CONTAINER
-    echo "Restarting container $EXISTING_CONTAINER ..."
+    echo "Removing and replacing container $EXISTING_CONTAINER ..."
     EXISTING_CONTAINER=""
 fi
 
