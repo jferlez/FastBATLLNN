@@ -15,6 +15,7 @@ ATTACH=""
 HOSTS=""
 RESET=""
 MPIHOSTS=""
+MPIARGS="--mca oob_tcp_if_include eth0 --mca btl_tcp_if_include eth0"
 CORES=""
 REMOVE=""
 for argwhole in "$@"; do
@@ -30,6 +31,7 @@ for argwhole in "$@"; do
         --known_hosts) HOSTS="yes";;
         --reset) RESET="yes";;
         --mpi) MPIHOSTS="$val";;
+        --mpi-args) MPIARGS="$val";;
         --cores) CORES="$val";;
         --remove) REMOVE="yes"
     esac
@@ -142,7 +144,7 @@ then
 fi
 
 if [ "$EXISTING_CONTAINER" = "" ]; then
-    docker run --privileged $GPUS --shm-size=${SHMSIZE}gb $INTERACTIVE $HOSTNETWORK $PORT $HTTPPORT --label server=${SERVER} $AZUREBIND -v "$(pwd)"/container_results:/home/${user}/results fastbatllnn-run:${user} ${user} $INTERACTIVE $SERVER $CORES $PORTNUM $MPIHOSTS
+    docker run --privileged $GPUS --shm-size=${SHMSIZE}gb $INTERACTIVE $HOSTNETWORK $PORT $HTTPPORT --label server=${SERVER} $AZUREBIND -v "$(pwd)"/container_results:/home/${user}/results fastbatllnn-run:${user} ${user} $INTERACTIVE $SERVER $CORES $PORTNUM $MPIHOSTS "$MPIARGS"
 else
     echo "Restarting container $EXISTING_CONTAINER (command line options except \"--server\" ignored)..."
     docker start $ATTACH $EXISTING_CONTAINER

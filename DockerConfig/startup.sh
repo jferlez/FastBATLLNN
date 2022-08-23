@@ -5,6 +5,7 @@ SERVER=$3
 CORES=$4
 PORTNUM=$5
 MPIHOSTS=$6
+MPIARGS="$7"
 /usr/sbin/sshd -D &> /root/sshd_log.out &
 if [ ! -d /home/$USER/.ssh ]
 then
@@ -58,7 +59,7 @@ if [ "$MPIHOSTS" != "" ]; then
 /g' -e 's/:/    /g' >> /etc/hosts
     HOSTLIST=`echo "$MPIHOSTS" | sed -E -e 's/:[^:,]+//g'`
     echo "#!/bin/bash
-mpirun -mca plm_rsh_args \"-p 3000\" --mca oob_tcp_if_include eth0 --mca btl_tcp_if_include eth0 -np $CORES -host $HOSTLIST -x PYTHONPATH=\"$PYPATH:\$PYTHONPATH\" /usr/bin/python3.9 \"\$@\"" > /usr/local/bin/charming.sh
+mpirun $MPIARGS -mca plm_rsh_args \"-p 3000\" -np $CORES -host $HOSTLIST -x PYTHONPATH=\"$PYPATH:\$PYTHONPATH\" /usr/bin/python3.9 \"\$@\"" > /usr/local/bin/charming.sh
 else
     echo "#!/bin/bash
 PYTHONPATH=\"$PYPATH:\$PYTHONPATH\"
