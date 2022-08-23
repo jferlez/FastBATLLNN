@@ -17,7 +17,7 @@ RUN git clone https://github.com/UIUC-PPL/charm4py && \
     sed -i -E -e "s/(\s+)(args\ \+\=)/\1args\.remove('\+\+interactive')\n\1\2/" ./charmrun/start.py && \
     git clone https://github.com/UIUC-PPL/charm charm_src/charm && \
     cd charm_src/charm && \
-    git checkout d4d22039271486e7e42c77d3fea90937be4071e5 && \
+    git checkout c7483ea419f5319a40993681916d38e3a72bd6be && \
     cd ../..
 WORKDIR /tmp/docker_build
 # Install MS PowerShell
@@ -25,10 +25,16 @@ RUN wget -q "https://packages.microsoft.com/config/ubuntu/$(lsb_release -rs)/pac
 RUN sudo dpkg -i packages-microsoft-prod.deb && rm packages-microsoft-prod.deb
 RUN sudo apt-get update && sudo apt-get install -y powershell
 # Install HPC-X and UCX
-RUN wget "https://content.mellanox.com/hpc/hpc-x/v2.12/hpcx-v2.12-gcc-MLNX_OFED_LINUX-5-ubuntu20.04-cuda11-gdrcopy2-nccl2.12-x86_64.tbz"  && \
-    tar -xvf hpcx-v2.12-gcc-MLNX_OFED_LINUX-5-ubuntu20.04-cuda11-gdrcopy2-nccl2.12-x86_64.tbz && \
-    mv hpcx-v2.12-gcc-MLNX_OFED_LINUX-5-ubuntu20.04-cuda11-gdrcopy2-nccl2.12-x86_64 /usr/local/ && \
-    HPCX_PATH=hpcx-v2.12-gcc-MLNX_OFED_LINUX-5-ubuntu20.04-cuda11-gdrcopy2-nccl2.12-x86_64.tbz
+#RUN wget "https://content.mellanox.com/hpc/hpc-x/v2.12/hpcx-v2.12-gcc-MLNX_OFED_LINUX-5-ubuntu20.04-cuda11-gdrcopy2-nccl2.12-x86_64.tbz"  && \
+#    tar -xvf hpcx-v2.12-gcc-MLNX_OFED_LINUX-5-ubuntu20.04-cuda11-gdrcopy2-nccl2.12-x86_64.tbz && \
+#    mv hpcx-v2.12-gcc-MLNX_OFED_LINUX-5-ubuntu20.04-cuda11-gdrcopy2-nccl2.12-x86_64 /usr/local/ && \
+#    HPCX_PATH=hpcx-v2.12-gcc-MLNX_OFED_LINUX-5-ubuntu20.04-cuda11-gdrcopy2-nccl2.12-x86_64.tbz
+RUN wget "https://content.mellanox.com/ofed/MLNX_OFED-5.7-1.0.2.0/MLNX_OFED_LINUX-5.7-1.0.2.0-ubuntu20.04-x86_64.tgz" && \
+    tar -xf MLNX_OFED_LINUX-5.7-1.0.2.0-ubuntu20.04-x86_64.tgz && \
+    cd MLNX_OFED_LINUX-5.7-1.0.2.0-ubuntu20.04-x86_64 && \
+    sudo apt -y install autoconf debhelper kmod ethtool libpci3 flex libfuse2 m4 libelf1 lsof libnl-route-3-dev autotools-dev libnuma1 libnl-route-3-200 libusb-1.0-0 tk libnl-3-dev swig tcl libnl-3-200 pciutils udev libltdl-dev libmnl0 bison graphviz automake pkg-config chrpath dpatch && \
+    ./mlnxofedinstall --user-space-only --force && \
+    cd ..
 #RUN wget "https://github.com/openucx/ucx/releases/download/v1.4.0/ucx-1.4.0.tar.gz" && \
 #    tar -xvf ucx-1.4.0.tar.gz && \
 #    cd ucx-1.4.0 && \
@@ -60,9 +66,8 @@ RUN wget https://ftp.gnu.org/gnu/glpk/glpk-5.0.tar.gz && \
     COIN_INSTALL_DIR=/usr/local && \
     COIN_INSTALL_DIR=/usr/local python3.9 -m pip install cylp
 RUN cd charm4py && \
-    /bin/bash -c "source /usr/local/hpcx-v2.12-gcc-MLNX_OFED_LINUX-5-ubuntu20.04-cuda11-gdrcopy2-nccl2.12-x86_64/hpcx-init-ompi.sh && \
-    hpcx_load && \
-    python3.9 setup.py install --mpi" && \
+    PATH="/usr/mpi/gcc/openmpi-4.1.5a1/bin:$PATH" && \
+    python3.9 setup.py install --mpi && \
     cd .. && \
     git clone https://github.com/numba/numba && \
     git clone https://github.com/numba/llvmlite && \
