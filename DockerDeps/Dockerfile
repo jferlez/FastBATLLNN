@@ -90,7 +90,7 @@ RUN echo "export PATH=/usr/local/bin:\$PATH\nexport LD_LIBRARY_PATH=/usr/local/l
 # RUN /usr/bin/ssh-keygen -A
 RUN sed -i -E -e 's/\s*#\s*PasswordAuthentication\s+(yes|no)/PasswordAuthentication no/' /etc/ssh/sshd_config
 RUN service ssh start
-EXPOSE 22
+EXPOSE 3000
 # CMD ["/bin/bash"]
 
 # Thsese are related to neovim; in future builds, they will be incorporated into earlier layers
