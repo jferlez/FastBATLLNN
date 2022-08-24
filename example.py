@@ -9,9 +9,11 @@ import time
 import pickle
 
 
+charm.options.local_msg_buf_size = 10000
+
 
 class Main(Chare):
-    
+
     def __init__(self,args):
 
         # Specify kernel/bias of 7 local linear functions:
@@ -117,7 +119,7 @@ class Main(Chare):
         t = time.time()-t
         print('TLL always <= ' + str(b) + ' on constraints? ' + str(not bool(ub)))
         print('-----------------------------------------------------------')
-        
+
 
         print('\n\n--------------- FINDING TIGHT LOWER BOUND:  ---------------')
 
@@ -152,5 +154,6 @@ class Main(Chare):
         print(' ')
 
         charm.exit()
-        
+
 charm.start(Main,modules=['posetFastCharm','TLLHypercubeReach','DistributedHash'])
+
