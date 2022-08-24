@@ -15,7 +15,7 @@ ATTACH=""
 HOSTS=""
 RESET=""
 MPIHOSTS=""
-MPIARGS="--mca oob_tcp_if_include eth0 --mca btl_tcp_if_include eth0"
+MPIARGS="--mca oob_tcp_if_include eth0 --mca btl_tcp_if_include eth0 -x UCX_TLS=tcp -x UCX_NET_DEVICES=eth0 -mca coll_hcoll_enable 0 -mca btl vader,self,tcp"
 CORES=""
 REMOVE=""
 for argwhole in "$@"; do
@@ -144,7 +144,7 @@ then
 fi
 
 INFINIDEVICES=""
-for i in `sudo ls /dev/infiniband/uverbs*`
+for i in `ls /dev/infiniband/uverbs*`
 do
     INFINIDEVICES="$INFINIDEVICES --device=$i"
 done
