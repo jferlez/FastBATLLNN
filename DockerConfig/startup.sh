@@ -57,7 +57,7 @@ PYPATH="/home/$USER/tools/FastBATLLNN:/home/$USER/tools/FastBATLLNN/HyperplaneRe
 if [ "$MPIHOSTS" != "" ]; then
     echo "$MPIHOSTS" | sed -e 's/,/\
 /g' -e 's/:/    /g' >> /etc/hosts
-    HOSTLIST=`echo "$MPIHOSTS" | sed -E -e 's/:[^:,]+/-1/g'`
+    HOSTLIST=`echo "$MPIHOSTS" | sed -E -e 's/:[^:,]+/:-1/g'`
     echo "#!/bin/bash
 mpirun $MPIARGS -mca plm_rsh_args \"-p 3000\" -np $CORES -host $HOSTLIST -x PYTHONPATH=\"$PYPATH:\$PYTHONPATH\" /usr/bin/python3.9 \"\$@\"" > /usr/local/bin/charming.sh
 else
