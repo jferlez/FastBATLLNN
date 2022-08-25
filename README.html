@@ -104,12 +104,11 @@ James Ferlez, Haitham Khedr and Yasser Shoukry. HSCC '22: 25th ACM International
 </blockquote>
 <h3 id="docker-prerequisites">(Docker) Prerequisites:</h3>
 <ol>
-<li>An x86_64 Linux, MacOS or Windows<sup>*</sup> host</li>
+<li>An x86_64 Linux, MacOS or Windows host</li>
 <li>A recent version of <a href="https://docker.com">Docker</a> (Windows hosts only tested with the <a href="https://docs.docker.com/desktop/install/windows-install/">WSL2 backend</a>)</li>
 <li>Approximately 25Gb of free disk space; however, the final Docker image only requires ~13Gb (MacOS users should allocate &gt;=30Gb to the Docker VM to be safe)</li>
 <li>The ability to run a Docker container with the <a href="https://docs.docker.com/engine/reference/run/#runtime-privilege-and-linux-capabilities"><code>--priviledged</code> switch</a>.</li>
 </ol>
-<p><sup>*</sup> <em>In my tests, both Docker and FastBATLLNN were slow and unstable on Windows, but my test configuration involved running Windows 11 inside a <a href="https://www.parallels.com">Parallels Virtual Machine</a> on a MacOS host. I suspect most of these issues are a result of this configuration, and in particular the necessity of using the buggier Parallels hypervisor (Apple's hypervisor doesn't support nested virtualization, which is required for WSL2). So you will hopefully have better luck running Windows 11 on bare metal. Your mileage may vary, though.</em></p>
 <h2 id="2-quick-start">2) Quick Start</h2>
 <p>Exectute the following in a Bash shell on the host (a WSL2 Bash shell on Windows):</p>
 <pre><code class="language-Bash"><div>LOCATION=/path/to/someplace/convenient
