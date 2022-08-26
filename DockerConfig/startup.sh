@@ -63,9 +63,9 @@ mpirun $MPIARGS -mca plm_rsh_args \"-p 3000\" -np $CORES -host $HOSTLIST -x PYTH
 else
     echo "#!/bin/bash
 PYTHONPATH=\"$PYPATH:\$PYTHONPATH\"
-charmrun +p$CORES \"\$@\"" >> /usr/local/bin/charming.sh
+charmrun +p$CORES \"\$@\"" >> /usr/local/bin/charming
 fi
-chmod 755 /usr/local/bin/charming.sh
+chmod 755 /usr/local/bin/charming
 
 if [ "$SERVER" = "server" ]; then
 	sudo -u $USER /usr/local/bin/charming.sh /home/$USER/tools/FastBATLLNN/FastBATLLNNServer.py &> "/home/$USER/results/FastBATLLNN_server_log.out" &
