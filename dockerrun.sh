@@ -145,13 +145,16 @@ then
 fi
 
 INFINIDEVICES=""
-for i in `ls /dev/infiniband/uverbs*`
-do
-    INFINIDEVICES="$INFINIDEVICES --device=$i"
-done
-if [ -e /dev/infiniband/rdma_cm ]
+if [ -d /dev/infiniband ]
 then
-    INFINIDEVICES="$INFINIDEVICES --device=/dev/infiniband/rdma_cm"
+    for i in `ls /dev/infiniband/uverbs*`
+    do
+        INFINIDEVICES="$INFINIDEVICES --device=$i"
+    done
+    if [ -e /dev/infiniband/rdma_cm ]
+    then
+        INFINIDEVICES="$INFINIDEVICES --device=/dev/infiniband/rdma_cm"
+    fi
 fi
 if [ "$INFINIDEVICES" != "" ]
 then
