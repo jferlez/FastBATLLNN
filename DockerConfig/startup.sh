@@ -68,7 +68,7 @@ fi
 chmod 755 /usr/local/bin/charming
 
 if [ "$SERVER" = "server" ]; then
-	sudo -u $USER /usr/local/bin/charming.sh /home/$USER/tools/FastBATLLNN/FastBATLLNNServer.py &> "/home/$USER/results/FastBATLLNN_server_log.out" &
+	sudo -u $USER /usr/local/bin/charming /home/$USER/tools/FastBATLLNN/FastBATLLNNServer.py &> "/home/$USER/results/FastBATLLNN_server_log.out" &
 fi
 if [ "$INTERACTIVE" = "-d" ]; then
 	wait -n
