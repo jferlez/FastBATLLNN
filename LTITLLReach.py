@@ -73,7 +73,8 @@ class LTITLLReach(Chare):
 
         for t in range(0,T):
 
-            pass
+            constraints = self.computeLTIBbox(constraints, boxLike=(False if t == 0 else True),ret=True).get()
+            print(constraints)
 
 
             # Now create a new set of linear constraints that one obtains from propagating the above
