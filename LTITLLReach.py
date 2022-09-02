@@ -73,8 +73,12 @@ class LTITLLReach(Chare):
 
         for t in range(0,T):
 
-            constraints = self.thisProxy.computeLTIBbox(constraints, boxLike=(False if t == 0 else True),ret=True).get()
-            print(constraints)
+            bboxStep = self.thisProxy.computeLTIBbox(constraints, boxLike=(False if t == 0 else True),ret=True).get()
+            print(f'Bounding box at T={t} is {bboxStep}')
+            constraints = [ \
+                        np.vstack([ np.eye(self.n), -np.eye(self.n) ]), \
+                        np.hstack([ bboxStep[:,0], -bboxStep[:,1] ]) \
+                    ]
 
 
             # Now create a new set of linear constraints that one obtains from propagating the above
@@ -138,15 +142,15 @@ class LTITLLReach(Chare):
             controllerReachBall = quadrantTLLReach[:,1] - controllerReachMidpoints # should be non-negative
 
             # This is the **l_1** error "added" to Ax + controllerReachMidpoints as a result of our bounding of B NN(x)
-            nnError = np.abs(self.B) @ controllerReachBall.reshape(-1,1)
+            nnError = (np.abs(self.B) @ controllerReachBall.reshape(-1,1)).flatten()
 
             if np.max(nnError) < self.correctedEpsilon/2:
                 # the error is acceptably small, so update allQuadrantBox
-                allQuadrantBox[:,0] = np.minimum(bboxQuadrant[:,0] + B @ controllerReachMidpoints + nnError, allQuadrantBox[:,0])
-                allQuadrantBox[:,1] = np.maximum(bboxQuadrant[:,1] + B @ controllerReachMidpoints + nnError, allQuadrantBox[:,1])
+                allQuadrantBox[:,0] = np.minimum(bboxQuadrant[:,0] + (self.B @ controllerReachMidpoints).flatten() + nnError, allQuadrantBox[:,0])
+                allQuadrantBox[:,1] = np.maximum(bboxQuadrant[:,1] + (self.B @ controllerReachMidpoints).flatten() + nnError, allQuadrantBox[:,1])
             else:
                 # recurse by calling computeLTIBbox on the current qudrant
-                recurseBox = self.thisProxy.computeLTIBbox(bboxQuadrant,boxLike=boxLike)
+                recurseBox = self.thisProxy.computeLTIBbox(quadrantConstraints,boxLike=boxLike,ret=True).get()
                 allQuadrantBox[:,0] = np.minimum(recurseBox[:,0], allQuadrantBox[:,0])
                 allQuadrantBox[:,1] = np.maximum(recurseBox[:,1], allQuadrantBox[:,1])
 
@@ -155,9 +159,9 @@ class LTITLLReach(Chare):
 
     def constraintBoundingBox(self,constraints):
         solver = self.usedOpts['solver'] if 'solver' in self.usedOpts else 'glpk'
-        if type(constraints[0]) is not np.ndarray:
-            print(f'constraints = {constraints}')
-            print(type(constraints[0][0]))
+        #if constraints[0].shape[1] != 2:
+        #print(f'constraints = {constraints}')
+        #print(type(constraints[0][0]))
         bboxIn = np.inf * np.ones((self.n,2),dtype=np.float64)
         bboxIn[:,0] = -bboxIn[:,0]
         ed = np.zeros((self.n,1))
