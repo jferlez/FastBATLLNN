@@ -43,8 +43,8 @@ class LTITLLReach(Chare):
 
         assert type(A) == np.ndarray and type(B) == np.ndarray, 'A and B matrices must be numpy arrays'
 
-        assert A.shape == (n,n), f'A must be an ({n} x {n}) matrix, where {n} is the number of TLL inputs'
-        assert B.shape == (n,m), f'B must be an ({n} x {m}) dimensional matrix, where {n} is the number of TLL inputs and {m} is the number of TLL outputs'
+        assert A.shape == (self.n,self.n), f'A must be an ({self.n} x {self.n}) matrix, where {self.n} is the number of TLL inputs'
+        assert B.shape == (self.n,self.m), f'B must be an ({self.n} x {self.m}) dimensional matrix, where {self.n} is the number of TLL inputs and {self.m} is the number of TLL outputs'
 
         self.A = A.copy()
         self.B = B.copy()
@@ -73,7 +73,7 @@ class LTITLLReach(Chare):
 
         for t in range(0,T):
 
-            constraints = self.computeLTIBbox(constraints, boxLike=(False if t == 0 else True),ret=True).get()
+            constraints = self.thisProxy.computeLTIBbox(constraints, boxLike=(False if t == 0 else True),ret=True).get()
             print(constraints)
 
 
@@ -141,7 +141,7 @@ class LTITLLReach(Chare):
                 allQuadrantBox[:,1] = np.maximum(bboxQuadrant[:,1] + B @ controllerReachMidpoints + nnError, allQuadrantBox[:,1])
             else:
                 # recurse by calling computeLTIBbox on the current qudrant
-                recurseBox = self.computeLTIBbox(bboxQuadrant,boxLike=boxLike)
+                recurseBox = self.thisProxy.computeLTIBbox(bboxQuadrant,boxLike=boxLike)
                 allQuadrantBox[:,0] = np.minimum(recurseBox[:,0], allQuadrantBox[:,0])
                 allQuadrantBox[:,1] = np.maximum(recurseBox[:,1], allQuadrantBox[:,1])
 
@@ -149,6 +149,7 @@ class LTITLLReach(Chare):
         return allQuadrantBox
 
     def constraintBoundingBox(self,constraints):
+        solver = self.usedOpts['solver'] if 'solver' in self.usedOpts else 'glpk'
         bboxIn = [[] for ii in range(self.n)]
         ed = np.zeros((self.n,1))
         for ii in range(self.n):
