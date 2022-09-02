@@ -89,11 +89,12 @@ class LTITLLReach(Chare):
         if not boxLike:
             bboxIn = self.constraintBoundingBox(constraints)
         else:
-            bboxIn = [[] for ii in range(d)]
+            bboxIn = np.inf * np.ones((self.n,2),dtype=np.float64)# [[] for ii in range(d)]
+            bboxIn[:,0] = -bboxIn[:,0]
             for  ii in range(self.n):
                 for direc in [1,-1]:
                     idx = np.nonzero(constraints[0] == direc)[0]
-                    bboxIn[ii].append(direc * constraints[1][idx])
+                    bboxIn[ii,(0 if direc == 1 else 1)] = direc * constraints[1][idx]
 
         # Split the state bounding box into 2^d quadrants
         midpoints = np.array([ 0.5 * sum(dimBounds) for dimBounds in bboxIn ],dtype=np.float64)
@@ -154,7 +155,11 @@ class LTITLLReach(Chare):
 
     def constraintBoundingBox(self,constraints):
         solver = self.usedOpts['solver'] if 'solver' in self.usedOpts else 'glpk'
-        bboxIn = [[] for ii in range(self.n)]
+        if type(constraints[0]) is not np.ndarray:
+            print(f'constraints = {constraints}')
+            print(type(constraints[0][0]))
+        bboxIn = np.inf * np.ones((self.n,2),dtype=np.float64)
+        bboxIn[:,0] = -bboxIn[:,0]
         ed = np.zeros((self.n,1))
         for ii in range(self.n):
             for direc in [1,-1]:
@@ -168,13 +173,13 @@ class LTITLLReach(Chare):
                 ed[ii,0] = 0
 
                 if status == 'optimal':
-                    bboxIn[ii].append(np.array(x[ii,0]))
+                    bboxIn[ii,(0 if direc == 1 else 1)] = x[ii,0]
                 elif status == 'dual infeasible':
-                    bboxIn[ii].append(-1*direc*np.inf)
+                    bboxIn[ii,(0 if direc == 1 else 1)] = -1*direc*np.inf
                 else:
                     print('********************  PE' + str(charm.myPe()) + ' WARNING!!  ********************')
                     print('PE' + str(charm.myPe()) + ': Infeasible or numerical ill-conditioning detected while computing bounding box!')
-                    return [[-np.inf, np.inf] for ii in range(self.n)]
+                    return bboxIn
         return bboxIn
 
 def int_to_np(myint,n):
