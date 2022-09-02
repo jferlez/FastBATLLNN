@@ -106,7 +106,7 @@ class LTITLLReach(Chare):
                 # recurse on this quadrant
         # This will track the coordinate-wise VERIFIED min and max values seen across ALL quadrants (possibly updated only after recursion)
         allQuadrantBox = np.inf * np.ones((self.n,2), dtype=np.float64)
-        allQuadrantBox[:,0] = -allQuadrantBox[:,0]
+        allQuadrantBox[:,1] = -allQuadrantBox[:,1]
 
         for quadrant in range(2**self.n):
             quadrantSel = int_to_np(quadrant, self.n)
@@ -131,18 +131,21 @@ class LTITLLReach(Chare):
             controllerReachMidpoints = 0.5 * np.sum(quadrantTLLReach, axis=1)
             controllerReachBall = quadrantTLLReach[:,1] - controllerReachMidpoints # should be non-negative
 
-            # This is the **l_1** error "added" to Ax as a result of our bounding of B NN(x)
+            # This is the **l_1** error "added" to Ax + controllerReachMidpoints as a result of our bounding of B NN(x)
             nnError = np.abs(self.B) @ controllerReachBall.reshape(-1,1)
 
             if np.max(nnError) < self.correctedEpsilon/2:
-                # update allQuadrantBox
-
-                pass
+                # the error is acceptably small, so update allQuadrantBox
+                allQuadrantBox[:,0] = np.minimum(bboxQuadrant[:,0] + B @ controllerReachMidpoints + nnError, allQuadrantBox[:,0])
+                allQuadrantBox[:,1] = np.maximum(bboxQuadrant[:,1] + B @ controllerReachMidpoints + nnError, allQuadrantBox[:,1])
             else:
                 # recurse by calling computeLTIBbox on the current qudrant
-                pass
+                recurseBox = self.computeLTIBbox(bboxQuadrant,boxLike=boxLike)
+                allQuadrantBox[:,0] = np.minimum(recurseBox[:,0], allQuadrantBox[:,0])
+                allQuadrantBox[:,1] = np.maximum(recurseBox[:,1], allQuadrantBox[:,1])
 
         # Final return value is max/min coordinates of each quadrant guaranteed up to self.correctedEpsilon
+        return allQuadrantBox
 
     def constraintBoundingBox(self,constraints):
         bboxIn = [[] for ii in range(self.n)]
