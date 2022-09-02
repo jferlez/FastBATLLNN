@@ -61,13 +61,20 @@ class LTITLLReach(Chare):
             self.usedOpts[ky] = opts[ky]
 
         self.maxIts = 100
+        # These will be updated with each time step
+        self.lbSeed = -1
+        self.ubSeed = 1
+
+        # This needs to be set to account for the exponential growth and number of time steps T
+        self.correctedEpsilon = epsilon
 
         constraints = [polytope['A'], polytope['b']]
         bBoxes = []
 
         for t in range(0,T):
 
-            bBoxes.append( self.tllReach.computeReach(lbSeed=-1,ubSeed=1, tol=epsilon, ret=True).get() )
+            pass
+
 
             # Now create a new set of linear constraints that one obtains from propagating the above
             # bounding box through the supplied LTI system
@@ -79,27 +86,7 @@ class LTITLLReach(Chare):
 
         # Compute the bounding box for the current supplied state constraints
         if not boxLike:
-            bboxIn = [[] for ii in range(d)]
-            ed = np.zeros((self.n,1))
-            for ii in range(self.n):
-                for direc in [1,-1]:
-                    ed[ii,0] = direc
-                    status, x = self.lp.runLP( \
-                        ed.flatten(), \
-                        -constraints[0], -constraints[1], \
-                        lpopts = {'solver':solver, 'fallback':'glpk'} if solver != 'glpk' else {'solver':'glpk'}, \
-                        msgID = str(charm.myPe()) \
-                    )
-                    ed[ii,0] = 0
-
-                    if status == 'optimal':
-                        bboxIn[ii].append(np.array(x[ii,0]))
-                    elif status == 'dual infeasible':
-                        bboxIn[ii].append(-1*direc*np.inf)
-                    else:
-                        print('********************  PE' + str(charm.myPe()) + ' WARNING!!  ********************')
-                        print('PE' + str(charm.myPe()) + ': Infeasible or numerical ill-conditioning detected while computing bounding box!')
-                        return [set([]), 0]
+            bboxIn = self.constraintBoundingBox(constraints)
         else:
             bboxIn = [[] for ii in range(d)]
             for  ii in range(self.n):
@@ -109,7 +96,7 @@ class LTITLLReach(Chare):
 
         # Split the state bounding box into 2^d quadrants
         midpoints = np.array([ 0.5 * sum(dimBounds) for dimBounds in bboxIn ],dtype=np.float64)
-        quadrants = np.eye(self.n, dtype=np.float64)
+        emat = np.eye(self.n, dtype=np.float64)
 
         # for each quadrant:
             # compute the controller reachable set subject to that quadrant as a state constraint
@@ -117,10 +104,69 @@ class LTITLLReach(Chare):
                 # then state constraint quadrant times A + controller reachable set is an epsilon bounding box for the next state started from this quadrant
             # else:
                 # recurse on this quadrant
+        # This will track the coordinate-wise VERIFIED min and max values seen across ALL quadrants (possibly updated only after recursion)
+        allQuadrantBox = np.inf * np.ones((self.n,2), dtype=np.float64)
+        allQuadrantBox[:,0] = -allQuadrantBox[:,0]
 
-        # Final return value is max/min coordinates of each quadrant
+        for quadrant in range(2**self.n):
+            quadrantSel = int_to_np(quadrant, self.n)
 
-        self.tllReach.initialize(self.tllController, constraints, self.maxIts, self.usedOpts['useQuery'], awaitable=True ).get()
+            quadrantConstraints = [ \
+                            np.vstack([constraints[0], emat]), \
+                            np.hstack([(-1)**quadrantSel * constraints[1], (-1)**quadrantSel * midpoints ]) \
+                        ]
+
+            bboxQuadrant = self.constraintBoundingBox(quadrantConstraints)
+
+            self.tllReach.initialize( \
+                        self.tllController, \
+                        quadrantConstraints , \
+                        self.maxIts, \
+                        self.usedOpts['useQuery'], \
+                        awaitable=True \
+                    ).get()
+
+            quadrantTLLReach = self.tllReach.computeReach(lbSeed=self.lbSeed,ubSeed=self.ubSeed, tol=self.correctedEpsilon, ret=True).get()
+
+            controllerReachMidpoints = 0.5 * np.sum(quadrantTLLReach, axis=1)
+            controllerReachBall = quadrantTLLReach[:,1] - controllerReachMidpoints # should be non-negative
+
+            # This is the **l_1** error "added" to Ax as a result of our bounding of B NN(x)
+            nnError = np.abs(self.B) @ controllerReachBall.reshape(-1,1)
+
+            if np.max(nnError) < self.correctedEpsilon/2:
+                # update allQuadrantBox
+
+                pass
+            else:
+                # recurse by calling computeLTIBbox on the current qudrant
+                pass
+
+        # Final return value is max/min coordinates of each quadrant guaranteed up to self.correctedEpsilon
+
+    def constraintBoundingBox(self,constraints):
+        bboxIn = [[] for ii in range(self.n)]
+        ed = np.zeros((self.n,1))
+        for ii in range(self.n):
+            for direc in [1,-1]:
+                ed[ii,0] = direc
+                status, x = self.lp.runLP( \
+                    ed.flatten(), \
+                    -constraints[0], -constraints[1], \
+                    lpopts = {'solver':solver, 'fallback':'glpk'} if solver != 'glpk' else {'solver':'glpk'}, \
+                    msgID = str(charm.myPe()) \
+                )
+                ed[ii,0] = 0
+
+                if status == 'optimal':
+                    bboxIn[ii].append(np.array(x[ii,0]))
+                elif status == 'dual infeasible':
+                    bboxIn[ii].append(-1*direc*np.inf)
+                else:
+                    print('********************  PE' + str(charm.myPe()) + ' WARNING!!  ********************')
+                    print('PE' + str(charm.myPe()) + ': Infeasible or numerical ill-conditioning detected while computing bounding box!')
+                    return [[-np.inf, np.inf] for ii in range(self.n)]
+        return bboxIn
 
 def int_to_np(myint,n):
     assert myint <= 2**n - 1, f'Integer {myint} can\'t be represented with only {n} bits!'
