@@ -112,9 +112,13 @@ class LTITLLReach(Chare):
         for quadrant in range(2**self.n):
             quadrantSel = int_to_np(quadrant, self.n)
 
+            # print(constraints)
+            # print(quadrantSel)
+            # print(midpoints)
+
             quadrantConstraints = [ \
                             np.vstack([constraints[0], emat]), \
-                            np.hstack([(-1)**quadrantSel * constraints[1], (-1)**quadrantSel * midpoints ]) \
+                            np.hstack([constraints[1], (-1)**quadrantSel * midpoints ]) \
                         ]
 
             bboxQuadrant = self.constraintBoundingBox(quadrantConstraints)
