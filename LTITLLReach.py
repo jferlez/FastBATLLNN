@@ -132,17 +132,22 @@ class LTITLLReach(Chare):
 
             bboxQuadrant = self.constraintBoundingBox(quadrantConstraints)
 
-            self.tllReach.initialize( \
-                        self.tllController, \
-                        quadrantConstraints , \
-                        self.maxIts, \
-                        self.usedOpts['useQuery'], \
-                        awaitable=True \
-                    ).get()
+            try:
+                self.tllReach.initialize( \
+                            self.tllController, \
+                            quadrantConstraints , \
+                            self.maxIts, \
+                            self.usedOpts['useQuery'], \
+                            awaitable=True \
+                        ).get()
+            except ValueError:
+                print('Unable to initialize tllReach; probably constraints with empty interior -- skipping this quadrant...')
+                continue
 
             quadrantTLLReach = self.tllReach.computeReach(lbSeed=self.lbSeed,ubSeed=self.ubSeed, tol=self.correctedEpsilon, ret=True).get()
 
             controllerReachMidpoints = 0.5 * np.sum(quadrantTLLReach, axis=1)
+
             controllerReachBall = quadrantTLLReach[:,1] - controllerReachMidpoints # should be non-negative
 
             # This is the **l_1** error "added" to Ax + controllerReachMidpoints as a result of our bounding of B NN(x)
