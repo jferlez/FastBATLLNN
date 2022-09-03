@@ -102,7 +102,7 @@ class LTITLLReach(Chare):
             for  ii in range(self.n):
                 for direc in [1,-1]:
                     idx = np.nonzero(constraints[0] == direc)[0]
-                    bboxIn[ii,(0 if direc == 1 else 1)] = direc * constraints[1][idx]
+                    bboxIn[ii,(0 if direc == 1 else 1)] = direc * constraints[1][idx,0]
 
         # Split the state bounding box into 2^d quadrants
         midpoints = np.array([ 0.5 * sum(dimBounds) for dimBounds in bboxIn ],dtype=np.float64)
