@@ -418,7 +418,6 @@ class TLLHypercubeReach(Chare):
         self.copyTime += time.time() - t # Total time across all PEs to set up a new problem
 
         opts['useQuery'] = self.useQuery
-        opts['useBounding'] = self.useBounding
 
         t = time.time()
         retVal = self.poset.populatePoset(opts, ret=True).get() # specify retChannelEndPoint=self.thisProxy to send to a channel as follows
