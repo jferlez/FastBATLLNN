@@ -70,6 +70,7 @@ class LTITLLReach(Chare):
 
         constraints = [polytope['A'], polytope['b']]
         bBoxes = []
+        self.level=0
 
         for t in range(0,T):
 
@@ -79,6 +80,7 @@ class LTITLLReach(Chare):
                         np.vstack([ np.eye(self.n), -np.eye(self.n) ]), \
                         np.hstack([ bboxStep[:,0], -bboxStep[:,1] ]) \
                     ]
+            self.level = 0
 
 
             # Now create a new set of linear constraints that one obtains from propagating the above
@@ -86,6 +88,8 @@ class LTITLLReach(Chare):
 
     @coro
     def computeLTIBbox(self, constraints, boxLike=False):
+        self.level += 1
+        print('***** DESCEND ONE LEVEL *****')
         # Function takes a polynomial constraint set of states as input
         # returns epsilon-tolerance bounding box for next state set subject to that constrained state set
 
@@ -155,6 +159,7 @@ class LTITLLReach(Chare):
                 allQuadrantBox[:,1] = np.maximum(recurseBox[:,1], allQuadrantBox[:,1])
 
         # Final return value is max/min coordinates of each quadrant guaranteed up to self.correctedEpsilon
+        self.level -= 1
         return allQuadrantBox
 
     def constraintBoundingBox(self,constraints):
