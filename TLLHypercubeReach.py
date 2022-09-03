@@ -256,10 +256,9 @@ class TLLHypercubeReach(Chare):
         # self.lpObj.initSolver(solver='glpk')
 
     @coro
-    def initialize(self, tll, inputConstraints, maxIts, useQuery, useBounding):
+    def initialize(self, tll, inputConstraints, maxIts, useQuery):
         self.maxIts = maxIts
         self.useQuery = useQuery
-        self.useBounding = useBounding
 
         # Transpose local linear function kernels and selector matrices to correct for
         # Keras' multiply-on-the-right convention
