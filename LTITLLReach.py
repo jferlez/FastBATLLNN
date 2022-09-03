@@ -122,7 +122,7 @@ class LTITLLReach(Chare):
             # print(midpoints)
 
             quadrantConstraints = [ \
-                            np.vstack([constraints[0], emat]), \
+                            np.vstack([constraints[0], (-1)**quadrantSel * emat]), \
                             np.hstack([constraints[1], (-1)**quadrantSel * midpoints ]) \
                         ]
 
