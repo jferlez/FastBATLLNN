@@ -542,10 +542,10 @@ class minGroupFeasibleUB(Chare):
             # TO DO: account for intersections that are on the boundary of the input polytope
             if status == 'optimal':
                 full = np.vstack([ selHypers, self.fixedA ])
-                actHypers = np.nonzero(np.abs( full @ sol + bVec) <= self.tol)[0]
+                actHypers = np.nonzero(np.abs( (full @ sol).flatten() + bVec) <= self.tol)[0]
                 # print('actHypers = ' + str(actHypers))
                 # print(sol)
-                if len(actHypers) == 0 or np.all((selHypers @ sol + ubShift.flatten()) + self.tol >= 0):
+                if len(actHypers) == 0 or np.all(((selHypers @ sol).flatten() + ubShift.flatten()) + self.tol >= 0):
                     for pxy in self.otherProxies:
                         pxy.setDone()
                     self.status.send(True)
@@ -563,8 +563,8 @@ class minGroupFeasibleUB(Chare):
                             )
                     # print('newSol = ' + str(newSol))
                     # print('Solution difference: '  + str(np.abs(newSol - sol)))
-                    if k < len(selHypers) and np.abs(selHypers[k,:] @ newSol + ubShift[k]) <= self.tol \
-                        and np.abs(selHypers[k,:] @ solList[-1] + ubShift[k]) <= self.tol \
+                    if k < len(selHypers) and np.abs((selHypers[k,:] @ newSol).flatten() + ubShift[k]) <= self.tol \
+                        and np.abs((selHypers[k,:] @ solList[-1]).flatten() + ubShift[k]) <= self.tol \
                         and all([np.linalg.norm(prevSol - newSol) > self.tol for prevSol in solList]):
                         # The feasible set contains a local linear function that is always equal to the upper bound
                         # we're testing, hence the min of this selector set is exactly equal to that upper bound
@@ -586,8 +586,8 @@ class minGroupFeasibleUB(Chare):
                         # print('solList ' + str(solList))
                         # print('selHypers @ interiorPoint = ' + str((selHypers @ interiorPoint) + ubShift.flatten()))
                         if (distinctCount == n + 1 and \
-                            np.all(selHypers @ interiorPoint + ubShift.flatten() > self.tol)) or \
-                            np.all((selHypers @ newSol + ubShift.flatten()) + self.tol >= 0):
+                            np.all((selHypers @ interiorPoint).flatten() + ubShift.flatten() > self.tol)) or \
+                            np.all(((selHypers @ newSol).flatten() + ubShift.flatten()) + self.tol >= 0):
                             # This feasible set has a nonempty interior, so we have a violation
                             # print('sending true')
                             self.cePoint = interiorPoint.copy()
