@@ -31,8 +31,11 @@ class LTITLLReach(Chare):
                 }
         self.lp = encapsulateLP.encapsulateLP()
 
-    @coro
-    def computeLTIReach(self,tllController=None,A=None,B=None,polytope=None,T=10,epsilon=0.1,opts={}):
+        self.initialized = False
+
+    def initialize(self,tllController=None,A=None,B=None,polytope=None):
+
+        self.initialized = False
 
         assert type(tllController) == TLLnet.TLLnet, 'tllController parameter must be a TLLnet object'
 
@@ -54,8 +57,16 @@ class LTITLLReach(Chare):
             'polytope must be a python dictionary with properties \'A\', \'b\' and \'polyDefinition\''
         assert polytope['polyDefinition'] == 'Ax >= b', 'Only \'Ax >= b\' polytopes are currently supported'
 
-        assert type(T) == int and T > 0, 'Time horizon T must be an integer > 0'
+        self.constraints = [polytope['A'], polytope['b']]
 
+        self.initialized = True
+
+    @coro
+    def computeLTIReach(self,T=10,epsilon=0.1,opts={}):
+
+        assert self.initialized == True, 'Not initialized. Please call initialize method first...'
+
+        assert type(T) == int and T > 0, 'Time horizon T must be an integer > 0'
 
         self.usedOpts = copy(self.defaultOpts)
         for ky in opts.keys():
@@ -72,13 +83,12 @@ class LTITLLReach(Chare):
         # This needs to be set to account for the exponential growth and number of time steps T
         self.correctedEpsilon = epsilon
 
-        constraints = [polytope['A'], polytope['b']]
         bBoxes = []
         self.level=0
 
         for t in range(0,T):
 
-            bboxStep = self.thisProxy.computeLTIBbox(constraints, boxLike=(False if t == 0 else True),ret=True).get()
+            bboxStep = self.thisProxy.computeLTIBbox(self.constraints, boxLike=(False if t == 0 else True),ret=True).get()
             print(f'Bounding box at T={t} is {bboxStep}')
             constraints = [ \
                         np.vstack([ np.eye(self.n), -np.eye(self.n) ]), \
@@ -233,6 +243,15 @@ class LTITLLReach(Chare):
                     print('PE' + str(charm.myPe()) + ': Infeasible or numerical ill-conditioning detected while computing bounding box!')
                     return bboxIn
         return bboxIn
+
+    def computeReachSamples(self,inputIn,T=10):
+        inputs = inputIn.copy()
+        for t in range(T):
+            tllEval = np.zeros((inputs.shape[0],self.m),dtype=np.float64)
+            for ii in range(inputs.shape[0]):
+                tllEval[ii,:] = self.tllController.pointEval(inputs[ii,:])
+            inputs = (self.A @ inputs.T + self.B @ tllEval.T).T
+        return inputs
 
 def int_to_np(myint,n):
     assert myint <= 2**n - 1, f'Integer {myint} can\'t be represented with only {n} bits!'
