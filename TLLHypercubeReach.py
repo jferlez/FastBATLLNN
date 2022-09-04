@@ -312,16 +312,19 @@ class TLLHypercubeReach(Chare):
 
 
     @coro
-    def computeReach(self, lbSeed=-1, ubSeed=1, tol=1e-3):
+    def computeReach(self, lbSeed=-1, ubSeed=1, tol=1e-3, opts={}):
         hypercube = np.ones((self.m, 2))
-        print('m = ' + str(self.m))
         for out in range(self.m):
-            hypercube[out,0] = self.thisProxy.searchBound(lbSeed,out=out,lb=True,tol=tol,verbose=True,ret=True).get()
-            hypercube[out,1] = self.thisProxy.searchBound(ubSeed,out=out,lb=False,tol=tol,verbose=True,ret=True).get()
+            hypercube[out,0] = self.thisProxy.searchBound(lbSeed,out=out,lb=True,tol=tol,opts=opts,ret=True).get()
+            hypercube[out,1] = self.thisProxy.searchBound(ubSeed,out=out,lb=False,tol=tol,opts=opts,ret=True).get()
         return hypercube
 
     @coro
-    def searchBound(self,seedBd,out=0,lb=True,tol=1e-3,verbose=False,opts={}):
+    def searchBound(self,seedBd,out=0,lb=True,tol=1e-3,opts={}):
+        if 'verbose' in opts:
+            verbose = opts['verbose']
+        else:
+            verbose = False
         if out >= self.m:
             raise ValueError('Output ' + str(out) + ' is greater than m = ' + str(self.m))
         # lb2ub = 1
@@ -336,7 +339,7 @@ class TLLHypercubeReach(Chare):
 
         while itCnt > 0:
             bdToCheck = windUB if windLB==-np.inf else 0.5*(windLB + windUB)
-            ver = self.verifyLB( bdToCheck, out=out, opts=opts) if lb else self.verifyUB( bdToCheck,out=out)
+            ver = self.verifyLB( bdToCheck, out=out, opts=opts) if lb else self.verifyUB( bdToCheck,out=out, verbose=verbose)
 
             if verbose:
                 print( 'Iteration ' + str(itCnt) +  ': ' + str(bdToCheck) + ' is ' + ('a VALID' if ver else 'an INVALID') + ' lower bound!')
@@ -426,22 +429,22 @@ class TLLHypercubeReach(Chare):
         if not retVal:
             t = time.time()
             ceList = self.checkerLocalVars.getCounterExample(ret=True).get()
-            print(f'Waited {time.time() - t} seconds to receive counterexample.')
+            #print(f'Waited {time.time() - t} seconds to receive counterexample.')
             for ce in ceList:
                 if ce is not None:
                     # ce is now a list of flipped hyperplanes corresponding to a counterexample region (w.r.t. the ORIGINAL constraints)
                     t = time.time()
                     self.cePoint = self.poset.getConstraintsObject(ret=True).get().regionInteriorPoint(ce)
-                    print(f'Used {time.time()-t} seconds to find an interior point.')
+                    #print(f'Used {time.time()-t} seconds to find an interior point.')
                     t = time.time()
                     self.cePointVal = self.tll.pointEval(self.cePoint)
-                    print(f'Used {time.time() - t} seconds to evaluate TLL at interior point.')
-                    print(f'Found counterexample TLL({self.cePoint}) = {self.cePointVal}')
+                    #print(f'Used {time.time() - t} seconds to evaluate TLL at interior point.')
+                    #print(f'Found counterexample TLL({self.cePoint}) = {self.cePointVal}')
                     break
         return retVal
 
     @coro
-    def verifyUB(self,ub,out=0, timeout=None, **kwargs):
+    def verifyUB(self,ub,out=0, timeout=None, verbose=False, **kwargs):
         if out >= self.m:
             raise ValueError('Output ' + str(out) + ' is greater than m = ' + str(self.m))
         self.cePoint = None
@@ -453,14 +456,16 @@ class TLLHypercubeReach(Chare):
 
         retVal = minCheckFut.get()
         timedOut = any(timedOut.get())
-        print('Upper Bound verifiction used ' + str(sum(self.ubCheckerGroup.getLPcount(ret=True).get())) + ' total LPs.')
+        if verbose:
+            print('Upper Bound verifiction used ' + str(sum(self.ubCheckerGroup.getLPcount(ret=True).get())) + ' total LPs.')
         if timedOut:
             retVal = None
             print('Upper bound verification timed out.')
         if retVal:
             t = time.time()
             ceList = self.ubCheckerGroup.getCounterExample(ret=True).get()
-            print(f'Used {time.time()-t} seconds to receive counterexample.')
+            if verbose:
+                print(f'Used {time.time()-t} seconds to receive counterexample.')
             self.cePoint = None
             self.cePointVal = None
             for ce in ceList:
@@ -468,8 +473,9 @@ class TLLHypercubeReach(Chare):
                     self.cePoint = np.array(ce,dtype=np.float64).reshape(self.n,1)
                     t = time.time()
                     self.cePointVal = self.tll.pointEval(self.cePoint)
-                    print(f'Used {time.time() - t} seconds to evaluate TLL at interior point.')
-                    print(f'Found counterexample TLL({self.cePoint}) = {self.cePointVal}')
+                    if verbose:
+                        print(f'Used {time.time() - t} seconds to evaluate TLL at interior point.')
+                        print(f'Found counterexample TLL({self.cePoint}) = {self.cePointVal}')
                     break
         return retVal
 
@@ -595,6 +601,8 @@ class minGroupFeasibleUB(Chare):
                                 pxy.setDone()
                             self.status.send(True)
                             return False
+            if status == 'optimal':
+                print(f'=====>> PE {charm.myPe()}: solList = {solList}; actHypers = {actHypers}; newSol = {newSol}; full = {full}; bVec = {bVec}; {np.nonzero(np.abs((full @ sol).flatten() + bVec)<=self.tol)[0]}')
         self.status.send(False)
         return False
 
