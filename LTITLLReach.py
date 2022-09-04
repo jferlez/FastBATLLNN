@@ -26,12 +26,13 @@ class LTITLLReach(Chare):
                     'method':'fastLP', \
                     'solver':'glpk', \
                     'useQuery':False, \
-                    'hashStore':'bits' \
+                    'hashStore':'bits', \
+                    'verbose': False \
                 }
         self.lp = encapsulateLP.encapsulateLP()
 
     @coro
-    def computeLTIReach(self,tllController=None,A=None,B=None,polytope=None,T=10,epsilon=0.01,opts={}):
+    def computeLTIReach(self,tllController=None,A=None,B=None,polytope=None,T=10,epsilon=0.1,opts={}):
 
         assert type(tllController) == TLLnet.TLLnet, 'tllController parameter must be a TLLnet object'
 
@@ -59,6 +60,9 @@ class LTITLLReach(Chare):
         self.usedOpts = copy(self.defaultOpts)
         for ky in opts.keys():
             self.usedOpts[ky] = opts[ky]
+
+        self.verbose = self.usedOpts['verbose']
+        self.restrictedVerbose = True
 
         self.maxIts = 100
         # These will be updated with each time step
@@ -89,7 +93,8 @@ class LTITLLReach(Chare):
     @coro
     def computeLTIBbox(self, constraints, boxLike=False):
         self.level += 1
-        print('***** DESCEND ONE LEVEL *****')
+        levelIndent = self.level * '    '
+        print(levelIndent + '***** DESCEND ONE LEVEL *****')
         # Function takes a polynomial constraint set of states as input
         # returns epsilon-tolerance bounding box for next state set subject to that constrained state set
 
@@ -97,17 +102,29 @@ class LTITLLReach(Chare):
         if not boxLike:
             bboxIn = self.constraintBoundingBox(constraints)
         else:
+            tester = self.constraintBoundingBox(constraints)
             bboxIn = np.inf * np.ones((self.n,2),dtype=np.float64)# [[] for ii in range(d)]
             bboxIn[:,0] = -bboxIn[:,0]
-            for  ii in range(self.n):
+            for ii in range(self.n):
                 for direc in [1,-1]:
-                    idx = np.nonzero(constraints[0] == direc)[0]
-                    bboxIn[ii,(0 if direc == 1 else 1)] = direc * constraints[1][idx,0]
+                    idx = np.nonzero(constraints[0][:,ii] == direc)[0]
+                    if direc == 1:
+                        idx = idx[np.argmax(constraints[1][idx])]
+                    else:
+                        idx = idx[np.argmax(constraints[1][idx])]
+                    #print(levelIndent + f'/\/\/\/\/\/ ***** idx is {idx}; constraints[1].shape = {constraints[1]}')
+                    bboxIn[ii,(0 if direc == 1 else 1)] = direc * constraints[1][idx]
+            print(levelIndent + f'/\/\/\/\/\/ constraints = {constraints}; bboxIn = {bboxIn}')
+            if np.any(np.abs(tester - bboxIn) > 1e-7):
+                print(levelIndent + f'First tester = {tester}; bboxIn = {bboxIn}')
 
         # Split the state bounding box into 2^d quadrants
         midpoints = np.array([ 0.5 * sum(dimBounds) for dimBounds in bboxIn ],dtype=np.float64)
         emat = np.eye(self.n, dtype=np.float64)
 
+        if self.verbose or self.restrictedVerbose:
+            print('\n' + levelIndent + '*****************************************************************************')
+            print(levelIndent + f'bboxIn = {bboxIn.tolist()}; midpoints = {midpoints.tolist()}')
         # for each quadrant:
             # compute the controller reachable set subject to that quadrant as a state constraint
             # if the size of the controller reachable set multiplied by B is less than epsilon/2:
@@ -130,7 +147,16 @@ class LTITLLReach(Chare):
                             np.hstack([constraints[1], (-1)**quadrantSel * midpoints ]) \
                         ]
 
-            bboxQuadrant = self.constraintBoundingBox(quadrantConstraints)
+            if not boxLike:
+                bboxQuadrant = self.constraintBoundingBox(quadrantConstraints)
+            else:
+                tester =  self.constraintBoundingBox(quadrantConstraints)
+                bboxQuadrant = bboxIn.copy()
+                bboxQuadrant[quadrantSel,1] = midpoints[quadrantSel]
+                bboxQuadrant[np.logical_not(quadrantSel),0] = midpoints[np.logical_not(quadrantSel)]
+                if np.any(np.abs(tester - bboxQuadrant) > 1e-5):
+                    print(levelIndent + f'tester = {tester}; bboxQuadrant = {bboxQuadrant}; quadrantSel = {quadrantSel}')
+                    charm.exit()
 
             try:
                 self.tllReach.initialize( \
@@ -141,17 +167,29 @@ class LTITLLReach(Chare):
                             awaitable=True \
                         ).get()
             except ValueError:
-                print('Unable to initialize tllReach; probably constraints with empty interior -- skipping this quadrant...')
+                print(levelIndent + 'Unable to initialize tllReach; probably constraints with empty interior -- skipping this quadrant...')
                 continue
 
-            quadrantTLLReach = self.tllReach.computeReach(lbSeed=self.lbSeed,ubSeed=self.ubSeed, tol=self.correctedEpsilon, ret=True).get()
+            quadrantTLLReach = self.tllReach.computeReach(lbSeed=self.lbSeed,ubSeed=self.ubSeed, tol=self.correctedEpsilon, opts=self.usedOpts, ret=True).get()
+
+            if self.verbose or self.restrictedVerbose:
+                print(f'\n' + levelIndent + f'LEVEL={self.level}; QUAD={quadrant} --- quadrantTLLReach = {quadrantTLLReach}')
 
             controllerReachMidpoints = 0.5 * np.sum(quadrantTLLReach, axis=1)
+
+            if self.verbose or self.restrictedVerbose:
+                print(levelIndent + f'LEVEL={self.level}; QUAD={quadrant} --- controllerReachMidpoints = {controllerReachMidpoints}')
 
             controllerReachBall = quadrantTLLReach[:,1] - controllerReachMidpoints # should be non-negative
 
             # This is the **l_1** error "added" to Ax + controllerReachMidpoints as a result of our bounding of B NN(x)
             nnError = (np.abs(self.B) @ controllerReachBall.reshape(-1,1)).flatten()
+
+            if self.verbose or self.restrictedVerbose:
+                print(levelIndent + f'LEVEL={self.level}; QUAD={quadrant} --- nnError = {nnError}\n')
+
+            if np.any(quadrantTLLReach[:,0] > quadrantTLLReach[:,1]):
+                charm.exit()
 
             if np.max(nnError) < self.correctedEpsilon/2:
                 # the error is acceptably small, so update allQuadrantBox
