@@ -1,4 +1,5 @@
 import numpy as np
+import scipy
 import charm4py
 from charm4py import charm, Chare, coro, Reducer, Group, Future, Channel
 
@@ -33,6 +34,8 @@ class LTITLLReach(Chare):
 
         self.initialized = False
 
+        self.usedOpts = copy(self.defaultOpts)
+
     def initialize(self,tllController=None,A=None,B=None,polytope=None):
 
         self.initialized = False
@@ -58,6 +61,10 @@ class LTITLLReach(Chare):
         assert polytope['polyDefinition'] == 'Ax >= b', 'Only \'Ax >= b\' polytopes are currently supported'
 
         self.constraints = [polytope['A'], polytope['b']]
+
+        r, q = scipy.linalg.rq(self.A)
+        self.r = r
+        self.q = q
 
         self.initialized = True
 
@@ -88,7 +95,7 @@ class LTITLLReach(Chare):
 
         for t in range(0,T):
 
-            bboxStep = self.thisProxy.computeLTIBbox(self.constraints, boxLike=(False if t == 0 else True),ret=True).get()
+            bboxStep = self.thisProxy.computeLTIBbox(self.constraints,ret=True).get()
             print(f'Bounding box at T={t} is {bboxStep}')
             constraints = [ \
                         np.vstack([ np.eye(self.n), -np.eye(self.n) ]), \
@@ -101,32 +108,19 @@ class LTITLLReach(Chare):
             # bounding box through the supplied LTI system
 
     @coro
-    def computeLTIBbox(self, constraints, boxLike=False):
+    def computeLTIBbox(self, constraints):
         self.level += 1
         levelIndent = self.level * '    '
         print(levelIndent + '***** DESCEND ONE LEVEL *****')
         # Function takes a polynomial constraint set of states as input
         # returns epsilon-tolerance bounding box for next state set subject to that constrained state set
 
-        # Compute the bounding box for the current supplied state constraints
-        if not boxLike:
-            bboxIn = self.constraintBoundingBox(constraints)
-        else:
-            tester = self.constraintBoundingBox(constraints)
-            bboxIn = np.inf * np.ones((self.n,2),dtype=np.float64)# [[] for ii in range(d)]
-            bboxIn[:,0] = -bboxIn[:,0]
-            for ii in range(self.n):
-                for direc in [1,-1]:
-                    idx = np.nonzero(constraints[0][:,ii] == direc)[0]
-                    if direc == 1:
-                        idx = idx[np.argmax(constraints[1][idx])]
-                    else:
-                        idx = idx[np.argmax(constraints[1][idx])]
-                    #print(levelIndent + f'/\/\/\/\/\/ ***** idx is {idx}; constraints[1].shape = {constraints[1]}')
-                    bboxIn[ii,(0 if direc == 1 else 1)] = direc * constraints[1][idx]
-            print(levelIndent + f'/\/\/\/\/\/ constraints = {constraints}; bboxIn = {bboxIn}')
-            if np.any(np.abs(tester - bboxIn) > 1e-7):
-                print(levelIndent + f'First tester = {tester}; bboxIn = {bboxIn}')
+        # Compute the axis-aligned bounding box for Ax where x is within the current supplied state constraints
+        bboxIn = self.constraintBoundingBox(constraints)
+        bboxInConstraints = [ \
+                    np.vstack([np.eye(self.n), -np.eye(self.n)]), \
+                    np.hstack([bboxIn[:,0], -bboxIn[:,1]])
+                ]
 
         # Split the state bounding box into 2^d quadrants
         midpoints = np.array([ 0.5 * sum(dimBounds) for dimBounds in bboxIn ],dtype=np.float64)
@@ -151,23 +145,24 @@ class LTITLLReach(Chare):
             # print(constraints)
             # print(quadrantSel)
             # print(midpoints)
-
+            # A box-like split quadrant of the previous state's bounding box
             quadrantConstraints = [ \
-                            np.vstack([constraints[0], (-1)**quadrantSel * emat]), \
-                            np.hstack([constraints[1], (-1)**quadrantSel * midpoints ]) \
+                            np.vstack([bboxInConstraints[0], (-1)**quadrantSel * emat ]), \
+                            np.hstack([bboxInConstraints[1], (-1)**quadrantSel * midpoints])  \
                         ]
 
-            if not boxLike:
-                bboxQuadrant = self.constraintBoundingBox(quadrantConstraints)
-            else:
-                tester =  self.constraintBoundingBox(quadrantConstraints)
-                bboxQuadrant = bboxIn.copy()
-                bboxQuadrant[quadrantSel,1] = midpoints[quadrantSel]
-                bboxQuadrant[np.logical_not(quadrantSel),0] = midpoints[np.logical_not(quadrantSel)]
-                if np.any(np.abs(tester - bboxQuadrant) > 1e-5):
-                    print(levelIndent + f'tester = {tester}; bboxQuadrant = {bboxQuadrant}; quadrantSel = {quadrantSel}')
-                    charm.exit()
+            bboxQuadrant = bboxIn.copy()
+            bboxQuadrant[quadrantSel,1] = midpoints[quadrantSel]
+            bboxQuadrant[np.logical_not(quadrantSel),0] = midpoints[np.logical_not(quadrantSel)]
 
+            # Compute a bounding box for the quadrant after passing it through the A matrix
+            quadrantStateBBox = self.constraintBoundingBox([quadrantConstraints[0] @ self.q.T, quadrantConstraints[1]],basis=self.r)
+            quadrantStateConstraints = [ \
+                    np.vstack([np.eye(self.n), -np.eye(self.n)]), \
+                    np.hstack([quadrantStateBBox[:,0], -quadrantStateBBox[:,1]])
+                ]
+
+            # We use the bounding box on the **PRIOR** state to bound the controller output
             try:
                 self.tllReach.initialize( \
                             self.tllController, \
@@ -201,13 +196,21 @@ class LTITLLReach(Chare):
             if np.any(quadrantTLLReach[:,0] > quadrantTLLReach[:,1]):
                 charm.exit()
 
+            nextStateBBox = np.zeros((self.n,2),dtype=np.float64)
+            nextStateBBox[:,0] = quadrantStateBBox[:,0] + (self.B @ controllerReachMidpoints).flatten() - nnError
+            nextStateBBox[:,1] = quadrantStateBBox[:,1] + (self.B @ controllerReachMidpoints).flatten() + nnError
             if np.max(nnError) < self.correctedEpsilon/2:
                 # the error is acceptably small, so update allQuadrantBox
-                allQuadrantBox[:,0] = np.minimum(bboxQuadrant[:,0] + (self.B @ controllerReachMidpoints).flatten() + nnError, allQuadrantBox[:,0])
-                allQuadrantBox[:,1] = np.maximum(bboxQuadrant[:,1] + (self.B @ controllerReachMidpoints).flatten() + nnError, allQuadrantBox[:,1])
+                allQuadrantBox[:,0] = np.minimum(nextStateBBox[:,0], allQuadrantBox[:,0])
+                allQuadrantBox[:,1] = np.maximum(nextStateBBox[:,1], allQuadrantBox[:,1])
             else:
-                # recurse by calling computeLTIBbox on the current qudrant
-                recurseBox = self.thisProxy.computeLTIBbox(quadrantConstraints,boxLike=boxLike,ret=True).get()
+                # recurse by calling computeLTIBbox on the current quadrant
+                nextStateConstraints = [ \
+                        np.vstack([np.eye(self.n), -np.eye(self.n)]), \
+                        np.hstack([nextStateBBox[:,0], -nextStateBBox[:,1]])
+                    ]
+                # Recurse by refining the size box on the previous state
+                recurseBox = self.thisProxy.computeLTIBbox(quadrantConstraints,ret=True).get()
                 allQuadrantBox[:,0] = np.minimum(recurseBox[:,0], allQuadrantBox[:,0])
                 allQuadrantBox[:,1] = np.maximum(recurseBox[:,1], allQuadrantBox[:,1])
 
@@ -218,7 +221,7 @@ class LTITLLReach(Chare):
     def constraintBoundingBox(self,constraints,basis=None):
         solver = self.usedOpts['solver'] if 'solver' in self.usedOpts else 'glpk'
         if basis is None:
-            bs = np.eye(constraints[0].shape[0])
+            bs = np.eye(constraints[0].shape[1])
         else:
             bs = basis.copy()
         #if constraints[0].shape[1] != 2:
@@ -247,14 +250,17 @@ class LTITLLReach(Chare):
                     return bboxIn
         return bboxIn
 
-    def computeReachSamples(self,inputIn,T=10):
-        inputs = inputIn.copy()
+    def computeReachSamples(self,xIn,T=10):
+        x = xIn.copy()
         for t in range(T):
-            tllEval = np.zeros((inputs.shape[0],self.m),dtype=np.float64)
-            for ii in range(inputs.shape[0]):
-                tllEval[ii,:] = self.tllController.pointEval(inputs[ii,:])
-            inputs = (self.A @ inputs.T + self.B @ tllEval.T).T
-        return inputs
+            tllEval = np.zeros((x.shape[0],self.m),dtype=np.float64)
+            for ii in range(x.shape[0]):
+                tllEval[ii,:] = self.tllController.pointEval(x[ii,:])
+            print(f'tllEval shape = {tllEval.shape}')
+            bounds = [np.min(tllEval,axis=0),np.max(tllEval,axis=0)]
+            print(f'time step T={t}; controller output bounds {bounds}')
+            x = (self.A @ x.T + self.B @ tllEval.T).T
+        return x
 
 def int_to_np(myint,n):
     assert myint <= 2**n - 1, f'Integer {myint} can\'t be represented with only {n} bits!'
