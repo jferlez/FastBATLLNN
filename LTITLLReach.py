@@ -95,7 +95,7 @@ class LTITLLReach(Chare):
 
         for t in range(0,T):
 
-            bboxStep = self.thisProxy.computeLTIBbox(self.constraints,ret=True).get()
+            bboxStep = self.thisProxy.computeLTIBbox(self.constraints,boxLike=(False if t == 0 else True),ret=True).get()
             print(f'Bounding box at T={t} is {bboxStep}')
             constraints = [ \
                         np.vstack([ np.eye(self.n), -np.eye(self.n) ]), \
@@ -108,7 +108,7 @@ class LTITLLReach(Chare):
             # bounding box through the supplied LTI system
 
     @coro
-    def computeLTIBbox(self, constraints):
+    def computeLTIBbox(self, constraints, boxLike=False):
         self.level += 1
         levelIndent = self.level * '    '
         print(levelIndent + '***** DESCEND ONE LEVEL *****')
@@ -116,11 +116,25 @@ class LTITLLReach(Chare):
         # returns epsilon-tolerance bounding box for next state set subject to that constrained state set
 
         # Compute the axis-aligned bounding box for Ax where x is within the current supplied state constraints
-        bboxIn = self.constraintBoundingBox(constraints)
+        if not boxLike:
+            bboxIn = self.constraintBoundingBox(constraints)
+        else:
+            bboxIn = np.inf * np.ones((self.n,2),dtype=np.float64)# [[] for ii in range(d)]
+            bboxIn[:,0] = -bboxIn[:,0]
+            for ii in range(self.n):
+                for direc in [1,-1]:
+                    idx = np.nonzero(constraints[0][:,ii] == direc)[0]
+                    if direc == 1:
+                        idx = idx[np.argmax(constraints[1][idx])]
+                    else:
+                        idx = idx[np.argmax(constraints[1][idx])]
+                    #print(levelIndent + f'/\/\/\/\/\/ ***** idx is {idx}; constraints[1].shape = {constraints[1]}')
+                    bboxIn[ii,(0 if direc == 1 else 1)] = direc * constraints[1][idx]
+
         bboxInConstraints = [ \
-                    np.vstack([np.eye(self.n), -np.eye(self.n)]), \
-                    np.hstack([bboxIn[:,0], -bboxIn[:,1]])
-                ]
+                        np.vstack([np.eye(self.n), -np.eye(self.n)]), \
+                        np.hstack([bboxIn[:,0], -bboxIn[:,1]])
+                    ]
 
         # Split the state bounding box into 2^d quadrants
         midpoints = np.array([ 0.5 * sum(dimBounds) for dimBounds in bboxIn ],dtype=np.float64)
@@ -146,10 +160,27 @@ class LTITLLReach(Chare):
             # print(quadrantSel)
             # print(midpoints)
             # A box-like split quadrant of the previous state's bounding box
-            quadrantConstraints = [ \
+            if boxLike:
+                quadrantConstraints = [ \
                             np.vstack([bboxInConstraints[0], (-1)**quadrantSel * emat ]), \
                             np.hstack([bboxInConstraints[1], (-1)**quadrantSel * midpoints])  \
                         ]
+            else:
+                quadrantConstraints = [ \
+                            np.vstack([constraints[0], (-1)**quadrantSel * emat ]), \
+                            np.hstack([constraints[1], (-1)**quadrantSel * midpoints])  \
+                        ]
+                status, _ = self.lp.runLP( \
+                    np.ones(self.n), \
+                    -quadrantConstraints[0], -quadrantConstraints[1], \
+                    lpopts = {'solver':self.usedOpts['solver'], 'fallback':'glpk'} if self.usedOpts['solver'] != 'glpk' else {'solver':'glpk'}, \
+                    msgID = str(charm.myPe()) \
+                )
+                if status == 'primal infeasible':
+                    # The current quadrant box doesn't intersect the input constraint set, so we can skip this quadrant
+                    print('Non-overlapping qudrant.... skipping...')
+                    continue
+
 
             bboxQuadrant = bboxIn.copy()
             bboxQuadrant[quadrantSel,1] = midpoints[quadrantSel]
@@ -204,13 +235,8 @@ class LTITLLReach(Chare):
                 allQuadrantBox[:,0] = np.minimum(nextStateBBox[:,0], allQuadrantBox[:,0])
                 allQuadrantBox[:,1] = np.maximum(nextStateBBox[:,1], allQuadrantBox[:,1])
             else:
-                # recurse by calling computeLTIBbox on the current quadrant
-                nextStateConstraints = [ \
-                        np.vstack([np.eye(self.n), -np.eye(self.n)]), \
-                        np.hstack([nextStateBBox[:,0], -nextStateBBox[:,1]])
-                    ]
                 # Recurse by refining the size box on the previous state
-                recurseBox = self.thisProxy.computeLTIBbox(quadrantConstraints,ret=True).get()
+                recurseBox = self.thisProxy.computeLTIBbox(quadrantConstraints,boxLike=boxLike,ret=True).get()
                 allQuadrantBox[:,0] = np.minimum(recurseBox[:,0], allQuadrantBox[:,0])
                 allQuadrantBox[:,1] = np.maximum(recurseBox[:,1], allQuadrantBox[:,1])
 
