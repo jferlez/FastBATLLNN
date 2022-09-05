@@ -93,9 +93,11 @@ class LTITLLReach(Chare):
         bBoxes = []
         self.level=0
 
+        constraints = [self.constraints[0].copy(), self.constraints[1].copy()]
+
         for t in range(0,T):
 
-            bboxStep = self.thisProxy.computeLTIBbox(self.constraints,boxLike=(False if t == 0 else True),ret=True).get()
+            bboxStep = self.thisProxy.computeLTIBbox(constraints,boxLike=(False if t == 0 else True),ret=True).get()
             print(f'Bounding box at T={t} is {bboxStep}')
             constraints = [ \
                         np.vstack([ np.eye(self.n), -np.eye(self.n) ]), \
