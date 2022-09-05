@@ -215,8 +215,12 @@ class LTITLLReach(Chare):
         self.level -= 1
         return allQuadrantBox
 
-    def constraintBoundingBox(self,constraints):
+    def constraintBoundingBox(self,constraints,basis=None):
         solver = self.usedOpts['solver'] if 'solver' in self.usedOpts else 'glpk'
+        if basis is None:
+            bs = np.eye(constraints[0].shape[0])
+        else:
+            bs = basis.copy()
         #if constraints[0].shape[1] != 2:
         #print(f'constraints = {constraints}')
         #print(type(constraints[0][0]))
@@ -225,17 +229,16 @@ class LTITLLReach(Chare):
         ed = np.zeros((self.n,1))
         for ii in range(self.n):
             for direc in [1,-1]:
-                ed[ii,0] = direc
                 status, x = self.lp.runLP( \
-                    ed.flatten(), \
+                    direc * bs[ii,:], \
                     -constraints[0], -constraints[1], \
                     lpopts = {'solver':solver, 'fallback':'glpk'} if solver != 'glpk' else {'solver':'glpk'}, \
                     msgID = str(charm.myPe()) \
                 )
-                ed[ii,0] = 0
+                x = np.frombuffer(x)
 
                 if status == 'optimal':
-                    bboxIn[ii,(0 if direc == 1 else 1)] = x[ii,0]
+                    bboxIn[ii,(0 if direc == 1 else 1)] = np.dot(x,bs[ii,:])
                 elif status == 'dual infeasible':
                     bboxIn[ii,(0 if direc == 1 else 1)] = -1*direc*np.inf
                 else:
