@@ -236,6 +236,7 @@ class LTITLLReach(Chare):
                 print(levelIndent + f'LEVEL={self.level}; QUAD={quadrant} --- nnError = {nnError}\n')
 
             if np.any(quadrantTLLReach[:,0] > quadrantTLLReach[:,1]):
+                print(f'Error: nonsensical bounding box for quadrantTLLReach = {quadrantTLLReach} ... Exiting ...')
                 charm.exit()
 
             nextStateBBox = np.zeros((self.n,2),dtype=np.float64)
