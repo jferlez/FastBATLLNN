@@ -95,7 +95,11 @@ class LTITLLReach(Chare):
 
         constraints = [self.constraints[0].copy(), self.constraints[1].copy()]
 
+        retDict = {}
+
         for t in range(0,T):
+
+            tStart = time.time()
 
             bboxStep = self.thisProxy.computeLTIBbox(constraints,boxLike=(False if t == 0 else True),ret=True).get()
             print(f'Bounding box at T={t} is {bboxStep}')
@@ -105,9 +109,12 @@ class LTITLLReach(Chare):
                     ]
             self.level = 0
 
-
+            retDict[t] = {}
+            retDict[t]['box'] = bboxStep
+            retDict[t]['time'] = time.time() - tStart
             # Now create a new set of linear constraints that one obtains from propagating the above
             # bounding box through the supplied LTI system
+        return retDict
 
     @coro
     def computeLTIBbox(self, constraints, boxLike=False):
