@@ -232,7 +232,7 @@ class LTITLLReach(Chare):
             nextStateBBox = np.zeros((self.n,2),dtype=np.float64)
             nextStateBBox[:,0] = quadrantStateBBox[:,0] + (self.B @ controllerReachMidpoints).flatten() - nnError
             nextStateBBox[:,1] = quadrantStateBBox[:,1] + (self.B @ controllerReachMidpoints).flatten() + nnError
-            if np.max(nnError) < self.correctedEpsilon/2:
+            if np.max(nnError) < self.correctedEpsilon:
                 # the error is acceptably small, so update allQuadrantBox
                 allQuadrantBox[:,0] = np.minimum(nextStateBBox[:,0], allQuadrantBox[:,0])
                 allQuadrantBox[:,1] = np.maximum(nextStateBBox[:,1], allQuadrantBox[:,1])
