@@ -80,7 +80,7 @@ class LTITLLReach(Chare):
             self.usedOpts[ky] = opts[ky]
 
         self.verbose = self.usedOpts['verbose']
-        self.restrictedVerbose = True
+        self.restrictedVerbose = False
 
         self.maxIts = 100
         # These will be updated with each time step
