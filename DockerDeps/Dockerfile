@@ -4,7 +4,7 @@ WORKDIR /tmp/docker_build
 RUN ln -snf /usr/share/zoneinfo/$CONTAINER_TIMEZONE /etc/localtime && echo $CONTAINER_TIMEZONE > /etc/timezone
 RUN apt-get update && \
     apt-get -y upgrade && \
-    apt -y install clang-12 python3-pip python3.9 python3.9-dev cmake gfortran gfortran-10 gcc-10 libgsl-dev libfftw3-3 libfftw3-dev libsuitesparse-dev git clang-11 libgmp-dev vim emacs nano screen tmux ipython3 openssh-server sudo curl universal-ctags ripgrep psmisc locales clangd libpython3.9-dev && \
+    apt -y install clang-12 python3-pip python3.9 python3.9-dev cmake gfortran gfortran-10 gcc-10 libgsl-dev libfftw3-3 libfftw3-dev libsuitesparse-dev git clang-11 libgmp-dev vim emacs nano screen tmux ipython3 openssh-server sudo curl universal-ctags ripgrep psmisc locales clangd libpython3.9-dev util-linux git-lfs && \
     curl -sL https://deb.nodesource.com/setup_16.x | bash - && \
     apt -y install nodejs && \
     python3.9 -m pip install --upgrade pip && \
