@@ -296,11 +296,11 @@ class LTITLLReach(Chare):
 
             sampleBoxes[t] = {}
 
-            bounds = np.array([np.min(tllEval,axis=0),np.max(tllEval,axis=0)])
+            bounds = np.array([np.min(tllEval,axis=0),np.max(tllEval,axis=0)]).T
             sampleBoxes[t]['controllerOutputBox'] = bounds
 
             x = (self.A @ x.T + self.B @ tllEval.T).T
-            xBox = np.array([np.min(x,axis=0),np.max(x,axis=0)])
+            xBox = np.array([np.min(x,axis=0),np.max(x,axis=0)]).T
             sampleBoxes[t]['stateBox'] = xBox
         return sampleBoxes
 
