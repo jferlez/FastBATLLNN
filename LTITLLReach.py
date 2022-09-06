@@ -287,16 +287,22 @@ class LTITLLReach(Chare):
         return bboxIn
 
     def computeReachSamples(self,xIn,T=10):
+        sampleBoxes = {}
         x = xIn.copy()
         for t in range(T):
             tllEval = np.zeros((x.shape[0],self.m),dtype=np.float64)
             for ii in range(x.shape[0]):
                 tllEval[ii,:] = self.tllController.pointEval(x[ii,:])
-            print(f'tllEval shape = {tllEval.shape}')
-            bounds = [np.min(tllEval,axis=0),np.max(tllEval,axis=0)]
-            print(f'time step T={t}; controller output bounds {bounds}')
+
+            sampleBoxes[t] = {}
+
+            bounds = np.array([np.min(tllEval,axis=0),np.max(tllEval,axis=0)])
+            sampleBoxes[t]['controllerOutputBox'] = bounds
+
             x = (self.A @ x.T + self.B @ tllEval.T).T
-        return x
+            xBox = np.array([np.min(x,axis=0),np.max(x,axis=0)])
+            sampleBoxes[t]['stateBox'] = xBox
+        return sampleBoxes
 
 def int_to_np(myint,n):
     assert myint <= 2**n - 1, f'Integer {myint} can\'t be represented with only {n} bits!'
