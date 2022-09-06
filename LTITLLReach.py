@@ -120,7 +120,8 @@ class LTITLLReach(Chare):
     def computeLTIBbox(self, constraints, boxLike=False):
         self.level += 1
         levelIndent = self.level * '    '
-        print(levelIndent + '***** DESCEND ONE LEVEL *****')
+        if self.verbose or self.restrictedVerbose:
+            print(levelIndent + '***** DESCEND ONE LEVEL *****')
         # Function takes a polynomial constraint set of states as input
         # returns epsilon-tolerance bounding box for next state set subject to that constrained state set
 
