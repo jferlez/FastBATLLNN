@@ -78,7 +78,9 @@ RUN /usr/bin/ssh-keygen -A
 
 # To get nohup with mpirun... not needed, though https://stackoverflow.com/questions/48296285/nohup-does-not-work-mpirun
 #RUN echo "#!/bin/sh\n(\necho \"Date: \`date\`\"\necho \"Command: \$*\"\nPYTHONPATH=/home/${USER_NAME}/tools/FastBATLLNN:/home/${USER_NAME}/tools/FastBATLLNN/HyperplaneRegionEnum:/home/${USER_NAME}/tools/FastBATLLNN/TLLnet:/home/${USER_NAME}/tools/nnenum/src/nnenum nohup \"\$@\"\necho \"Completed: \`date\`\"\necho\n) >>\${LOGFILE:=log.out} 2>&1 &" > /usr/local/bin/bk
-RUN echo "#!/bin/sh" > /usr/local/bin/bk
+# Use bash for this script, since for all shells (login/non-login/interactive/non-interactive) it will use /etc/bash.bashrc
+# See: https://unix.stackexchange.com/questions/170493/login-non-login-and-interactive-non-interactive-shells
+RUN echo "#!/bin/bash" > /usr/local/bin/bk
 RUN echo "(" >>  /usr/local/bin/bk
 RUN echo 'echo "Date: `date`"' >>  /usr/local/bin/bk
 RUN echo 'echo "Command: $*"' >>  /usr/local/bin/bk
