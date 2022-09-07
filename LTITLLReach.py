@@ -215,7 +215,7 @@ class LTITLLReach(Chare):
             except ValueError:
                 if self.verbose or self.restrictedVerbose:
                     print(levelIndent + 'Unable to initialize tllReach; probably constraints with empty interior -- skipping this quadrant...')
-                    continue
+                continue
 
             quadrantTLLReach = self.tllReach.computeReach(lbSeed=self.lbSeed,ubSeed=self.ubSeed, tol=self.correctedEpsilon, opts=self.usedOpts, ret=True).get()
 
