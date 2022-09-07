@@ -28,7 +28,8 @@ class LTITLLReach(Chare):
                     'solver':'glpk', \
                     'useQuery':False, \
                     'hashStore':'bits', \
-                    'verbose': False \
+                    'verbose': False, \
+                    'restrictedVerbose':False \
                 }
         self.lp = encapsulateLP.encapsulateLP()
 
@@ -80,7 +81,7 @@ class LTITLLReach(Chare):
             self.usedOpts[ky] = opts[ky]
 
         self.verbose = self.usedOpts['verbose']
-        self.restrictedVerbose = False
+        self.restrictedVerbose = self.usedOpts['restrictedVerbose']
 
         self.maxIts = 100
         # These will be updated with each time step
