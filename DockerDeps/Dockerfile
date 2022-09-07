@@ -55,15 +55,15 @@ RUN wget https://ftp.gnu.org/gnu/glpk/glpk-5.0.tar.gz && \
     COIN_INSTALL_DIR=/usr/local && \
     COIN_INSTALL_DIR=/usr/local python3.10 -m pip install cylp
 # Installl OpenMPI with UCX support
-RUN wget "https://content.mellanox.com/ofed/MLNX_OFED-5.4-3.4.0.0/MLNX_OFED_LINUX-5.4-3.4.0.0-ubuntu20.04-x86_64.tgz" && \
-    tar -xf MLNX_OFED_LINUX-5.4-3.4.0.0-ubuntu20.04-x86_64.tgz && \
-    cd MLNX_OFED_LINUX-5.4-3.4.0.0-ubuntu20.04-x86_64 && \
+RUN wget "https://content.mellanox.com/ofed/MLNX_OFED-5.7-1.0.2.0/MLNX_OFED_LINUX-5.7-1.0.2.0-ubuntu20.04-x86_64.tgz" && \
+    tar -xf MLNX_OFED_LINUX-5.7-1.0.2.0-ubuntu20.04-x86_64.tgz && \
+    cd MLNX_OFED_LINUX-5.7-1.0.2.0-ubuntu20.04-x86_64 && \
     sudo apt -y install autoconf libnuma-dev debhelper kmod ethtool libpci3 flex libfuse2 m4 libelf1 lsof libnl-route-3-dev autotools-dev libnuma1 libnl-route-3-200 libusb-1.0-0 tk libnl-3-dev swig tcl libnl-3-200 pciutils udev libltdl-dev libmnl0 bison graphviz automake pkg-config chrpath dpatch && \
     ./mlnxofedinstall --user-space-only --force && \
     cd ..
 RUN apt-get -y install zlib1g zlib1g-dev
 RUN cd charm4py && \
-    PATH="/usr/mpi/gcc/openmpi-4.1.2a1/bin:$PATH" && \
+    PATH="/usr/mpi/gcc/openmpi-4.1.5a1/bin:$PATH" && \
     python3.10 setup.py install --mpi && \
     cd .. && \
     git clone https://github.com/numba/numba && \
@@ -103,7 +103,7 @@ RUN echo "#!/bin/bash\n/usr/sbin/sshd -D &> /root/sshd_log.out &\nif [ -e /etc/s
 RUN chmod 755 /usr/local/bin/startup.sh
 
 #RUN echo "export PATH=/usr/local/bin:\$PATH\nexport LD_LIBRARY_PATH=/usr/local/lib\nexport COIN_INSTALL_DIR=/usr/local\nexport PATH=\"/usr/mpi/gcc/openmpi-4.1.2a1/bin:$PATH\"" >> /etc/bash.bashrc
-RUN sed -i "2i export PATH=/usr/local/bin:/usr/mpi/gcc/openmpi-4.1.2a1/bin:\$PATH" /etc/bash.bashrc
+RUN sed -i "2i export PATH=/usr/local/bin:/usr/mpi/gcc/openmpi-4.1.5a1/bin:\$PATH" /etc/bash.bashrc
 RUN sed -i "3i export LD_LIBRARY_PATH=/usr/local/lib" /etc/bash.bashrc
 RUN sed -i "4i export COIN_INSTALL_DIR=/usr/local" /etc/bash.bashrc
 
