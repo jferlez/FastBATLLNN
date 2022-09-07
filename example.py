@@ -98,7 +98,7 @@ class Main(Chare):
         useBounding = False
         tllReach = Chare(TLLHypercubeReach.TLLHypercubeReach, args=[pes])
         charm.awaitCreation(tllReach)
-        tllReach.initialize(tll , constraints, 100, useQuery, useBounding,awaitable=True).get()
+        tllReach.initialize(tll , constraints, 100, useQuery, awaitable=True).get()
 
 
         print('\n\n----------------- VERIFYING LOWER BOUND:  -----------------')
