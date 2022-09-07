@@ -5,9 +5,6 @@ ARG UID
 ARG GID
 ARG CORES
 
-RUN update-alternatives --install /usr/bin/python3 python3 /usr/bin/python3.9 1
-RUN update-alternatives --install /usr/bin/python python /usr/bin/python3.9 1
-
 RUN sed -i '16i Port 3000' /etc/ssh/sshd_config
 
 # Delete some groups that overlap with MacOS standard user groups
