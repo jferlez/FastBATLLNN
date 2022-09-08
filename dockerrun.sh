@@ -15,7 +15,7 @@ ATTACH=""
 HOSTS=""
 RESET=""
 MPIHOSTS=""
-MPIARGS="--mca oob_tcp_if_include eth0 --mca btl_tcp_if_include eth0 -x UCX_TLS=tcp -x UCX_NET_DEVICES=eth0 -mca coll_hcoll_enable 0 -mca btl vader,self,tcp"
+MPIARGS="--mca pml ob1 --mca btl tcp,vader,self"
 CORES=""
 REMOVE=""
 for argwhole in "$@"; do
