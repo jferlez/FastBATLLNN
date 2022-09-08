@@ -62,8 +62,7 @@ if [ "$MPIHOSTS" != "" ]; then
 mpirun $MPIARGS -mca plm_rsh_args \"-p 3000\" -np $CORES -host $HOSTLIST -x PYTHONPATH=\"$PYPATH:\$PYTHONPATH\" /usr/bin/python3.10 \"\$@\"" > /usr/local/bin/charming
 else
     echo "#!/bin/bash
-PYTHONPATH=\"$PYPATH:\$PYTHONPATH\"
-charmrun +p$CORES \"\$@\"" >> /usr/local/bin/charming
+mpirun $MPIARGS -np $CORES -x PYTHONPATH=\"$PYPATH:\$PYTHONPATH\" /usr/bin/python3.10 \"\$@\"" > /usr/local/bin/charming
 fi
 chmod 755 /usr/local/bin/charming
 
