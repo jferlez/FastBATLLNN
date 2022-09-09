@@ -20,8 +20,16 @@ class LTITLLReach(Chare):
 
     def __init__(self, pes):
 
-        self.tllReach = Chare(TLLHypercubeReach.TLLHypercubeReach, args=[pes])
-        charm.awaitCreation(self.tllReach)
+        self.tllReach = []
+        self.fastbatllnnLock = []
+        self.suspendChannels = []
+        for ii in range(4):
+            self.tllReach.append(Chare(TLLHypercubeReach.TLLHypercubeReach, args=[pes]))
+            charm.awaitCreation(self.tllReach[-1])
+            self.fastbatllnnLock.append(False)
+            self.suspendChannels.append(Channel(self,remote=self.thisProxy))
+            self.suspendChannels[-1].send(-1)
+            self.suspendChannels[-1].recv()
 
         self.defaultOpts = { \
                     'method':'fastLP', \
@@ -67,6 +75,19 @@ class LTITLLReach(Chare):
         self.r = r
         self.q = q
 
+        # Create additional FastBATLLNN instances if necessary:
+        if 2**self.n > len(self.tllReach):
+            for ii in range(len(self.tllReach),self.n):
+                self.tllReach.append(Chare(TLLHypercubeReach.TLLHypercubeReach, args=[pes]))
+                charm.awaitCreation(self.tllReach[-1])
+                self.fastbatllnnLock.append(False)
+                self.suspendChannels.append(Channel(self,remote=self.thisProxy))
+                self.suspendChannels[-1].send(-1)
+                self.suspendChannels[-1].recv()
+
+        self.allQuadrantBox = np.full((self.n,2),np.inf,dtype=np.float64)
+        self.allQuadrantBox[:,1] = -self.allQuadrantBox[:,1]
+
         self.initialized = True
 
     @coro
@@ -92,7 +113,7 @@ class LTITLLReach(Chare):
         self.correctedEpsilon = epsilon
 
         bBoxes = []
-        self.level=0
+        self.level = [0 for ii in range(len(self.tllReach))]
 
         constraints = [self.constraints[0].copy(), self.constraints[1].copy()]
 
@@ -101,14 +122,20 @@ class LTITLLReach(Chare):
         for t in range(0,T):
 
             tStart = time.time()
+            self.skipBoxCount = 0
+            self.numRefine = 0
 
-            bboxStep = self.thisProxy.computeLTIBbox(constraints,boxLike=(False if t == 0 else True),ret=True).get()
+            self.allQuadrantBox = np.full((self.n,2),np.inf,dtype=np.float64)
+            self.allQuadrantBox[:,1] = -self.allQuadrantBox[:,1]
+            self.thisProxy.computeLTIBbox(constraints,boxLike=(False if t == 0 else True),ret=True).get()
+            bboxStep = self.allQuadrantBox.copy()
             print(f'Bounding box at T={t} is {bboxStep}')
+            print(f'Number of boxes skipped: {self.skipBoxCount}; Total number of refinements: {self.numRefine}')
             constraints = [ \
                         np.vstack([ np.eye(self.n), -np.eye(self.n) ]), \
                         np.hstack([ bboxStep[:,0], -bboxStep[:,1] ]) \
                     ]
-            self.level = 0
+            self.level = [0 for ii in range(len(self.tllReach))]
 
             retDict[t] = {}
             retDict[t]['box'] = bboxStep
@@ -118,9 +145,26 @@ class LTITLLReach(Chare):
         return retDict
 
     @coro
-    def computeLTIBbox(self, constraints, boxLike=False):
-        self.level += 1
-        levelIndent = self.level * '    '
+    def computeLTIBbox(self, constraints, order=None, batllnnInst=None, boxLike=False):
+        if order is None and batllnnInst is None:
+            firstRun = True
+            order = 0
+            batllnnInst = 0
+        else:
+            firstRun = False
+
+        sig = np.random.rand()
+
+        self.level[batllnnInst] = 1
+        levelIndent = self.level[batllnnInst] * '    '
+
+        # suspend here until our respective FastBATLLNN instance is free
+        while self.fastbatllnnLock[batllnnInst]:
+            tempFut = Future()
+            tempFut.send(1)
+            tempFut.get()
+        self.fastbatllnnLock[batllnnInst] = True
+
         if self.verbose or self.restrictedVerbose:
             print(levelIndent + '***** DESCEND ONE LEVEL *****')
         # Function takes a polynomial constraint set of states as input
@@ -161,12 +205,13 @@ class LTITLLReach(Chare):
             # else:
                 # recurse on this quadrant
         # This will track the coordinate-wise VERIFIED min and max values seen across ALL quadrants (possibly updated only after recursion)
-        allQuadrantBox = np.inf * np.ones((self.n,2), dtype=np.float64)
-        allQuadrantBox[:,1] = -allQuadrantBox[:,1]
+        # allQuadrantBox = np.inf * np.ones((self.n,2), dtype=np.float64)
+        # allQuadrantBox[:,1] = -allQuadrantBox[:,1]
+
+        quadrantFutures = []
 
         for quadrant in range(2**self.n):
-            quadrantSel = int_to_np(quadrant, self.n)
-
+            quadrantSel = int_to_np( quadrant if firstRun else (quadrant + order) % 2**self.n , self.n)
             # print(constraints)
             # print(quadrantSel)
             # print(midpoints)
@@ -206,7 +251,7 @@ class LTITLLReach(Chare):
 
             # We use the bounding box on the **PRIOR** state to bound the controller output
             try:
-                self.tllReach.initialize( \
+                self.tllReach[batllnnInst].initialize( \
                             self.tllController, \
                             quadrantConstraints , \
                             self.maxIts, \
@@ -218,15 +263,15 @@ class LTITLLReach(Chare):
                     print(levelIndent + 'Unable to initialize tllReach; probably constraints with empty interior -- skipping this quadrant...')
                 continue
 
-            quadrantTLLReach = self.tllReach.computeReach(lbSeed=self.lbSeed,ubSeed=self.ubSeed, tol=self.correctedEpsilon, opts=self.usedOpts, ret=True).get()
+            quadrantTLLReach = self.tllReach[batllnnInst].computeReach(lbSeed=self.lbSeed,ubSeed=self.ubSeed, tol=self.correctedEpsilon, opts=self.usedOpts, ret=True).get()
 
             if self.verbose or self.restrictedVerbose:
-                print(f'\n' + levelIndent + f'LEVEL={self.level}; QUAD={quadrant} --- quadrantTLLReach = {quadrantTLLReach}')
+                print(f'\n' + levelIndent + f'LEVEL={self.level[batllnnInst]}; QUAD={quadrant} --- quadrantTLLReach = {quadrantTLLReach}')
 
             controllerReachMidpoints = 0.5 * np.sum(quadrantTLLReach, axis=1)
 
             if self.verbose or self.restrictedVerbose:
-                print(levelIndent + f'LEVEL={self.level}; QUAD={quadrant} --- controllerReachMidpoints = {controllerReachMidpoints}')
+                print(levelIndent + f'LEVEL={self.level[batllnnInst]}; QUAD={quadrant} --- controllerReachMidpoints = {controllerReachMidpoints}')
 
             controllerReachBall = quadrantTLLReach[:,1] - controllerReachMidpoints # should be non-negative
 
@@ -234,7 +279,7 @@ class LTITLLReach(Chare):
             nnError = (np.abs(self.B) @ controllerReachBall.reshape(-1,1)).flatten()
 
             if self.verbose or self.restrictedVerbose:
-                print(levelIndent + f'LEVEL={self.level}; QUAD={quadrant} --- nnError = {nnError}\n')
+                print(levelIndent + f'LEVEL={self.level[batllnnInst]}; QUAD={quadrant} --- nnError = {nnError}\n')
 
             if np.any(quadrantTLLReach[:,0] > quadrantTLLReach[:,1]):
                 print(f'Error: nonsensical bounding box for quadrantTLLReach = {quadrantTLLReach} ... Exiting ...')
@@ -243,19 +288,43 @@ class LTITLLReach(Chare):
             nextStateBBox = np.zeros((self.n,2),dtype=np.float64)
             nextStateBBox[:,0] = quadrantStateBBox[:,0] + (self.B @ controllerReachMidpoints).flatten() - nnError
             nextStateBBox[:,1] = quadrantStateBBox[:,1] + (self.B @ controllerReachMidpoints).flatten() + nnError
-            if np.max(nnError) < self.correctedEpsilon:
+            redundantBox = np.all(self.allQuadrantBox[:,0] <= nextStateBBox[:,0]) and np.all(nextStateBBox[:,1] <= self.allQuadrantBox[:,1])
+            if np.max(nnError) < self.correctedEpsilon or redundantBox:
+                if redundantBox:
+                    self.skipBoxCount += 1
                 # the error is acceptably small, so update allQuadrantBox
-                allQuadrantBox[:,0] = np.minimum(nextStateBBox[:,0], allQuadrantBox[:,0])
-                allQuadrantBox[:,1] = np.maximum(nextStateBBox[:,1], allQuadrantBox[:,1])
+                self.allQuadrantBox[:,0] = np.minimum(nextStateBBox[:,0], self.allQuadrantBox[:,0])
+                self.allQuadrantBox[:,1] = np.maximum(nextStateBBox[:,1], self.allQuadrantBox[:,1])
             else:
                 # Recurse by refining the size box on the previous state
-                recurseBox = self.thisProxy.computeLTIBbox(quadrantConstraints,boxLike=boxLike,ret=True).get()
-                allQuadrantBox[:,0] = np.minimum(recurseBox[:,0], allQuadrantBox[:,0])
-                allQuadrantBox[:,1] = np.maximum(recurseBox[:,1], allQuadrantBox[:,1])
+                self.numRefine += 1
+                quadrantFutures.append( \
+                            self.thisProxy.computeLTIBbox( \
+                                quadrantConstraints, \
+                                order=(quadrant if firstRun else order), \
+                                batllnnInst=(quadrant if firstRun else batllnnInst), \
+                                boxLike=boxLike, \
+                                ret=True \
+                            ) \
+                        )
+                # allQuadrantBox[:,0] = np.minimum(recurseBox[:,0], allQuadrantBox[:,0])
+                # allQuadrantBox[:,1] = np.maximum(recurseBox[:,1], allQuadrantBox[:,1])
+
+        # We have finished using our instance of FastBATLLNN so unlock it for the next level down
+        self.fastbatllnnLock[batllnnInst] = False
+
+        # Now wait for all quadrants to finish
+        if len(quadrantFutures) > 0:
+            charm.wait(quadrantFutures)
+        # for fut in quadrantFutures:
+        #     print(f'Waiting for work to be done on box {bboxIn} {sig}')
+        #     fut.get()
+
+        return True
 
         # Final return value is max/min coordinates of each quadrant guaranteed up to self.correctedEpsilon
-        self.level -= 1
-        return allQuadrantBox
+        # self.level[batllnnInst] -= 1
+        # return allQuadrantBox
 
     def constraintBoundingBox(self,constraints,basis=None):
         solver = self.usedOpts['solver'] if 'solver' in self.usedOpts else 'glpk'
