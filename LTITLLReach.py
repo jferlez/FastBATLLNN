@@ -379,7 +379,7 @@ class LTITLLReach(Chare):
     def computeReachSamples(self,xIn,T=10,reachBoxes=None):
         sampleBoxes = {}
         approxBoxes = {}
-        boxSamplesNum = 1000
+        boxSamplesNum = 10000
         if reachBoxes is not None and 0 in reachBoxes:
             doBoxSamples = True
         else:
