@@ -23,7 +23,7 @@ class LTITLLReach(Chare):
         self.tllReach = []
         self.fastbatllnnLock = []
         self.suspendChannels = []
-        for ii in range(4):
+        for ii in range(5):
             self.tllReach.append(Chare(TLLHypercubeReach.TLLHypercubeReach, args=[pes]))
             charm.awaitCreation(self.tllReach[-1])
             self.fastbatllnnLock.append(False)
@@ -76,8 +76,8 @@ class LTITLLReach(Chare):
         self.q = q
 
         # Create additional FastBATLLNN instances if necessary:
-        if 2**self.n > len(self.tllReach):
-            for ii in range(len(self.tllReach),self.n):
+        if 2**self.n + 1 > len(self.tllReach):
+            for ii in range(len(self.tllReach),2**self.n + 1):
                 self.tllReach.append(Chare(TLLHypercubeReach.TLLHypercubeReach, args=[pes]))
                 charm.awaitCreation(self.tllReach[-1])
                 self.fastbatllnnLock.append(False)
@@ -124,6 +124,8 @@ class LTITLLReach(Chare):
             tStart = time.time()
             self.skipBoxCount = 0
             self.numRefine = 0
+            self.cornerRefined = [False for ii in range(len(self.tllReach))]
+            self.cornerRefined[-1] = True
 
             self.allQuadrantBox = np.full((self.n,2),np.inf,dtype=np.float64)
             self.allQuadrantBox[:,1] = -self.allQuadrantBox[:,1]
@@ -149,7 +151,7 @@ class LTITLLReach(Chare):
         if order is None and batllnnInst is None:
             firstRun = True
             order = 0
-            batllnnInst = 0
+            batllnnInst = len(self.tllReach) - 1
         else:
             firstRun = False
 
@@ -159,11 +161,11 @@ class LTITLLReach(Chare):
         levelIndent = self.level[batllnnInst] * '    '
 
         # suspend here until our respective FastBATLLNN instance is free
-        while self.fastbatllnnLock[batllnnInst]:
-            tempFut = Future()
-            tempFut.send(1)
-            tempFut.get()
-        self.fastbatllnnLock[batllnnInst] = True
+        # while self.fastbatllnnLock[batllnnInst]:
+        #     tempFut = Future()
+        #     tempFut.send(1)
+        #     tempFut.get()
+        # self.fastbatllnnLock[batllnnInst] = True
 
         if self.verbose or self.restrictedVerbose:
             print(levelIndent + '***** DESCEND ONE LEVEL *****')
@@ -295,23 +297,39 @@ class LTITLLReach(Chare):
                 # the error is acceptably small, so update allQuadrantBox
                 self.allQuadrantBox[:,0] = np.minimum(nextStateBBox[:,0], self.allQuadrantBox[:,0])
                 self.allQuadrantBox[:,1] = np.maximum(nextStateBBox[:,1], self.allQuadrantBox[:,1])
+                if not self.cornerRefined[batllnnInst]:
+                    self.cornerRefined[batllnnInst] = True
+                while not all(self.cornerRefined):
+                    # print(f'Waiting for corner visits on {batllnnInst}. QuadrantBox:\n{self.allQuadrantBox}')
+                    tempFut = Future()
+                    tempFut.send(1)
+                    tempFut.get()
             else:
                 # Recurse by refining the size box on the previous state
                 self.numRefine += 1
-                quadrantFutures.append( \
-                            self.thisProxy.computeLTIBbox( \
-                                quadrantConstraints, \
-                                order=(quadrant if firstRun else order), \
-                                batllnnInst=(quadrant if firstRun else batllnnInst), \
-                                boxLike=boxLike, \
-                                ret=True \
-                            ) \
-                        )
+                if firstRun:
+                    quadrantFutures.append( \
+                                self.thisProxy.computeLTIBbox( \
+                                    quadrantConstraints, \
+                                    order=(quadrant if firstRun else order), \
+                                    batllnnInst=(quadrant if firstRun else batllnnInst), \
+                                    boxLike=boxLike, \
+                                    ret=True \
+                                ) \
+                            )
+                else:
+                    self.thisProxy.computeLTIBbox( \
+                                    quadrantConstraints, \
+                                    order=order, \
+                                    batllnnInst=batllnnInst, \
+                                    boxLike=boxLike, \
+                                    ret=True \
+                                ).get()
                 # allQuadrantBox[:,0] = np.minimum(recurseBox[:,0], allQuadrantBox[:,0])
                 # allQuadrantBox[:,1] = np.maximum(recurseBox[:,1], allQuadrantBox[:,1])
 
         # We have finished using our instance of FastBATLLNN so unlock it for the next level down
-        self.fastbatllnnLock[batllnnInst] = False
+        # self.fastbatllnnLock[batllnnInst] = False
 
         # Now wait for all quadrants to finish
         if len(quadrantFutures) > 0:
