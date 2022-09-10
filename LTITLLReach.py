@@ -290,7 +290,7 @@ class LTITLLReach(Chare):
             nextStateBBox[:,1] = quadrantStateBBox[:,1] + (self.B @ controllerReachMidpoints).flatten() + nnError
             redundantBox = np.all(self.allQuadrantBox[:,0] <= nextStateBBox[:,0]) and np.all(nextStateBBox[:,1] <= self.allQuadrantBox[:,1])
             if np.max(nnError) < self.correctedEpsilon or redundantBox:
-                if redundantBox:
+                if redundantBox and np.max(nnError) >= self.correctedEpsilon:
                     self.skipBoxCount += 1
                 # the error is acceptably small, so update allQuadrantBox
                 self.allQuadrantBox[:,0] = np.minimum(nextStateBBox[:,0], self.allQuadrantBox[:,0])
