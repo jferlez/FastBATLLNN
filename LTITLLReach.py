@@ -110,7 +110,7 @@ class LTITLLReach(Chare):
         self.ubSeed = 1
 
         # This needs to be set to account for the exponential growth and number of time steps T
-        self.correctedEpsilon = epsilon
+        self.correctedEpsilon = epsilon/2
 
         bBoxes = []
         self.level = [0 for ii in range(len(self.tllReach))]
