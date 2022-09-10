@@ -376,8 +376,15 @@ class LTITLLReach(Chare):
                     return bboxIn
         return bboxIn
 
-    def computeReachSamples(self,xIn,T=10):
+    def computeReachSamples(self,xIn,T=10,reachBoxes=None):
         sampleBoxes = {}
+        approxBoxes = {}
+        boxSamplesNum = 1000
+        if reachBoxes is not None and 0 in reachBoxes:
+            doBoxSamples = True
+        else:
+            doBoxSamples = False
+
         x = xIn.copy()
         for t in range(T):
             tllEval = np.zeros((x.shape[0],self.m),dtype=np.float64)
@@ -391,7 +398,20 @@ class LTITLLReach(Chare):
 
             x = (self.A @ x.T + self.B @ tllEval.T).T
             xBox = np.array([np.min(x,axis=0),np.max(x,axis=0)]).T
-            sampleBoxes[t]['stateBox'] = xBox
+            sampleBoxes[t]['stateBoxInputSamples'] = xBox
+
+            if reachBoxes is not None and t in reachBoxes and 'box' in reachBoxes[t] and reachBoxes[t]['box'].shape == (self.n, 2):
+                boxTime = 0 if t == 0 else t-1
+                xBoxSamples = np.random.uniform(low=reachBoxes[boxTime]['box'][:,0],high=reachBoxes[boxTime]['box'][:,1],size=(boxSamplesNum,self.n))
+                if t == 0:
+                    sampleBoxes[t]['stateBoxBoxSamples'] = np.array([np.min(xBoxSamples,axis=0),np.max(xBoxSamples,axis=0)]).T
+                else:
+                    tllEval = np.zeros((boxSamplesNum, self.m), dtype=np.float64)
+                    for ii in range(boxSamplesNum):
+                        tllEval[ii,:] = self.tllController.pointEval(xBoxSamples[ii,:])
+                    xBoxSamples = (self.A @ xBoxSamples.T + self.B @ tllEval.T).T
+                    sampleBoxes[t]['stateBoxBoxSamples'] = np.array([np.min(xBoxSamples,axis=0),np.max(xBoxSamples,axis=0)]).T
+
         return sampleBoxes
 
 def int_to_np(myint,n):
