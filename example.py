@@ -139,7 +139,7 @@ class Main(Chare):
 
         print('\n\n--------------- FINDING TIGHT UPPER BOUND:  ---------------')
         t = time.time()
-        ubFut = tllReach.searchBound(-135,lb=False,verbose=True,awaitable=True,ret=True)
+        ubFut = tllReach.searchBound(-135,lb=False,awaitable=True,opts={'verbose':True},ret=True)
         ub = ubFut.get()
         t = time.time()-t
 
