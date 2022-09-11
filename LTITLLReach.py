@@ -126,6 +126,7 @@ class LTITLLReach(Chare):
             self.numRefine = 0
             self.cornerRefined = [False for ii in range(len(self.tllReach))]
             self.cornerRefined[-1] = True
+            self.allDone = [False for ii in range(len(self.tllReach)-1)]
 
             self.allQuadrantBox = np.full((self.n,2),np.inf,dtype=np.float64)
             self.allQuadrantBox[:,1] = -self.allQuadrantBox[:,1]
@@ -333,6 +334,11 @@ class LTITLLReach(Chare):
 
         # Now wait for all quadrants to finish
         if len(quadrantFutures) > 0:
+            while not all(self.allDone):
+                tempFut2 = Future()
+                tempFut2.send(-1)
+                tempFut2.get()
+
             charm.wait(quadrantFutures)
         # for fut in quadrantFutures:
         #     print(f'Waiting for work to be done on box {bboxIn} {sig}')
