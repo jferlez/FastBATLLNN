@@ -218,6 +218,7 @@ class LTITLLReach(Chare):
         # allQuadrantBox[:,1] = -allQuadrantBox[:,1]
 
         quadrantFutures = []
+        waitForAllDone = []
         numDescents = 0
         for quadrant in range(2**self.n):
             quadrantSel = int_to_np( quadrant if firstRun else (quadrant + order) % 2**self.n , self.n)
@@ -306,7 +307,7 @@ class LTITLLReach(Chare):
                 self.allQuadrantBox[:,1] = np.maximum(nextStateBBox[:,1], self.allQuadrantBox[:,1])
                 if not self.cornerRefined[batllnnInst]:
                     self.cornerRefined[batllnnInst] = True
-                while not all(self.cornerRefined):
+                while not all(self.cornerRefined) and not firstRun:
                     # print(f'Waiting for corner visits on {batllnnInst}. QuadrantBox:\n{self.allQuadrantBox}')
                     tempFut = Future()
                     tempFut.send(1)
@@ -325,6 +326,7 @@ class LTITLLReach(Chare):
                                     ret=True \
                                 ) \
                             )
+                    waitForAllDone.append((quadrant if firstRun else batllnnInst))
                 else:
                     self.thisProxy.computeLTIBbox( \
                                     quadrantConstraints, \
@@ -338,7 +340,11 @@ class LTITLLReach(Chare):
 
         # We have finished using our instance of FastBATLLNN so unlock it for the next level down
         # self.fastbatllnnLock[batllnnInst] = False
-
+        if len(waitForAllDone) > 0:
+            for ii in range(len(self.level)-1):
+                if ii not in waitForAllDone:
+                    self.cornerRefined[ii] = True
+                    self.allDone[ii] = True
         # Now wait for all quadrants to finish
         if len(quadrantFutures) > 0:
             while not all(self.allDone):
