@@ -135,6 +135,7 @@ class LTITLLReach(Chare):
             self.allQuadrantBox = np.full((self.n,2),np.inf,dtype=np.float64)
             self.allQuadrantBox[:,1] = -self.allQuadrantBox[:,1]
             self.progress = 0.0
+            self.startTime = time.time()
             self.thisProxy.computeLTIBbox(constraints,boxLike=(False if t == 0 else True),ret=True).get()
             bboxStep = self.allQuadrantBox.copy()
             print(f'Bounding box at T={t} is {bboxStep}')
@@ -354,7 +355,7 @@ class LTITLLReach(Chare):
                 # print(f'Level {self.level[batllnnInst]}')
                 fineProgress = 1.0/(2.0**(self.n*(self.progressLevel)))
                 self.progress += fineProgress
-                print(f'{int(100*self.progress)}% complete...')
+                print(f'{int(100*self.progress)}% complete... ({time.time() - self.startTime} seconds elapsed)')
             elif self.level[batllnnInst] < self.progressLevel:
                 # print(f'Level {self.level[batllnnInst]}')
                 self.progress += (2**self.n - numDescents)/(2.0**(self.n*(self.level[batllnnInst]+1)))
