@@ -41,7 +41,7 @@ class LTITLLReach(Chare):
                 }
         self.lp = encapsulateLP.encapsulateLP()
 
-        self.progressLevel = 4
+        self.progressLevel = 3
 
         self.initialized = False
 
@@ -165,7 +165,6 @@ class LTITLLReach(Chare):
 
         self.level[batllnnInst] += 1
         levelIndent = self.level[batllnnInst] * '    '
-        levelStartTime = time.time()
 
         # suspend here until our respective FastBATLLNN instance is free
         # while self.fastbatllnnLock[batllnnInst]:
@@ -355,11 +354,11 @@ class LTITLLReach(Chare):
                 # print(f'Level {self.level[batllnnInst]}')
                 fineProgress = 1.0/(2.0**(self.n*(self.progressLevel)))
                 self.progress += fineProgress
-                print(f'{int(100*self.progress)}% complete... (Level {self.progressLevel}: {100*fineProgress}% progress in approx. {time.time() - levelStartTime} seconds)')
+                print(f'{int(100*self.progress)}% complete...')
             elif self.level[batllnnInst] < self.progressLevel:
                 # print(f'Level {self.level[batllnnInst]}')
                 self.progress += (2**self.n - numDescents)/(2.0**(self.n*(self.level[batllnnInst]+1)))
-                print(f'{int(100*self.progress)}% complete... (Level {self.level[batllnnInst]})')
+                print(f'{int(100*self.progress)}% complete...')
         elif batllnnInst == len(self.tllReach)-1 and numDescents < 2**self.n:
             self.progress += (2**self.n - numDescents)/(2.0**(self.n))
             print(f'{int(100*self.progress)}% complete...')
