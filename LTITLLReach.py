@@ -41,6 +41,8 @@ class LTITLLReach(Chare):
                 }
         self.lp = encapsulateLP.encapsulateLP()
 
+        self.progressLevel = 4
+
         self.initialized = False
 
         self.usedOpts = copy(self.defaultOpts)
@@ -88,6 +90,8 @@ class LTITLLReach(Chare):
         self.allQuadrantBox = np.full((self.n,2),np.inf,dtype=np.float64)
         self.allQuadrantBox[:,1] = -self.allQuadrantBox[:,1]
 
+        self.progress = 0
+
         self.initialized = True
 
     @coro
@@ -130,6 +134,7 @@ class LTITLLReach(Chare):
 
             self.allQuadrantBox = np.full((self.n,2),np.inf,dtype=np.float64)
             self.allQuadrantBox[:,1] = -self.allQuadrantBox[:,1]
+            self.progress = 0.0
             self.thisProxy.computeLTIBbox(constraints,boxLike=(False if t == 0 else True),ret=True).get()
             bboxStep = self.allQuadrantBox.copy()
             print(f'Bounding box at T={t} is {bboxStep}')
@@ -158,8 +163,9 @@ class LTITLLReach(Chare):
 
         sig = np.random.rand()
 
-        self.level[batllnnInst] = 1
+        self.level[batllnnInst] += 1
         levelIndent = self.level[batllnnInst] * '    '
+        levelStartTime = time.time()
 
         # suspend here until our respective FastBATLLNN instance is free
         # while self.fastbatllnnLock[batllnnInst]:
@@ -212,7 +218,7 @@ class LTITLLReach(Chare):
         # allQuadrantBox[:,1] = -allQuadrantBox[:,1]
 
         quadrantFutures = []
-
+        numDescents = 0
         for quadrant in range(2**self.n):
             quadrantSel = int_to_np( quadrant if firstRun else (quadrant + order) % 2**self.n , self.n)
             # print(constraints)
@@ -308,6 +314,7 @@ class LTITLLReach(Chare):
             else:
                 # Recurse by refining the size box on the previous state
                 self.numRefine += 1
+                numDescents += 1
                 if firstRun:
                     quadrantFutures.append( \
                                 self.thisProxy.computeLTIBbox( \
@@ -343,11 +350,26 @@ class LTITLLReach(Chare):
         # for fut in quadrantFutures:
         #     print(f'Waiting for work to be done on box {bboxIn} {sig}')
         #     fut.get()
+        if batllnnInst < len(self.tllReach) - 1:
+            if self.level[batllnnInst] == self.progressLevel:
+                # print(f'Level {self.level[batllnnInst]}')
+                fineProgress = 1.0/(2.0**(self.n*(self.progressLevel)))
+                self.progress += fineProgress
+                print(f'{int(100*self.progress)}% complete... (Level {self.progressLevel}: {100*fineProgress}% progress in approx. {time.time() - levelStartTime} seconds)')
+            elif self.level[batllnnInst] < self.progressLevel:
+                # print(f'Level {self.level[batllnnInst]}')
+                self.progress += (2**self.n - numDescents)/(2.0**(self.n*(self.level[batllnnInst]+1)))
+                print(f'{int(100*self.progress)}% complete... (Level {self.level[batllnnInst]})')
+        elif batllnnInst == len(self.tllReach)-1 and numDescents < 2**self.n:
+            self.progress += (2**self.n - numDescents)/(2.0**(self.n))
+            print(f'{int(100*self.progress)}% complete...')
 
+        self.level[batllnnInst] -= 1
+        if batllnnInst < len(self.tllReach) - 1 and self.level[batllnnInst] == 0:
+            self.allDone[batllnnInst] = True
         return True
 
         # Final return value is max/min coordinates of each quadrant guaranteed up to self.correctedEpsilon
-        # self.level[batllnnInst] -= 1
         # return allQuadrantBox
 
     def constraintBoundingBox(self,constraints,basis=None):
