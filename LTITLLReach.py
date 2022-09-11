@@ -272,7 +272,7 @@ class LTITLLReach(Chare):
                     print(levelIndent + 'Unable to initialize tllReach; probably constraints with empty interior -- skipping this quadrant...')
                 continue
 
-            quadrantTLLReach = self.tllReach[batllnnInst].computeReach(lbSeed=self.lbSeed,ubSeed=self.ubSeed, tol=self.correctedEpsilon, opts=self.usedOpts, ret=True).get()
+            quadrantTLLReach = self.tllReach[batllnnInst].computeReach(lbSeed=self.lbSeed,ubSeed=self.ubSeed, tol=self.correctedEpsilon/(self.m*np.max(np.abs(self.B))), opts=self.usedOpts, ret=True).get()
 
             if self.verbose or self.restrictedVerbose:
                 print(f'\n' + levelIndent + f'LEVEL={self.level[batllnnInst]}; QUAD={quadrant} --- quadrantTLLReach = {quadrantTLLReach}')
