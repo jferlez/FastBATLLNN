@@ -34,7 +34,7 @@ RUN sudo dpkg -i packages-microsoft-prod.deb && rm packages-microsoft-prod.deb
 RUN sudo apt-get update && sudo apt-get install -y powershell
 
 # Install latest neovim
-RUN wget https://github.com/neovim/neovim/releases/download/v0.7.2/nvim-linux64.deb
+RUN wget https://github.com/neovim/neovim/releases/download/v0.8.0/nvim-linux64.deb 
 RUN apt install ./nvim-linux64.deb
 RUN rm ./nvim-linux64.deb
 # Build Fast BATLLNN dependencies
