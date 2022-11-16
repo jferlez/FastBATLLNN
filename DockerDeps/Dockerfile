@@ -76,6 +76,12 @@ RUN cd charm4py && \
     python3.10 setup.py install && \
     cd .. && \
     rm -rf *
+
+# Install nnenum globally:
+WORKDIR /usr/local/lib/python3.10/dist-packages
+RUN git clone https://github.com/stanleybak/nnenum
+WORKDIR /tmp/docker_build
+
 # Configuration to enable UCX/InfiniBand Networking:
 RUN echo "* soft memlock unlimited\n* hard memlock unlimited" >> /etc/security/limits.conf
 # Patch to enable profiling in charm4py

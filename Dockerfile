@@ -39,7 +39,8 @@ RUN git clone --depth=1 https://github.com/jferlez/nvim-config.git /home/${USER_
 RUN git clone --recursive https://github.com/jferlez/FastBATLLNN
 
 # This installs VNNLIB support
-RUN git clone https://github.com/stanleybak/nnenum
+#RUN git clone https://github.com/stanleybak/nnenum
+RUN ln -s /usr/local/lib/python3.10/dist-packages/nnenum /home/${USER_NAME}/tools/nnenum
 
 # WORKDIR /home/${USER_NAME}/tools/FastBATLLNN/HyperplaneRegionEnum
 # RUN python3.9 posetFastCharm_numba.py
