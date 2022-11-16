@@ -16,7 +16,7 @@ RUN apt-get update && \
     curl -sL https://deb.nodesource.com/setup_16.x | bash - && \
     apt -y install nodejs && \
     python3.10 -m pip install --upgrade pip && \
-    python3.10 -m pip install tensorflow-gpu scipy greenlet pycddlib Cython pyopencl pycuda cupy-cuda112==10.5.0 mpmath matplotlib onnx onnxruntime tf2onnx torch torchvision torchaudio pylint flake8 vim-vint 'python-lsp-server[all]' pylsp-mypy pyls-isort pynvim cdifflib tree_sitter && \
+    python3.10 -m pip install tensorflow scipy greenlet pycddlib Cython pyopencl pycuda cupy-cuda112==10.5.0 mpmath matplotlib onnx onnxruntime tf2onnx torch torchvision torchaudio pylint flake8 vim-vint 'python-lsp-server[all]' pylsp-mypy pyls-isort pynvim cdifflib tree_sitter && \
     python3.10 -m pip install "jax[cuda11_cudnn805]" -f https://storage.googleapis.com/jax-releases/jax_releases.html
 RUN npm install -g vim-language-server node-gyp tree-sitter tree-sitter-cli
 RUN git clone https://github.com/UIUC-PPL/charm4py && \
