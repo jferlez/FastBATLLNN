@@ -55,10 +55,10 @@ RUN wget https://ftp.gnu.org/gnu/glpk/glpk-5.0.tar.gz && \
     COIN_INSTALL_DIR=/usr/local && \
     COIN_INSTALL_DIR=/usr/local python3.10 -m pip install cylp
 # Installl OpenMPI with UCX support
-RUN wget "https://content.mellanox.com/ofed/MLNX_OFED-5.7-1.0.2.0/MLNX_OFED_LINUX-5.7-1.0.2.0-ubuntu20.04-x86_64.tgz" && \
-    tar -xf MLNX_OFED_LINUX-5.7-1.0.2.0-ubuntu20.04-x86_64.tgz && \
-    cd MLNX_OFED_LINUX-5.7-1.0.2.0-ubuntu20.04-x86_64 && \
-    sudo apt -y install autoconf libnuma-dev debhelper kmod ethtool libpci3 flex libfuse2 m4 libelf1 lsof libnl-route-3-dev autotools-dev libnuma1 libnl-route-3-200 libusb-1.0-0 tk libnl-3-dev swig tcl libnl-3-200 pciutils udev libltdl-dev libmnl0 bison graphviz automake pkg-config chrpath dpatch && \
+RUN wget "https://content.mellanox.com/ofed/MLNX_OFED-5.8-1.1.2.1/MLNX_OFED_LINUX-5.8-1.1.2.1-ubuntu20.04-x86_64.tgz" && \
+    tar -xf MLNX_OFED_LINUX-5.8-1.1.2.1-ubuntu20.04-x86_64.tgz && \
+    cd MLNX_OFED_LINUX-5.8-1.1.2.1-ubuntu20.04-x86_64 && \
+    sudo apt -y install autoconf libgfortran5 gfortran libnuma-dev debhelper kmod ethtool libpci3 flex libfuse2 m4 libelf1 lsof libnl-route-3-dev autotools-dev libnuma1 libnl-route-3-200 libusb-1.0-0 tk libnl-3-dev swig tcl libnl-3-200 pciutils udev libltdl-dev libmnl0 bison graphviz automake pkg-config chrpath dpatch && \
     ./mlnxofedinstall --user-space-only --force && \
     cd ..
 RUN apt-get -y install zlib1g zlib1g-dev
