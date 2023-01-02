@@ -16,7 +16,7 @@ RUN apt-get update && \
     curl -sL https://deb.nodesource.com/setup_16.x | bash - && \
     apt -y install nodejs && \
     python3.10 -m pip install --upgrade pip && \
-    python3.10 -m pip install tensorflow scipy greenlet pycddlib Cython pyopencl pycuda cupy-cuda112==10.5.0 mpmath matplotlib onnx onnxruntime tf2onnx torch torchvision torchaudio pylint flake8 vim-vint 'python-lsp-server[all]' pylsp-mypy pyls-isort pynvim cdifflib tree_sitter && \
+    python3.10 -m pip install numpy==1.23.5 tensorflow scipy greenlet pycddlib Cython pyopencl pycuda cupy-cuda112==10.5.0 mpmath matplotlib onnx onnxruntime tf2onnx torch torchvision torchaudio pylint flake8 vim-vint 'python-lsp-server[all]' pylsp-mypy pyls-isort pynvim cdifflib tree_sitter && \
     python3.10 -m pip install "jax[cuda11_cudnn805]" -f https://storage.googleapis.com/jax-releases/jax_releases.html
 RUN npm install -g vim-language-server node-gyp tree-sitter tree-sitter-cli
 RUN git clone https://github.com/UIUC-PPL/charm4py && \
@@ -69,10 +69,10 @@ RUN cd charm4py && \
     git clone https://github.com/numba/numba && \
     git clone https://github.com/numba/llvmlite && \
     cd llvmlite && \
-    git checkout b9c748c6dc786857e8ba09382cfdce03533b7c03 && \
+    git checkout ed0f625e5ee8b5250b71d4bab58390a5382f6fba && \
     LLVM_CONFIG=llvm-config-11 python3.10 setup.py install && \
     cd ../numba && \
-    git checkout 63d0c471410063b716797425aeaf244b9fa8b2b7 && \
+    git checkout 61e4b01a0e317abdfb5193347d820547f8cc0acd && \
     python3.10 setup.py install && \
     cd .. && \
     rm -rf *
