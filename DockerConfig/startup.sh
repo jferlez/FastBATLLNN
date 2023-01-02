@@ -5,7 +5,10 @@ SERVER=$3
 CORES=$4
 PORTNUM=$5
 MPIHOSTS=$6
-MPIARGS="$7"
+MPIARGS=$7
+if [ $MPIHOSTS == "127.0.0.1:localhost" ]; then
+    MPIHOSTS=""
+fi
 /usr/sbin/sshd -D &> /root/sshd_log.out &
 if [ ! -d /home/$USER/.ssh ]
 then
