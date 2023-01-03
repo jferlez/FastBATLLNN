@@ -49,6 +49,7 @@ WORKDIR /home/${USER_NAME}
 RUN git clone https://github.com/jferlez/FastBATLLNN_Experiments_HSCC2022
 #RUN echo "export PYTHONPATH=/home/${USER_NAME}/tools/FastBATLLNN:/home/${USER_NAME}/tools/FastBATLLNN/HyperplaneRegionEnum:/home/${USER_NAME}/tools/FastBATLLNN/TLLnet:/home/${USER_NAME}/tools/nnenum/src/nnenum" >> /home/${USER_NAME}/.bashrc
 RUN sed -i "4i export PYTHONPATH=/home/${USER_NAME}/tools/FastBATLLNN:/home/${USER_NAME}/tools/FastBATLLNN/HyperplaneRegionEnum:/home/${USER_NAME}/tools/FastBATLLNN/TLLnet:/home/${USER_NAME}/tools/nnenum/src/nnenum" /home/${USER_NAME}/.bashrc
+RUN sed -i "4i export TF_CPP_MIN_LOG_LEVEL=2" /home/${USER_NAME}/.bashrc
 RUN echo "export TERM=xterm-256color" >> /home/${USER_NAME}/.bashrc
 RUN echo "export COLORTERM=truecolor" >> /home/${USER_NAME}/.bashrc
 RUN echo "export TERM_PROGRAM=iTerm2.app" >> /home/${USER_NAME}/.bashrc
