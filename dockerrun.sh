@@ -15,7 +15,7 @@ ATTACH=""
 HOSTS=""
 RESET=""
 MPIHOSTS="127.0.0.1:localhost"
-MPIARGS="--mca pml ob1 --mca btl tcp,vader,self"
+MPIARGS="--mca pml ob1 --mca btl tcp,vader,self --mca btl_tcp_if_include eth0"
 CORES=""
 REMOVE=""
 for argwhole in "$@"; do
