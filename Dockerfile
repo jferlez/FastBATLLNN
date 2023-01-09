@@ -30,10 +30,11 @@ RUN ssh-keygen -t rsa -q -f /home/${USER_NAME}/.ssh/id_rsa -N ""
 RUN cat /home/${USER_NAME}/.ssh/id_rsa.pub >> /home/${USER_NAME}/.ssh/authorized_keys
 
 # Install neovim stuff:
-RUN mkdir -p /home/${USER_NAME}/.local/share/nvim/site/pack/packer/opt/
-RUN git clone --depth=1 https://github.com/wbthomason/packer.nvim /home/${USER_NAME}/.local/share/nvim/site/pack/packer/opt/packer.nvim
+RUN mkdir -p /home/${USER_NAME}/.local/share/nvim/site/pack/packer/start
+RUN git clone --depth=1 https://github.com/folke/tokyonight.nvim /home/${USER_NAME}/.local/share/nvim/site/pack/packer/start/tokyonight.nvim
 RUN mkdir -p /home/${USER_NAME}/.local/nvim
 RUN git clone --depth=1 https://github.com/jferlez/nvim-config.git /home/${USER_NAME}/.config/nvim
+RUN TEMP="$(/usr/bin/nvim -c 'sleep 140' -c 'qa')"
 
 # Now copy over FastBATLLNN code
 RUN git clone --recursive https://github.com/jferlez/FastBATLLNN
