@@ -16,8 +16,10 @@ RUN apt-get update && \
     curl -sL https://deb.nodesource.com/setup_16.x | bash - && \
     apt -y install nodejs && \
     python3.10 -m pip install --upgrade pip && \
-    python3.10 -m pip install numpy==1.23.5 tensorflow scipy greenlet pycddlib Cython pyopencl pycuda cupy-cuda112==10.5.0 mpmath matplotlib onnx onnxruntime tf2onnx torch torchvision torchaudio pylint flake8 vim-vint 'python-lsp-server[all]' pylsp-mypy pyls-isort pynvim cdifflib tree_sitter && \
+    python3.10 -m pip install numpy==1.23.5 tensorflow==2.11.0 scipy==1.9.3 greenlet==2.0.1 pycddlib==2.1.6 Cython==0.29.32 pyopencl==2022.3 pycuda==2022.2.2 cupy-cuda112==10.5.0 mpmath==1.2.1 matplotlib==3.6.2 onnx==1.12.0 onnxruntime==1.13.1 tf2onnx==1.13.0 torch==1.13.1 torchvision==0.14.1 torchaudio==0.13.1 pylint==2.15.9 flake8==6.0.0 vim-vint==0.3.21 'python-lsp-server[all]' pylsp-mypy==0.6.4 pyls-isort==0.2.2 pynvim==0.4.3 cdifflib==1.2.6 tree_sitter==0.20.1 && \
     python3.10 -m pip install "jax[cuda11_cudnn805]" -f https://storage.googleapis.com/jax-releases/jax_releases.html
+    # Non-frozen version install command:
+    # python3.10 -m pip install numpy tensorflow scipy greenlet pycddlib Cython pyopencl pycuda cupy-cuda112==10.5.0 mpmath matplotlib onnx onnxruntime tf2onnx torch torchvision torchaudio pylint flake8 vim-vint 'python-lsp-server[all]' pylsp-mypy pyls-isort pynvim cdifflib tree_sitter && \
 RUN npm install -g vim-language-server node-gyp tree-sitter tree-sitter-cli
 RUN git clone https://github.com/UIUC-PPL/charm4py && \
     cd charm4py && \
