@@ -51,7 +51,7 @@ class LTITLLReach(Chare):
 
         self.initialized = False
 
-        assert type(tllController) == TLLnet.TLLnet, 'tllController parameter must be a TLLnet object'
+        assert issubclass(type(tllController),TLLnet.TLLnet) , 'tllController parameter must be a TLLnet object'
 
         self.tllController = tllController
 

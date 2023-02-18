@@ -1,7 +1,7 @@
 import numpy as np
 import charm4py
 from charm4py import charm, Chare, coro, Reducer, Group, Future, Array, Channel
-import TLLnet
+import TLLnetIO as TLLnet
 import posetFastCharm
 import TLLHypercubeReach
 
