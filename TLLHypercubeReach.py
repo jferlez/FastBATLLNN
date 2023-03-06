@@ -113,6 +113,9 @@ class setupCheckerVars(Chare):
     @coro
     def getSchedCount(self):
         return self.schedCount
+    @coro
+    def getCounterExample(self):
+        return None
 
 
 
@@ -296,7 +299,7 @@ class TLLHypercubeReach(Chare):
             self.checkerLocalVars.initialize(self.selectorSetsFull)
         else:
             # For node checking:
-            self.checkerLocalVars.init(self.selectorSetsFull,self.hashPElist)
+            self.checkerLocalVars.initialize(self.selectorSetsFull,self.hashPElist)
 
 
         stat = self.poset.initialize(self.localLinearFns, self.pt, self.inputConstraintsA, self.inputConstraintsb, awaitable=True)
