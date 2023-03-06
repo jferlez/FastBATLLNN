@@ -84,7 +84,7 @@ class PosetNodeTLLVer(DistributedHash.Node):
 #     return retVal
 
 class setupCheckerVars(Chare):
-    def init(self,selectorSetsFull,hashPElist):
+    def initialize(self,selectorSetsFull,hashPElist):
         self.schedCount = 0
         self.skip = False
         if not hashPElist is None:
@@ -248,7 +248,8 @@ class TLLHypercubeReach(Chare):
 
 
         succGroupProxy = self.poset.getSuccGroupProxy(ret=True).get()
-        self.checkerLocalVars.init(succGroupProxy,self.posetPElist)
+        if self.usePosetChecking:
+            self.checkerLocalVars.init(succGroupProxy,self.posetPElist)
 
         self.ubCheckerGroup = Group(minGroupFeasibleUB)
         charm.awaitCreation(self.ubCheckerGroup)
