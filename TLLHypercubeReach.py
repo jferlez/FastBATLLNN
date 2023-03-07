@@ -187,17 +187,7 @@ class setupCheckerVarsOriginCheck(Chare):
         if not temp:
             if type(nodeBytes) == bytearray:
                 nodeBytes = tuple(posetFastCharm.bytesToList(nodeBytes,self.flippedConstraints.wholeBytes,self.flippedConstraints.tailBits))
-            regSet = np.full(self.allN, True, dtype=bool)
-            regSet[tuple(self.flippedConstraints.flipMapSet),] = np.full(len(self.flippedConstraints.flipMapSet),False,dtype=bool)
-            if self.N == self.allN:
-                regSet[nodeBytes,] = np.full(len(nodeBytes),False,dtype=bool)
-                unflipped = posetFastCharm_numba.is_in_set(self.flippedConstraints.flipMapSetNP,list(nodeBytes))
-            else:
-                sel = self.flippedConstraints.nonRedundantHyperplanes[nodeBytes,]
-                regSet[sel,] = np.full(len(sel),False,dtype=bool)
-                unflipped = posetFastCharm_numba.is_in_set(self.flippedConstraints.flipMapSetNP,sel.tolist())
-            regSet[unflipped,] = np.full(len(unflipped),True,dtype=bool)
-            regSet = np.nonzero(regSet)[0]
+            regSet = self.flippedConstraints.translateRegion(nodeBytes,allN=True) 
 
             val = False
             for sSet in self.selectorSetsFull[self.out]:
@@ -210,7 +200,7 @@ class setupCheckerVarsOriginCheck(Chare):
                 # This behavior is totally inexplicable: for some reason, it will fail with the infamous: "No pending future with fid= ...
                 # A common reason is sending to a future that already received its value(s)" message.
                 self.thisProxy.setSkip(True)
-                self.counterExample = copy(regSet)
+                self.counterExample = copy(nodeBytes)
                 self.posetSuccGroupProxy[self.thisIndex].sendAll(-4,ret=True).get()
 
         self.schedCount -= 1
