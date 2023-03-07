@@ -38,17 +38,8 @@ class PosetNodeTLLVer(DistributedHash.Node):
             nodeBytes = tuple(posetFastCharm.bytesToList(self.nodeBytes,self.constraints.wholeBytes,self.constraints.tailBits))
         else:
             nodeBytes = self.nodeBytes
-        regSet = np.full(self.constraints.allN, True, dtype=bool)
-        regSet[tuple(self.constraints.flipMapSet),] = np.full(len(self.constraints.flipMapSet),False,dtype=bool)
-        if self.constraints.N == self.constraints.allN:
-            regSet[self.nodeBytes,] = np.full(len(nodeBytes),False,dtype=bool)
-            unflipped = posetFastCharm_numba.is_in_set(self.constraints.flipMapSetNP,list(nodeBytes))
-        else:
-            sel = self.constraints.nonRedundantHyperplanes[nodeBytes,]
-            regSet[sel,] = np.full(len(sel),False,dtype=bool)
-            unflipped = posetFastCharm_numba.is_in_set(self.constraints.flipMapSetNP,sel.tolist())
-        regSet[unflipped,] = np.full(len(unflipped),True,dtype=bool)
-        regSet = np.nonzero(regSet)[0]
+
+        regSet = self.constraints.translateRegion(nodeBytes,allN=True)
 
         val = False
         for sSet in self.selectorSetsFull[self.out]:
@@ -187,7 +178,7 @@ class setupCheckerVarsOriginCheck(Chare):
         if not temp:
             if type(nodeBytes) == bytearray:
                 nodeBytes = tuple(posetFastCharm.bytesToList(nodeBytes,self.flippedConstraints.wholeBytes,self.flippedConstraints.tailBits))
-            regSet = self.flippedConstraints.translateRegion(nodeBytes,allN=True) 
+            regSet = self.flippedConstraints.translateRegion(nodeBytes,allN=True)
 
             val = False
             for sSet in self.selectorSetsFull[self.out]:
