@@ -1,33 +1,33 @@
 # FROM ubuntu:21.10
-FROM nvidia/cuda:11.2.2-cudnn8-devel-ubuntu20.04
+FROM nvidia/cuda:11.8.0-cudnn8-devel-ubuntu20.04
 WORKDIR /tmp/docker_build
 RUN ln -snf /usr/share/zoneinfo/$CONTAINER_TIMEZONE /etc/localtime && echo $CONTAINER_TIMEZONE > /etc/timezone
 RUN apt-get update && apt-get -y install software-properties-common
 RUN add-apt-repository ppa:deadsnakes/nightly
-RUN apt-get update && apt-get -y install python3.10 python3.10-dev python3.10-distutils libpython3.10-dev curl
-RUN curl -sS https://bootstrap.pypa.io/get-pip.py | python3.10
-RUN python3.10 -m pip install --upgrade pip
-RUN update-alternatives --install /usr/bin/python3 python3 /usr/bin/python3.10 1
-RUN update-alternatives --install /usr/bin/python python /usr/bin/python3.10 1
-#RUN python3.10 -m pip install --upgrade pip && python3.10 -m pip install --upgrade html5lib
+RUN apt-get update && apt-get -y install python3.11 python3.11-dev python3.11-distutils libpython3.11-dev curl
+RUN curl -sS https://bootstrap.pypa.io/get-pip.py | python3.11
+RUN python3.11 -m pip install --upgrade pip
+RUN update-alternatives --install /usr/bin/python3 python3 /usr/bin/python3.11 1
+RUN update-alternatives --install /usr/bin/python python /usr/bin/python3.11 1
+#RUN python3.11 -m pip install --upgrade pip && python3.11 -m pip install --upgrade html5lib
 RUN apt-get update && \
     apt-get -y upgrade && \
     apt -y install clang-12 cmake gfortran gfortran-10 gcc-10 libgsl-dev libfftw3-3 libfftw3-dev libsuitesparse-dev git clang-11 libgmp-dev vim emacs nano screen tmux ipython3 openssh-server sudo curl universal-ctags ripgrep psmisc locales clangd util-linux git-lfs && \
     curl -sL https://deb.nodesource.com/setup_16.x | bash - && \
     apt -y install nodejs && \
-    python3.10 -m pip install --upgrade pip && \
-    python3.10 -m pip install numpy==1.23.5 tensorflow==2.11.0 scipy==1.9.3 greenlet==2.0.1 pycddlib==2.1.6 Cython==0.29.32 pyopencl==2022.3 pycuda==2022.2.2 cupy-cuda112==10.5.0 mpmath==1.2.1 matplotlib==3.6.2 onnx==1.12.0 onnxruntime==1.13.1 tf2onnx==1.13.0 torch==1.13.1 torchvision==0.14.1 torchaudio==0.13.1 pylint==2.15.9 flake8==6.0.0 vim-vint==0.3.21 'python-lsp-server[all]' pylsp-mypy==0.6.4 pyls-isort==0.2.2 pynvim==0.4.3 cdifflib==1.2.6 tree_sitter==0.20.1 && \
-    python3.10 -m pip install "jax[cuda11_cudnn805]" -f https://storage.googleapis.com/jax-releases/jax_releases.html
+    python3.11 -m pip install --upgrade pip && \
+    python3.11 -m pip install numpy==1.23.5 tensorflow==2.12.0rc1 scipy==1.10.1 greenlet==2.0.2 pycddlib==2.1.6 Cython==0.29.33 pyopencl==2022.3.1 pycuda==2022.2.2 cupy-cuda11x==11.6.0 mpmath==1.3.0 matplotlib==3.7.1 onnx==1.13.1 tf2onnx==1.13.0 torch==2.0.0 torchvision==0.15.1 torchaudio==2.0.1 pylint==2.17.1 flake8==6.0.0 vim-vint==0.3.21 'python-lsp-server[all]' pylsp-mypy pyls-isort pynvim==0.4.3 cdifflib==1.2.6 tree_sitter && \
+    python3.11 -m pip install "jax[cuda11_cudnn805]" -f https://storage.googleapis.com/jax-releases/jax_releases.html
     # Non-frozen version install command:
-    # python3.10 -m pip install numpy tensorflow scipy greenlet pycddlib Cython pyopencl pycuda cupy-cuda112==10.5.0 mpmath matplotlib onnx onnxruntime tf2onnx torch torchvision torchaudio pylint flake8 vim-vint 'python-lsp-server[all]' pylsp-mypy pyls-isort pynvim cdifflib tree_sitter && \
+    # python3.11 -m pip install numpy tensorflow scipy greenlet pycddlib Cython pyopencl pycuda cupy-cuda112==10.5.0 mpmath matplotlib onnx onnxruntime tf2onnx torch torchvision torchaudio pylint flake8 vim-vint 'python-lsp-server[all]' pylsp-mypy pyls-isort pynvim cdifflib tree_sitter && \
 RUN npm install -g vim-language-server node-gyp tree-sitter tree-sitter-cli
 RUN git clone https://github.com/UIUC-PPL/charm4py && \
     cd charm4py && \
-    git checkout 0aa892b7e09dc0c0b22b75f84103b1bfa7ed3ae3 && \
+    git checkout fc0f0108ffdb6fd5b4d868d250cc9fe4e3285c4d && \
     sed -i -E -e "s/(\s+)(args\ \+\=)/\1args\.remove('\+\+interactive')\n\1\2/" ./charmrun/start.py && \
     git clone https://github.com/UIUC-PPL/charm charm_src/charm && \
     cd charm_src/charm && \
-    git checkout c7483ea419f5319a40993681916d38e3a72bd6be && \
+    git checkout 724b2a02084e288bbd6cbdd22b60891b504ec333 && \
     cd ../..
 WORKDIR /tmp/docker_build
 # Install MS PowerShell
@@ -36,7 +36,8 @@ RUN sudo dpkg -i packages-microsoft-prod.deb && rm packages-microsoft-prod.deb
 RUN sudo apt-get update && sudo apt-get install -y powershell
 
 # Install latest neovim
-RUN wget https://github.com/neovim/neovim/releases/download/v0.8.0/nvim-linux64.deb 
+# RUN wget https://github.com/neovim/neovim/releases/download/v0.8.0/nvim-linux64.deb 
+RUN wget https://github.com/neovim/neovim/releases/download/nightly/nvim-linux64.deb
 RUN apt install ./nvim-linux64.deb
 RUN rm ./nvim-linux64.deb
 # Build Fast BATLLNN dependencies
@@ -48,47 +49,47 @@ RUN wget https://ftp.gnu.org/gnu/glpk/glpk-5.0.tar.gz && \
     git clone https://github.com/cvxopt/cvxopt.git && \
     cd cvxopt && \
     git checkout f236615e5bd326daeb6cda511c31d86bcc354747 && \
-    CVXOPT_BUILD_FFTW=1 CVXOPT_BUILD_GSL=1 CVXOPT_BUILD_GLPK=1 CVXOPT_GLPK_LIB_DIR=/usr/local/lib CVXOPT_GLPK_INC_DIR=/usr/local/include CC=/usr/bin/clang-12 CXX=/usr/bin/clang++-12 CPP=/usr/bin/clang-cpp-12 python3.10 setup.py install && \
+    CVXOPT_BUILD_FFTW=1 CVXOPT_BUILD_GSL=1 CVXOPT_BUILD_GLPK=1 CVXOPT_GLPK_LIB_DIR=/usr/local/lib CVXOPT_GLPK_INC_DIR=/usr/local/include CC=/usr/bin/clang-12 CXX=/usr/bin/clang++-12 CPP=/usr/bin/clang-cpp-12 python3.11 setup.py install && \
     cd .. && \
     wget https://raw.githubusercontent.com/coin-or/coinbrew/master/coinbrew && \
     chmod 755 coinbrew && \
     ./coinbrew --latest-release --no-prompt build Clp --prefix=/usr/local && \
     ./coinbrew --latest-release --no-prompt build Cbc --prefix=/usr/local && \
     COIN_INSTALL_DIR=/usr/local && \
-    COIN_INSTALL_DIR=/usr/local python3.10 -m pip install cylp
+    COIN_INSTALL_DIR=/usr/local python3.11 -m pip install cylp
 # Installl OpenMPI with UCX support
-RUN wget "https://content.mellanox.com/ofed/MLNX_OFED-5.8-1.1.2.1/MLNX_OFED_LINUX-5.8-1.1.2.1-ubuntu20.04-x86_64.tgz" && \
-    tar -xf MLNX_OFED_LINUX-5.8-1.1.2.1-ubuntu20.04-x86_64.tgz && \
-    cd MLNX_OFED_LINUX-5.8-1.1.2.1-ubuntu20.04-x86_64 && \
+RUN wget "https://content.mellanox.com/ofed/MLNX_OFED-5.9-0.5.6.0/MLNX_OFED_LINUX-5.9-0.5.6.0-ubuntu20.04-x86_64.tgz" && \
+    tar -xf MLNX_OFED_LINUX-5.9-0.5.6.0-ubuntu20.04-x86_64.tgz && \
+    cd MLNX_OFED_LINUX-5.9-0.5.6.0-ubuntu20.04-x86_64 && \
     sudo apt -y install autoconf libgfortran5 gfortran libnuma-dev debhelper kmod ethtool libpci3 flex libfuse2 m4 libelf1 lsof libnl-route-3-dev autotools-dev libnuma1 libnl-route-3-200 libusb-1.0-0 tk libnl-3-dev swig tcl libnl-3-200 pciutils udev libltdl-dev libmnl0 bison graphviz automake pkg-config chrpath dpatch && \
-    ./mlnxofedinstall --user-space-only --force && \
+    ./mlnxofedinstall --user-space-only --force --without-ucx-cuda && \
     cd ..
 RUN apt-get -y install zlib1g zlib1g-dev
 RUN cd charm4py && \
-    PATH="/usr/mpi/gcc/openmpi-4.1.5a1/bin:$PATH" && \
-    python3.10 setup.py install --mpi && \
+    PATH="/usr/mpi/gcc/openmpi-4.1.5rc2/bin:$PATH" && \
+    python3.11 setup.py install --mpi && \
     cd .. && \
     git clone https://github.com/numba/numba && \
     git clone https://github.com/numba/llvmlite && \
     cd llvmlite && \
-    git checkout ed0f625e5ee8b5250b71d4bab58390a5382f6fba && \
-    LLVM_CONFIG=llvm-config-11 python3.10 setup.py install && \
-    cd ../numba && \
-    git checkout 61e4b01a0e317abdfb5193347d820547f8cc0acd && \
-    python3.10 setup.py install && \
+    git checkout ec899d64b69af630d65eb720fea28195fce3bfb6 && \
+    LLVM_CONFIG=llvm-config-11 python3.11 setup.py install && \
+    cd ../numba && git fetch && git switch py3.11 && git pull && \
+    git checkout c4168f12a464108f7d5e1b98f5c5b4ac3cf56f8f && \
+    python3.11 setup.py install && \
     cd .. && \
     rm -rf *
 
 # Install nnenum globally:
-WORKDIR /usr/local/lib/python3.10/dist-packages
+WORKDIR /usr/local/lib/python3.11/dist-packages
 RUN git clone https://github.com/stanleybak/nnenum
 WORKDIR /tmp/docker_build
 
 # Configuration to enable UCX/InfiniBand Networking:
 RUN echo "* soft memlock unlimited\n* hard memlock unlimited" >> /etc/security/limits.conf
 # Patch to enable profiling in charm4py
-RUN sed -i -E -e 's/(assert not self.running and charm.runningEntryMethod is None)/\#\1/' -e 's/(assert self.running and charm.runningEntryMethod == self)/\#\1/'  /usr/local/lib/python3.10/dist-packages/charm4py/entry_method.py
-RUN sed -i -E -e 's/(\s*self\.options\.local_msg_optim\s*=\s*)False/\1True/' /usr/local/lib/python3.10/dist-packages/charm4py/charm.py
+RUN sed -i -E -e 's/(assert not self.running and charm.runningEntryMethod is None)/\#\1/' -e 's/(assert self.running and charm.runningEntryMethod == self)/\#\1/'  /usr/local/lib/python3.11/dist-packages/charm4py/entry_method.py
+RUN sed -i -E -e 's/(\s*self\.options\.local_msg_optim\s*=\s*)False/\1True/' /usr/local/lib/python3.11/dist-packages/charm4py/charm.py
 # RUN useradd -rm -d /home/ubuntu -s /bin/bash -g root -G sudo -u 1000 ubuntu
 # RUN echo 'ubuntu:ubuntu' | chpasswd
 RUN /usr/bin/ssh-keygen -A
@@ -111,7 +112,7 @@ RUN echo "#!/bin/bash\n/usr/sbin/sshd -D &> /root/sshd_log.out &\nif [ -e /etc/s
 RUN chmod 755 /usr/local/bin/startup.sh
 
 #RUN echo "export PATH=/usr/local/bin:\$PATH\nexport LD_LIBRARY_PATH=/usr/local/lib\nexport COIN_INSTALL_DIR=/usr/local\nexport PATH=\"/usr/mpi/gcc/openmpi-4.1.2a1/bin:$PATH\"" >> /etc/bash.bashrc
-RUN sed -i "2i export PATH=/usr/local/bin:/usr/mpi/gcc/openmpi-4.1.5a1/bin:\$PATH" /etc/bash.bashrc
+RUN sed -i "2i export PATH=/usr/local/bin:/usr/mpi/gcc/openmpi-4.1.5rc2/bin:\$PATH" /etc/bash.bashrc
 RUN sed -i "3i export LD_LIBRARY_PATH=/usr/local/lib" /etc/bash.bashrc
 RUN sed -i "4i export COIN_INSTALL_DIR=/usr/local" /etc/bash.bashrc
 

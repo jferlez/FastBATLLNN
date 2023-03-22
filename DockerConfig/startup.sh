@@ -62,10 +62,10 @@ if [ "$MPIHOSTS" != "" ]; then
 /g' -e 's/:/    /g' >> /etc/hosts
     HOSTLIST=`echo "$MPIHOSTS" | sed -E -e 's/:[^:,]+/:-1/g'`
     echo "#!/bin/bash
-mpirun $MPIARGS -mca plm_rsh_args \"-p 3000\" -np $CORES -host $HOSTLIST -x PYTHONPATH=\"$PYPATH:\$PYTHONPATH\" -x TF_CPP_MIN_LOG_LEVEL=2 /usr/bin/python3.10 \"\$@\"" > /usr/local/bin/charming
+mpirun $MPIARGS -mca plm_rsh_args \"-p 3000\" -np $CORES -host $HOSTLIST -x PYTHONPATH=\"$PYPATH:\$PYTHONPATH\" -x TF_CPP_MIN_LOG_LEVEL=2 /usr/bin/python3.11 \"\$@\"" > /usr/local/bin/charming
 else
     echo "#!/bin/bash
-mpirun $MPIARGS -np $CORES -x PYTHONPATH=\"$PYPATH:\$PYTHONPATH\" -x TF_CPP_MIN_LOG_LEVEL=2 /usr/bin/python3.10 \"\$@\"" > /usr/local/bin/charming
+mpirun $MPIARGS -np $CORES -x PYTHONPATH=\"$PYPATH:\$PYTHONPATH\" -x TF_CPP_MIN_LOG_LEVEL=2 /usr/bin/python3.11 \"\$@\"" > /usr/local/bin/charming
 fi
 chmod 755 /usr/local/bin/charming
 
