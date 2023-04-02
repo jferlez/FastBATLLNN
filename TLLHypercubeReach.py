@@ -112,13 +112,13 @@ class setupCheckerVars(Chare):
 
 # For checking on *Poset* nodes
 class PosetNodeTLLVerOriginCheck(DistributedHash.Node):
-    # Optional init that copies (by reference) the list of poset PEs to make available to Node methods
+    # Possible init method to retrieve posetPE list from localCheckerGroup
     # def init(self):
     #     self.posetPElist = self.localProxy[self.storePe].getPosetPEList(ret=True).get()
     def check(self):
         # print(self.posetSuccGroupProxy)
         # self.posetSuccGroupProxy[self.data[0]].checkNode(self.nodeBytes)
-        self.localProxy[ self.localProxy[self.storePe].schedRandomPosetPe(ret=True).get() ].checkNode(self.nodeBytes)
+        self.localProxy[ self.localProxy[self.storePe].schedRandomPosetPe(ret=True).get() ].checkNode(self.originPe,self.nodeBytes)
         return True
 
 class setupCheckerVarsOriginCheck(Chare):
@@ -126,6 +126,7 @@ class setupCheckerVarsOriginCheck(Chare):
         self.posetSuccGroupProxy = succGroupProxy
         self.posetPElist = posetPElist
         self.schedCount = 0
+        # self.closedCalls = []
         self.skip = False
         self.counterExample = None
 
@@ -148,9 +149,15 @@ class setupCheckerVarsOriginCheck(Chare):
     def reset(self):
         self.skip = False
         self.schedCount = 0
+    # @coro
+    # def getSchedCount(self):
+    #     return self.schedCount
     @coro
     def getCounterExample(self):
         return self.counterExample
+    # @coro
+    # def getClosedCalls(self):
+    #     return self.closedCalls
 
     # Legacy methods
     @coro
@@ -169,11 +176,19 @@ class setupCheckerVarsOriginCheck(Chare):
         return (self.flippedConstraints, self.selectorSetsFull, self.nodeIntMask, self.out)
     def getPosetPEList(self):
         return self.posetPElist
+    # @coro
+    # def incSchedCount(self,arg):
+    #     self.closedCalls.append(arg)
+    #     self.schedCount += 1
+    # @coro
+    # def resetSchedCount(self):
+    #     self.closedCalls = []
+    #     self.schedCount = 0
 
 # class successorWorkerCheck(posetFastCharm.successorWorker,Chare):
 
     @coro
-    def checkNode(self,nodeBytes):
+    def checkNode(self,originPe,nodeBytes):
         temp = self.skip
         if not temp:
             if type(nodeBytes) == bytearray:
@@ -193,6 +208,9 @@ class setupCheckerVarsOriginCheck(Chare):
                 self.thisProxy.setSkip(True)
                 self.counterExample = copy(nodeBytes)
                 self.posetSuccGroupProxy[self.thisIndex].sendAll(-4,ret=True).get()
+
+        self.posetSuccGroupProxy[originPe].decHashedNodeCount()
+        # self.schedCount += 1
 
 class TLLHypercubeReach(Chare):
     # @coro
@@ -223,10 +241,10 @@ class TLLHypercubeReach(Chare):
 
         if self.usePosetChecking:
              # For poset checking:
-            self.poset.init(pes, PosetNodeTLLVerOriginCheck, self.checkerLocalVars, (simple2xSuccessorWorker if simple2xAvailable else None),awaitable=True).get()
+            self.poset.init(pes, PosetNodeTLLVerOriginCheck, self.checkerLocalVars, (simple2xSuccessorWorker if simple2xAvailable else None), self.usePosetChecking, awaitable=True).get()
         else:
             # For node checking;
-            self.poset.init(pes, PosetNodeTLLVer, self.checkerLocalVars, (simple2xSuccessorWorker if simple2xAvailable else None),awaitable=True).get()
+            self.poset.init(pes, PosetNodeTLLVer, self.checkerLocalVars, (simple2xSuccessorWorker if simple2xAvailable else None), self.usePosetChecking, awaitable=True).get()
 
 
         succGroupProxy = self.poset.getSuccGroupProxy(ret=True).get()
