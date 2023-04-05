@@ -215,6 +215,7 @@ class setupCheckerVarsOriginCheck(Chare):
 class TLLHypercubeReach(Chare):
     # @coro
     def __init__(self,pes):
+        self.basePe = 0
         self.usePosetChecking = True
         self.posetPElist = list(itertools.chain.from_iterable( \
                [list(range(r[0],r[1],r[2])) for r in pes['poset']] \
@@ -232,19 +233,24 @@ class TLLHypercubeReach(Chare):
 
         charm.awaitCreation(self.checkerLocalVars)
 
-        if simple2xAvailable and 'gpu' in pes:
-            self.poset = Chare(PosetSimple2x,args=[],onPE=charm.myPe())
+        if self.usePosetChecking:
+            constructorArgs = [pes, PosetNodeTLLVerOriginCheck, self.checkerLocalVars, (simple2xSuccessorWorker if simple2xAvailable else None), self.usePosetChecking, []]
         else:
-            self.poset = Chare(posetFastCharm.Poset,args=[],onPE=charm.myPe())
+            constructorArgs = [pes, PosetNodeTLLVer, self.checkerLocalVars, (simple2xSuccessorWorker if simple2xAvailable else None), self.usePosetChecking, []]
+
+        if simple2xAvailable and 'gpu' in pes:
+            self.poset = Chare(PosetSimple2x,args=constructorArgs,onPE=0)
+        else:
+            self.poset = Chare(posetFastCharm.Poset,args=constructorArgs,onPE=0)
 
         charm.awaitCreation(self.poset)
 
-        if self.usePosetChecking:
-             # For poset checking:
-            self.poset.init(pes, PosetNodeTLLVerOriginCheck, self.checkerLocalVars, (simple2xSuccessorWorker if simple2xAvailable else None), self.usePosetChecking, awaitable=True).get()
-        else:
-            # For node checking;
-            self.poset.init(pes, PosetNodeTLLVer, self.checkerLocalVars, (simple2xSuccessorWorker if simple2xAvailable else None), self.usePosetChecking, awaitable=True).get()
+        # migrationList = self.poset.getMigrationInfo(ret=True).get()
+        # for (peList, pxy) in migrationList['hash']:
+        #     assert self.basePe in peList
+        #     pxy.migrate(self.basePe,awaitable=True).get()
+
+        self.poset.init(awaitable=True).get()
 
 
         succGroupProxy = self.poset.getSuccGroupProxy(ret=True).get()
