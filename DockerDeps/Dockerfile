@@ -90,6 +90,7 @@ RUN echo "* soft memlock unlimited\n* hard memlock unlimited" >> /etc/security/l
 # Patch to enable profiling in charm4py
 RUN sed -i -E -e 's/(assert not self.running and charm.runningEntryMethod is None)/\#\1/' -e 's/(assert self.running and charm.runningEntryMethod == self)/\#\1/'  /usr/local/lib/python3.11/dist-packages/charm4py/entry_method.py
 RUN sed -i -E -e 's/(\s*self\.options\.local_msg_optim\s*=\s*)False/\1True/' /usr/local/lib/python3.11/dist-packages/charm4py/charm.py
+RUN sed -i -E -e 's/(\s*super\(em\.C)(\,\ obj\)\.__init__\(\)\s*\#\s*call\s*Chare\s*class\s*__init__\s*first)/\1\.__mro__\[-3\]\2/' /usr/local/lib/python3.11/dist-packages/charm4py/charm.py
 # RUN useradd -rm -d /home/ubuntu -s /bin/bash -g root -G sudo -u 1000 ubuntu
 # RUN echo 'ubuntu:ubuntu' | chpasswd
 RUN /usr/bin/ssh-keygen -A
