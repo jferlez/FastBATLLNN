@@ -13,7 +13,7 @@ RUN update-alternatives --install /usr/bin/python python /usr/bin/python3.11 1
 #RUN python3.11 -m pip install --upgrade pip && python3.11 -m pip install --upgrade html5lib
 RUN apt-get update && \
     apt-get -y upgrade && \
-    apt -y install clang-12 cmake gfortran gfortran-10 gcc-10 libgsl-dev libfftw3-3 libfftw3-dev libsuitesparse-dev git clang-11 libgmp-dev vim emacs nano screen tmux ipython3 openssh-server sudo curl universal-ctags ripgrep psmisc locales clangd util-linux git-lfs && \
+    apt -y install clang-12 cmake gfortran gfortran-10 gcc-10 libgsl-dev libfftw3-3 libfftw3-dev libsuitesparse-dev git clang-11 libgmp-dev vim emacs nano screen tmux ipython3 openssh-server sudo curl universal-ctags ripgrep psmisc locales clangd util-linux git-lfs htop && \
     curl -sL https://deb.nodesource.com/setup_16.x | bash - && \
     apt -y install nodejs && \
     python3.11 -m pip install --upgrade pip && \
