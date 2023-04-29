@@ -3,6 +3,7 @@ FROM nvidia/cuda:11.8.0-cudnn8-devel-ubuntu20.04
 WORKDIR /tmp/docker_build
 RUN ln -snf /usr/share/zoneinfo/$CONTAINER_TIMEZONE /etc/localtime && echo $CONTAINER_TIMEZONE > /etc/timezone
 RUN apt-get update && apt-get -y install software-properties-common
+RUN add-apt-repository ppa:neovim-ppa/unstable
 RUN add-apt-repository ppa:deadsnakes/nightly
 RUN apt-get update && apt-get -y install python3.11 python3.11-dev python3.11-distutils libpython3.11-dev curl
 RUN curl -sS https://bootstrap.pypa.io/get-pip.py | python3.11
@@ -36,10 +37,7 @@ RUN sudo dpkg -i packages-microsoft-prod.deb && rm packages-microsoft-prod.deb
 RUN sudo apt-get update && sudo apt-get install -y powershell
 
 # Install latest neovim
-# RUN wget https://github.com/neovim/neovim/releases/download/v0.8.0/nvim-linux64.deb 
-RUN wget https://github.com/neovim/neovim/releases/download/nightly/nvim-linux64.deb
-RUN apt install ./nvim-linux64.deb
-RUN rm ./nvim-linux64.deb
+RUN sudo apt-get -y install neovim
 # Build Fast BATLLNN dependencies
 RUN wget https://ftp.gnu.org/gnu/glpk/glpk-5.0.tar.gz && \
     tar -xf glpk-5.0.tar.gz && \
