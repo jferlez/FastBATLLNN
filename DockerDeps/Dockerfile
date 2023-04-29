@@ -28,7 +28,7 @@ RUN git clone https://github.com/UIUC-PPL/charm4py && \
     sed -i -E -e "s/(\s+)(args\ \+\=)/\1args\.remove('\+\+interactive')\n\1\2/" ./charmrun/start.py && \
     git clone https://github.com/UIUC-PPL/charm charm_src/charm && \
     cd charm_src/charm && \
-    git checkout 724b2a02084e288bbd6cbdd22b60891b504ec333 && \
+    git checkout 1d37ae3f505ee7249c5b0e56fdeeaa1524ce483a && \
     cd ../..
 WORKDIR /tmp/docker_build
 # Install MS PowerShell
