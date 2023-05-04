@@ -18,6 +18,7 @@ MPIHOSTS="127.0.0.1:localhost"
 MPIARGS="--mca pml ob1 --mca btl tcp,vader,self --mca btl_tcp_if_include eth0"
 CORES=""
 REMOVE=""
+AZURETMP=""
 for argwhole in "$@"; do
     IFS='=' read -r -a array <<< "$argwhole"
     arg="${array[0]}"
@@ -34,7 +35,8 @@ for argwhole in "$@"; do
         --mpi) MPIHOSTS="$val";;
         --mpi-args) MPIARGS="$val";;
         --cores) CORES="$val";;
-        --remove) REMOVE="yes"
+        --remove) REMOVE="yes";;
+        --azure-tmp) AZURETMP="yes"
     esac
 done
 
@@ -144,6 +146,12 @@ then
     AZUREBIND="-v /media/azuredata:/media/azuredata"
 fi
 
+AZURETMPBIND=""
+if [ "$AZURETMP" = "yes" ] && [ -d /mnt ]
+then
+    AZURETMPBIND="-v /mnt:/media/azuretmp"
+fi
+
 INFINIDEVICES=""
 if [ -d /dev/infiniband ]
 then
@@ -162,7 +170,7 @@ then
 fi
 
 if [ "$EXISTING_CONTAINER" = "" ]; then
-    docker run --privileged $GPUS --shm-size=${SHMSIZE}gb $INFINIDEVICES $INTERACTIVE $HOSTNETWORK $PORT $HTTPPORT --label server=${SERVER} $AZUREBIND -v "$(pwd)"/container_results:/home/${user}/results fastbatllnn-run:${user} ${user} $INTERACTIVE $SERVER $CORES $PORTNUM $MPIHOSTS "$MPIARGS"
+    docker run --privileged $GPUS --shm-size=${SHMSIZE}gb $INFINIDEVICES $INTERACTIVE $HOSTNETWORK $PORT $HTTPPORT --label server=${SERVER} $AZUREBIND $AZURETMPBIND -v "$(pwd)"/container_results:/home/${user}/results fastbatllnn-run:${user} ${user} $INTERACTIVE $SERVER $CORES $PORTNUM $MPIHOSTS "$MPIARGS"
 else
     echo "Restarting container $EXISTING_CONTAINER (command line options except \"--server\" ignored)..."
     docker start $ATTACH $EXISTING_CONTAINER
