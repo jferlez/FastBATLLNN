@@ -22,6 +22,15 @@ RUN apt-get update && \
     # Non-frozen version install command:
     # python3.11 -m pip install numpy tensorflow scipy greenlet pycddlib Cython pyopencl pycuda cupy-cuda112==10.5.0 mpmath matplotlib onnx onnxruntime tf2onnx torch torchvision torchaudio pylint flake8 vim-vint 'python-lsp-server[all]' pylsp-mypy pyls-isort pynvim cdifflib tree_sitter && \
 RUN npm install -g vim-language-server node-gyp tree-sitter tree-sitter-cli
+RUN git clone https://github.com/mckib2/scikit-glpk && \
+    sed -i -E -e 's/24/23/' ./scikit-glpk/requirements.txt && \
+    sed -i -E -e 's#xprintf#//xprintf#' ./scikit-glpk/glpk-5.0/src/api/advbas.c && \
+    sed -i -E -e 's#xprintf#//xprintf#' ./scikit-glpk/glpk-5.0/src/api/cpxbas.c && \ 
+    sed -i -E -e 's/warn\(/#warn\(/' ./scikit-glpk/glpk/_glpk.py && \
+    sed -i -E -e 's/GLPK\.RET_CODES\[ret_code\],/GLPK\.RET_CODES\[ret_code\],'"'"'status'"'"':ret_code,/' ./scikit-glpk/glpk/_glpk.py && \
+    cd scikit-glpk && \
+    python3.11 setup.py install && \
+    cd .. && rm -rf scikit-glpk
 RUN git clone https://github.com/UIUC-PPL/charm4py && \
     cd charm4py && \
     git checkout fc0f0108ffdb6fd5b4d868d250cc9fe4e3285c4d && \
