@@ -26,6 +26,7 @@ RUN git clone https://github.com/mckib2/scikit-glpk && \
     sed -i -E -e 's/24/23/' ./scikit-glpk/requirements.txt && \
     sed -i -E -e 's#xprintf#//xprintf#' ./scikit-glpk/glpk-5.0/src/api/advbas.c && \
     sed -i -E -e 's#xprintf#//xprintf#' ./scikit-glpk/glpk-5.0/src/api/cpxbas.c && \
+    sed -i -E -e 's#xprintf#//xprintf#' ./scikit-glpk/glpk-5.0/src/draft/glpscl.c && \
     sed -i -E -e 's/warn\(/#warn\(/' ./scikit-glpk/glpk/_glpk.py && \
     sed -i -E -e 's/GLPK\.RET_CODES\[ret_code\],/GLPK\.RET_CODES\[ret_code\],'"'"'ret_code'"'"':ret_code,/' ./scikit-glpk/glpk/_glpk.py && \
     cd scikit-glpk && \
