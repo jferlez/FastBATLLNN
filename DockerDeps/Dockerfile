@@ -13,7 +13,7 @@ RUN update-alternatives --install /usr/bin/python python /usr/bin/python3.11 1
 #RUN python3.11 -m pip install --upgrade pip && python3.11 -m pip install --upgrade html5lib
 RUN apt-get update && \
     apt-get -y upgrade && \
-    apt -y install clang-12 cmake gfortran gfortran-10 gcc-10 libgsl-dev libfftw3-3 libfftw3-dev libsuitesparse-dev git clang-11 libgmp-dev vim emacs nano screen tmux ipython3 openssh-server sudo curl universal-ctags ripgrep psmisc locales clangd util-linux git-lfs htop && \
+    apt -y install clang-12 clang-14 cmake gfortran gfortran-10 gcc-10 libgsl-dev libfftw3-3 libfftw3-dev libsuitesparse-dev git clang-11 libgmp-dev vim emacs nano screen tmux ipython3 openssh-server sudo curl universal-ctags ripgrep psmisc locales clangd util-linux git-lfs htop && \
     curl -sL https://deb.nodesource.com/setup_16.x | bash - && \
     apt -y install nodejs
 RUN python3.11 -m pip install --upgrade pip && \
@@ -33,7 +33,7 @@ RUN git clone https://github.com/mckib2/scikit-glpk && \
     python3.11 setup.py install && \
     cd .. && rm -rf scikit-glpk && \
     git clone https://github.com/onnx/tensorflow-onnx && \
-    cd tensorflow-onnx && \
+    cd tensorflow-onnx && git checkout 554d90ad8b8e0bf089ed10550c4c4a253ac1f717 && \
     sed -i -E -e 's/<3\.0\,//' setup.py && \
     python3.11 setup.py install && \
     cd .. && rm -rf tensorflow-onnx
@@ -71,9 +71,9 @@ RUN wget https://ftp.gnu.org/gnu/glpk/glpk-5.0.tar.gz && \
     COIN_INSTALL_DIR=/usr/local && \
     COIN_INSTALL_DIR=/usr/local python3.11 -m pip install cylp
 # Installl OpenMPI with UCX support
-RUN wget "https://content.mellanox.com/ofed/MLNX_OFED-5.9-0.5.6.0/MLNX_OFED_LINUX-5.9-0.5.6.0-ubuntu20.04-x86_64.tgz" && \
-    tar -xf MLNX_OFED_LINUX-5.9-0.5.6.0-ubuntu20.04-x86_64.tgz && \
-    cd MLNX_OFED_LINUX-5.9-0.5.6.0-ubuntu20.04-x86_64 && \
+RUN wget "https://content.mellanox.com/ofed/MLNX_OFED-5.9-0.5.6.0/MLNX_OFED_LINUX-5.9-0.5.6.0-ubuntu22.04-x86_64.tgz" && \
+    tar -xf MLNX_OFED_LINUX-5.9-0.5.6.0-ubuntu22.04-x86_64.tgz && \
+    cd MLNX_OFED_LINUX-5.9-0.5.6.0-ubuntu22.04-x86_64 && \
     sudo apt -y install autoconf libgfortran5 gfortran libnuma-dev debhelper kmod ethtool libpci3 flex libfuse2 m4 libelf1 lsof libnl-route-3-dev autotools-dev libnuma1 libnl-route-3-200 libusb-1.0-0 tk libnl-3-dev swig tcl libnl-3-200 pciutils udev libltdl-dev libmnl0 bison graphviz automake pkg-config chrpath dpatch && \
     ./mlnxofedinstall --user-space-only --force --without-ucx-cuda && \
     cd ..
@@ -86,7 +86,7 @@ RUN cd charm4py && \
     git clone https://github.com/numba/llvmlite && \
     cd llvmlite && \
     git checkout 70f057b59a9d11de1c4d1792aabe6d5bf24eacc3 && \
-    LLVM_CONFIG=llvm-config-11 python3.11 setup.py install && \
+    LLVM_CONFIG=llvm-config-14 python3.11 setup.py install && \
     cd ../numba && git fetch && git pull && \
     git checkout ac1a5f85fc9128cb7a7c862401467b6bb2ae85bf && \
     python3.11 setup.py install && \
