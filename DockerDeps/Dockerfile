@@ -15,9 +15,9 @@ RUN apt-get update && \
     apt-get -y upgrade && \
     apt -y install clang-12 cmake gfortran gfortran-10 gcc-10 libgsl-dev libfftw3-3 libfftw3-dev libsuitesparse-dev git clang-11 libgmp-dev vim emacs nano screen tmux ipython3 openssh-server sudo curl universal-ctags ripgrep psmisc locales clangd util-linux git-lfs htop && \
     curl -sL https://deb.nodesource.com/setup_16.x | bash - && \
-    apt -y install nodejs && \
-    python3.11 -m pip install --upgrade pip && \
-    python3.11 -m pip install numpy==1.23.5 tensorflow==2.12.0rc1 scipy==1.10.1 greenlet==2.0.2 pycddlib==2.1.6 Cython==0.29.33 pyopencl==2022.3.1 pycuda==2022.2.2 cupy-cuda11x==11.6.0 mpmath==1.3.0 matplotlib==3.7.1 onnx==1.14.0 onnxruntime==1.15.0 tf2onnx==1.13.0 torch==2.0.0 torchvision==0.15.1 torchaudio==2.0.1 onnx==1.14.0 onnxruntime==1.15.0 pylint==2.17.1 flake8==6.0.0 vim-vint==0.3.21 swiglpk==5.0.8 'python-lsp-server[all]' pylsp-mypy pyls-isort pynvim==0.4.3 cdifflib==1.2.6 tree_sitter jupyterlab ipympl && \
+    apt -y install nodejs
+RUN python3.11 -m pip install --upgrade pip && \
+    python3.11 -m pip install numpy==1.24.2 tensorflow==2.13.0rc0 scipy==1.10.1 greenlet==2.0.2 pycddlib==2.1.6 Cython==0.29.33 pyopencl==2022.3.1 pycuda==2022.2.2 cupy-cuda11x==11.6.0 mpmath==1.3.0 matplotlib==3.7.1 onnx==1.14.0 onnxruntime==1.15.0 torch==2.0.0 torchvision==0.15.1 torchaudio==2.0.1 onnx==1.14.0 onnxruntime==1.15.0 pylint==2.17.1 flake8==6.0.0 vim-vint==0.3.21 swiglpk==5.0.8 'python-lsp-server[all]' pylsp-mypy pyls-isort pynvim==0.4.3 cdifflib==1.2.6 tree_sitter jupyterlab ipympl && \
     python3.11 -m pip install "jax[cuda11_cudnn805]" -f https://storage.googleapis.com/jax-releases/jax_releases.html
     # Non-frozen version install command:
     # python3.11 -m pip install numpy tensorflow scipy greenlet pycddlib Cython pyopencl pycuda cupy-cuda112==10.5.0 mpmath matplotlib onnx onnxruntime tf2onnx torch torchvision torchaudio pylint flake8 vim-vint 'python-lsp-server[all]' pylsp-mypy pyls-isort pynvim cdifflib tree_sitter && \
@@ -31,7 +31,12 @@ RUN git clone https://github.com/mckib2/scikit-glpk && \
     sed -i -E -e 's/GLPK\.RET_CODES\[ret_code\],/GLPK\.RET_CODES\[ret_code\],'"'"'ret_code'"'"':ret_code,/' ./scikit-glpk/glpk/_glpk.py && \
     cd scikit-glpk && \
     python3.11 setup.py install && \
-    cd .. && rm -rf scikit-glpk
+    cd .. && rm -rf scikit-glpk && \
+    git clone https://github.com/onnx/tensorflow-onnx && \
+    cd tensorflow-onnx && \
+    sed -i -E -e 's/<3\.0\,//' setup.py && \
+    python3.11 setup.py install && \
+    cd .. && rm -rf tensorflow-onnx
 RUN git clone https://github.com/UIUC-PPL/charm4py && \
     cd charm4py && \
     git checkout fc0f0108ffdb6fd5b4d868d250cc9fe4e3285c4d && \
@@ -80,10 +85,10 @@ RUN cd charm4py && \
     git clone https://github.com/numba/numba && \
     git clone https://github.com/numba/llvmlite && \
     cd llvmlite && \
-    git checkout ec899d64b69af630d65eb720fea28195fce3bfb6 && \
+    git checkout 70f057b59a9d11de1c4d1792aabe6d5bf24eacc3 && \
     LLVM_CONFIG=llvm-config-11 python3.11 setup.py install && \
-    cd ../numba && git fetch && git switch py3.11 && git pull && \
-    git checkout c4168f12a464108f7d5e1b98f5c5b4ac3cf56f8f && \
+    cd ../numba && git fetch && git pull && \
+    git checkout ac1a5f85fc9128cb7a7c862401467b6bb2ae85bf && \
     python3.11 setup.py install && \
     cd .. && \
     rm -rf *
