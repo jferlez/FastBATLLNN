@@ -430,7 +430,7 @@ class TLLHypercubeReach(Chare):
         opts['useQuery'] = self.useQuery
 
         t = time.time()
-        retVal = self.poset.populatePoset(opts, ret=True).get() # specify retChannelEndPoint=self.thisProxy to send to a channel as follows
+        retVal = self.poset.populatePoset(opts=opts, ret=True).get() # specify retChannelEndPoint=self.thisProxy to send to a channel as follows
         self.posetTime += time.time() - t
 
         if not retVal:
