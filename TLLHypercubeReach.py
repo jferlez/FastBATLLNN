@@ -449,6 +449,10 @@ class TLLHypercubeReach(Chare):
                     #print(f'Found counterexample TLL({self.cePoint}) = {self.cePointVal}')
                     break
         return retVal
+    
+    @coro
+    def getLBLPCount(self):
+        return self.poset.getLPCount(ret=True).get()['LPSolverCount']
 
     @coro
     def verifyUB(self,ub,out=0, timeout=None, verbose=False, **kwargs):
@@ -485,6 +489,10 @@ class TLLHypercubeReach(Chare):
                         print(f'Found counterexample TLL({self.cePoint}) = {self.cePointVal}')
                     break
         return retVal
+
+    @coro
+    def getUBLPCount(self):
+        return sum(self.ubCheckerGroup.getLPcount(ret=True).get())
 
     @coro
     def getCounterExamplePoint(self):
