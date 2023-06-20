@@ -8,7 +8,7 @@ availableVNNLIB = False
 
 if len(sys.argv) >= 2 and sys.argv[1] == 'setProblem' or sys.argv[0][-min(20,len(sys.argv[0])):] != 'FastBATLLNNClient.py':
 
-    import TLLnet
+    import TLLnetIO as TLLnet
     import numpy as np
 
     try:
