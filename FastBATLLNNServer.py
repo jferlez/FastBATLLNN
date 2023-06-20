@@ -173,7 +173,7 @@ class FastBATLLNNServer(Chare):
                     A_out = msg['A_out']
                     b_out = msg['b_out']
 
-                    tllReach.initialize(tll , constraints, 100, useQuery, useBounding,awaitable=True).get()
+                    tllReach.initialize(tll , constraints, 100, useQuery, awaitable=True).get()
 
                 # Now wait for either a "GO" or "SHUTDOWN" command
                 msg = fromServerChannel.recv()
