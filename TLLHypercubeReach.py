@@ -120,6 +120,8 @@ class PosetNodeTLLVerOriginCheck(DistributedHash.Node):
         # self.posetSuccGroupProxy[self.data[0]].checkNode(self.nodeBytes)
         self.localProxy[ self.localProxy[self.storePe].schedRandomPosetPe(ret=True).get() ].checkNode(self.originPe,self.nodeBytes)
         return True
+    def update(self, lsb,msb,nodeBytes, originPe, face, witness, *args):
+        self.parentChare.parentProxy.decHashedNodeCountFeeder(originPe)
 
 class setupCheckerVarsOriginCheck(Chare):
     def init(self,succGroupProxy,posetPElist):
