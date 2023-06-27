@@ -74,7 +74,7 @@ class PosetNodeTLLVer(DistributedHash.Node):
 #             return retVal
 #     return retVal
 
-class setupCheckerVars(Chare):
+class setupCheckerVars(posetFastCharm.localVar,Chare):
     def initialize(self,selectorSetsFull,hashPElist):
         self.schedCount = 0
         self.skip = False
@@ -123,7 +123,7 @@ class PosetNodeTLLVerOriginCheck(DistributedHash.Node):
     def update(self, lsb,msb,nodeBytes, originPe, face, witness, *args):
         self.parentChare.parentProxy.decHashedNodeCountFeeder(originPe)
 
-class setupCheckerVarsOriginCheck(Chare):
+class setupCheckerVarsOriginCheck(posetFastCharm.localVar, Chare):
     def init(self,succGroupProxy,posetPElist):
         self.posetSuccGroupProxy = succGroupProxy
         self.posetPElist = posetPElist
