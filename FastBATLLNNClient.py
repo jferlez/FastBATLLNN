@@ -3,7 +3,7 @@ import requests
 import json
 import time
 import numpy as np
-serverURL = 'http://localhost:8000/'
+serverURL = 'http://localhost:7999/'
 availableVNNLIB = False
 
 if len(sys.argv) >= 2 and sys.argv[1] == 'setProblem' or sys.argv[0][-min(20,len(sys.argv[0])):] != 'FastBATLLNNClient.py':
