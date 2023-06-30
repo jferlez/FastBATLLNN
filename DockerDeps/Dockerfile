@@ -34,8 +34,8 @@ RUN git clone https://github.com/mckib2/scikit-glpk && \
     cd .. && rm -rf scikit-glpk && \
     git clone https://github.com/onnx/tensorflow-onnx && \
     cd tensorflow-onnx && git checkout 554d90ad8b8e0bf089ed10550c4c4a253ac1f717 && \
-    sed -i -E -e 's/concrete_func\.graph\.\_captures/concrete_func\.graph\.captures/' ./tf2onnx/convert.py && \
-    sed -i -E -e 's/graph\_captures\.values\(\)/graph\_captures/' ./tf2onnx/convert.py && \
+    sed -i -E -e 's/concrete_func\.graph\.\_captures/concrete_func\.graph\.function_captures\.by_val_internal/' ./tf2onnx/convert.py && \
+    sed -i -E -e 's/t_name\.name\ for\ t_val\,\ t_name/t\.name\ for\ t/' ./tf2onnx/convert.py && \
     sed -i -E -e 's/<3\.0\,//' setup.py && \
     python3.11 setup.py install && \
     cd .. && rm -rf tensorflow-onnx
