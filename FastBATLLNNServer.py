@@ -173,7 +173,6 @@ class FastBATLLNNServer(Chare):
                     A_out = msg['A_out']
                     b_out = msg['b_out']
 
-                    tllReach.initialize(tll , constraints, 100, useQuery, awaitable=True).get()
 
                 # Now wait for either a "GO" or "SHUTDOWN" command
                 msg = fromServerChannel.recv()
@@ -198,6 +197,7 @@ class FastBATLLNNServer(Chare):
                     toServerChannel.send({'id':problemID,'RESULT':'INVALID'})
                 else:
                     # Here is where we will actually run FastBATLLNN
+                    tllReach.initialize(tll , constraints, 100, useQuery, awaitable=True).get()
                     if A_out > 0:
                         result = not bool(tllReach.verifyLB(b_out,timeout=(timeout if timeout > 0 else None),ret=True).get()) # verify NN >= a: True/1 == SAT; False/0 == UNSAT
                     else:
