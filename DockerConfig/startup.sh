@@ -62,15 +62,17 @@ if [ "$MPIHOSTS" != "" ]; then
 /g' -e 's/:/    /g' >> /etc/hosts
     HOSTLIST=`echo "$MPIHOSTS" | sed -E -e 's/:[^:,]+/:-1/g'`
     echo "#!/bin/bash
+source /etc/bash.bashrc
 mpirun $MPIARGS -mca plm_rsh_args \"-p 3000\" -np $CORES -host $HOSTLIST -x PYTHONPATH=\"$PYPATH:\$PYTHONPATH\" -x TF_CPP_MIN_LOG_LEVEL=2 /usr/bin/python3.11 \"\$@\"" > /usr/local/bin/charming
 else
     echo "#!/bin/bash
+source /etc/bash.bashrc
 mpirun $MPIARGS -np $CORES -x PYTHONPATH=\"$PYPATH:\$PYTHONPATH\" -x TF_CPP_MIN_LOG_LEVEL=2 /usr/bin/python3.11 \"\$@\"" > /usr/local/bin/charming
 fi
 chmod 755 /usr/local/bin/charming
 
 if [ "$SERVER" = "server" ]; then
-	sudo -u $USER /bin/bash -i -l -c "/usr/local/bin/charming /home/$USER/tools/FastBATLLNN/FastBATLLNNServer.py &> '/home/$USER/results/FastBATLLNN_server_log.out' &"
+	sudo -u $USER /usr/local/bin/charming /home/$USER/tools/FastBATLLNN/FastBATLLNNServer.py &> "/home/$USER/results/FastBATLLNN_server_log.out" &
 fi
 if [ "$INTERACTIVE" = "-d" ]; then
 	wait -n
