@@ -1,5 +1,5 @@
 # FROM ubuntu:21.10
-FROM nvidia/cuda:11.8.0-cudnn8-devel-ubuntu22.04
+FROM nvidia/cuda:11.7.1-cudnn8-devel-ubuntu22.04
 WORKDIR /tmp/docker_build
 RUN ln -snf /usr/share/zoneinfo/$CONTAINER_TIMEZONE /etc/localtime && echo $CONTAINER_TIMEZONE > /etc/timezone
 RUN apt-get update && apt-get -y install software-properties-common
@@ -17,7 +17,7 @@ RUN apt-get update && \
     curl -sL https://deb.nodesource.com/setup_16.x | bash - && \
     apt -y install nodejs
 RUN python3.11 -m pip install --upgrade pip && \
-    python3.11 -m pip install numpy==1.24.2 tensorflow==2.13.0rc0 scipy==1.10.1 greenlet==2.0.2 pycddlib==2.1.6 Cython==0.29.33 pyopencl==2022.3.1 pycuda==2022.2.2 cupy-cuda11x==11.6.0 mpmath==1.3.0 matplotlib==3.7.1 onnx==1.14.0 onnxruntime==1.15.0 torch==2.0.0 torchvision==0.15.1 torchaudio==2.0.1 onnx==1.14.0 onnxruntime==1.15.0 pylint==2.17.1 flake8==6.0.0 vim-vint==0.3.21 swiglpk==5.0.8 threadpoolctl==3.1.0 skl2onnx==1.14.1 'python-lsp-server[all]' pylsp-mypy pyls-isort pynvim==0.4.3 cdifflib==1.2.6 tree_sitter jupyterlab ipympl && \
+    python3.11 -m pip install numpy==1.24.2 tensorflow==2.13.0 scipy==1.10.1 greenlet==2.0.2 pycddlib==2.1.6 Cython==0.29.33 pyopencl==2022.3.1 pycuda==2022.2.2 cupy-cuda11x==11.6.0 mpmath==1.3.0 matplotlib==3.7.1 onnx==1.14.0 onnxruntime==1.15.0 torch==2.0.1 torchvision==0.15.2 torchaudio==2.0.2 torchtext==0.15.2 onnx==1.14.0 onnxruntime==1.15.0 pylint==2.17.1 flake8==6.0.0 vim-vint==0.3.21 swiglpk==5.0.8 threadpoolctl==3.1.0 skl2onnx==1.14.1 'python-lsp-server[all]' pylsp-mypy pyls-isort pynvim==0.4.3 cdifflib==1.2.6 tree_sitter jupyterlab ipympl portalocker Pillow==10.0.0 kiwisolver==1.4.4 && \
     python3.11 -m pip install "jax[cuda11_cudnn805]" -f https://storage.googleapis.com/jax-releases/jax_releases.html
     # Non-frozen version install command:
     # python3.11 -m pip install numpy tensorflow scipy greenlet pycddlib Cython pyopencl pycuda cupy-cuda112==10.5.0 mpmath matplotlib onnx onnxruntime tf2onnx torch torchvision torchaudio pylint flake8 vim-vint 'python-lsp-server[all]' pylsp-mypy pyls-isort pynvim cdifflib tree_sitter && \
