@@ -77,9 +77,9 @@ RUN wget https://ftp.gnu.org/gnu/glpk/glpk-5.0.tar.gz && \
 # Installl OpenMPI with UCX support
 # NB: dependencies are
 # apt -y install autoconf libgfortran5 gfortran libnuma-dev debhelper kmod ethtool libpci3 flex libfuse2 m4 libelf1 lsof libnl-route-3-dev autotools-dev libnuma1 libnl-route-3-200 libusb-1.0-0 tk libnl-3-dev swig tcl libnl-3-200 pciutils udev libltdl-dev libmnl0 bison graphviz automake pkg-config chrpath dpatch
-RUN wget "https://content.mellanox.com/ofed/MLNX_OFED-5.9-0.5.6.0/MLNX_OFED_LINUX-5.9-0.5.6.0-ubuntu22.04-x86_64.tgz" && \
-    tar -xf MLNX_OFED_LINUX-5.9-0.5.6.0-ubuntu22.04-x86_64.tgz && \
-    cd MLNX_OFED_LINUX-5.9-0.5.6.0-ubuntu22.04-x86_64 && \
+RUN wget "https://content.mellanox.com/ofed/MLNX_OFED-23.07-0.5.0.0/MLNX_OFED_LINUX-23.07-0.5.0.0-ubuntu22.04-x86_64.tgz" && \
+    tar -xf MLNX_OFED_LINUX-23.07-0.5.0.0-ubuntu22.04-x86_64.tgz && \
+    cd MLNX_OFED_LINUX-23.07-0.5.0.0-ubuntu22.04-x86_64 && \
     ./mlnxofedinstall --user-space-only --force --without-ucx-cuda && \
     cd .. && \
     rm -rf *
