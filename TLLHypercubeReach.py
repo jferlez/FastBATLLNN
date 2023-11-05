@@ -451,7 +451,7 @@ class TLLHypercubeReach(Chare):
                     #print(f'Found counterexample TLL({self.cePoint}) = {self.cePointVal}')
                     break
         return retVal
-    
+
     @coro
     def getLBLPCount(self):
         return self.poset.getLPCount(ret=True).get()['LPSolverCount']
