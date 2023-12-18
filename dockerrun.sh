@@ -91,12 +91,15 @@ then
     mkdir "$SCRIPT_DIR/container_results"
 fi
 cd "$SCRIPT_DIR/container_results"
-if [ -e ~/.ssh/id_rsa.pub ]
-then
-    echo "Copying public key from ~/.ssh/id_rsa.pub to container authorized_keys"
-    cat ~/.ssh/id_rsa.pub > authorized_keys
-    echo "" >> authorized_keys
-fi
+for type in ed25519 rsa; do
+    if [ -e ~/.ssh/id_${type}.pub ]
+    then
+        echo "Copying public key from ~/.ssh/id_${type}.pub to container authorized_keys"
+        cat ~/.ssh/id_${type}.pub > authorized_keys
+        echo "" >> authorized_keys
+        break
+    fi
+done
 if [ -e ~/.ssh/authorized_keys ]
 then
     echo "Copying public keys from ~/.ssh/authorized_keys to container authorized_keys"

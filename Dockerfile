@@ -28,8 +28,8 @@ WORKDIR /home/${USER_NAME}/tools
 RUN chown -R ${UID}:${GID} /home/${USER_NAME}
 
 USER ${USER_NAME}
-RUN ssh-keygen -t rsa -q -f /home/${USER_NAME}/.ssh/id_rsa -N ""
-RUN cat /home/${USER_NAME}/.ssh/id_rsa.pub >> /home/${USER_NAME}/.ssh/authorized_keys
+RUN ssh-keygen -t ed25519 -q -f /home/${USER_NAME}/.ssh/id_ed25519 -N ""
+RUN cat /home/${USER_NAME}/.ssh/id_ed25519.pub >> /home/${USER_NAME}/.ssh/authorized_keys
 
 # Install neovim stuff:
 RUN mkdir -p /home/${USER_NAME}/.local/share/nvim/site/pack/packer/start

@@ -14,29 +14,35 @@ if [ ! -d /home/$USER/.ssh ]
 then
     sudo -u $USER mkdir /home/$USER/.ssh
 fi
-if [ -e /etc/ssh/ssh_host_rsa_key.pub ]; then
-	echo "
-****** SSH host key ******"
-	cat /etc/ssh/ssh_host_rsa_key.pub
-	echo "**************************
-"
-    sudo -u $USER mkdir -p /home/$USER/results/ssh_keys
-    sudo -u $USER chown -R $USER:$USER /home/$USER/results/ssh_keys
-    sudo -u $USER cp /etc/ssh/ssh_host_rsa_key.pub /home/$USER/results/ssh_keys
-    HOSTKEY=`cat /etc/ssh/ssh_host_rsa_key.pub`
-    sudo -u $USER sh -c "echo \"*:$PORTNUM $HOSTKEY\" > /home/$USER/.ssh/known_hosts"
-fi
-if [ -e /home/$USER/.ssh/id_rsa.pub ]; then
-	echo "
-****** SSH public key for user $USER ******"
-    cat /home/$USER/.ssh/id_rsa.pub
-    echo "***************************************
-"
-    sudo -u $USER mkdir -p /home/$USER/results/ssh_keys
-    sudo -u $USER chown -R $USER:$USER /home/$USER/results/ssh_keys
-    sudo -u $USER cp /home/$USER/.ssh/id_rsa.pub /home/$USER/results/ssh_keys/id_rsa_${USER}.pub
-    sudo -u $USER sh -c "cat /home/$USER/.ssh/id_rsa.pub > /home/$USER/.ssh/authorized_keys"
-fi
+for type in ed25519 rsa; do
+    if [ -e "/etc/ssh/ssh_host_${type}_key.pub" ]; then
+        echo "
+    ****** SSH host key ******"
+        cat /etc/ssh/ssh_host_${type}_key.pub
+        echo "**************************
+    "
+        sudo -u $USER mkdir -p /home/$USER/results/ssh_keys
+        sudo -u $USER chown -R $USER:$USER /home/$USER/results/ssh_keys
+        sudo -u $USER cp /etc/ssh/ssh_host_${type}_key.pub /home/$USER/results/ssh_keys
+        HOSTKEY=`cat "/etc/ssh/ssh_host_${type}_key.pub"`
+        sudo -u $USER sh -c "echo \"*:$PORTNUM $HOSTKEY\" > /home/$USER/.ssh/known_hosts"
+        break
+    fi
+done
+for type in ed25519 rsa; do
+    if [ -e "/home/$USER/.ssh/id_${type}.pub" ]; then
+        echo "
+    ****** SSH public key for user $USER ******"
+        cat /home/$USER/.ssh/id_${type}.pub
+        echo "***************************************
+    "
+        sudo -u $USER mkdir -p /home/$USER/results/ssh_keys
+        sudo -u $USER chown -R $USER:$USER /home/$USER/results/ssh_keys
+        sudo -u $USER cp /home/$USER/.ssh/id_${type}.pub /home/$USER/results/ssh_keys/id_${type}_${USER}.pub
+        sudo -u $USER sh -c "cat /home/$USER/.ssh/id_${type}.pub > /home/$USER/.ssh/authorized_keys"
+        break
+    fi
+done
 
 # Setup authorized_keys/known_hosts
 for fname in authorized_keys known_hosts; do
