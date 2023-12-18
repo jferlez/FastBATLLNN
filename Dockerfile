@@ -60,6 +60,7 @@ RUN echo "set-option -gs default-terminal \"tmux-256color\" # Optional" >> /home
 RUN echo "set-option -gas terminal-overrides \"*:Tc\"" >> /home/${USER_NAME}/.tmux.conf
 RUN echo "set-option -gas terminal-overrides \"*:RGB\"" >> /home/${USER_NAME}/.tmux.conf
 RUN echo "set-window-option -g mode-keys vi" >> /home/${USER_NAME}/.tmux.conf
+RUN echo "set-option -g history-limit 50000" >> /home/${USER_NAME}/.tmux.conf
 WORKDIR /home/${USER_NAME}/tools/FastBATLLNN
 
 USER root
