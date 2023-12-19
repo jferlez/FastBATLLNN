@@ -7,9 +7,12 @@ import TLLHypercubeReach
 
 import time
 import pickle
+import os
 
 
 charm.options.local_msg_buf_size = 10000
+if os.path.exists('./enable_profiling'):
+    charm.options.profiling = True
 
 
 class Main(Chare):
@@ -153,6 +156,11 @@ class Main(Chare):
             pass
         print('-----------------------------------------------------------')
         print(' ')
+
+        if os.path.exists('./enable_profiling'):
+            for pe in range(charm.numPes()):
+                charm.thisProxy[pe].printStats(awaitable=True).get()
+                charm.sleep(1)
 
         charm.exit()
 
