@@ -167,7 +167,7 @@ class setupCheckerVarsOriginCheck(posetFastCharm.localVar, Chare):
         self.out = out
         # self.posetSuccGroupProxy.setProperty('out',out)
         # self.selectorSets = self.selectorSetsFull[out]
-        self.flippedConstraints = constraints
+        self.flippedConstraints = constraints.deserialize()
         self.N = self.flippedConstraints.N
         self.allN = self.flippedConstraints.allN
         self.nodeIntMask = [(2**(self.N+1))-1]
@@ -175,7 +175,7 @@ class setupCheckerVarsOriginCheck(posetFastCharm.localVar, Chare):
         self.skip = False
         self.counterExample = None
     def getConstraints(self):
-        return (self.flippedConstraints, self.selectorSetsFull, self.nodeIntMask, self.out)
+        return (self.flippedConstraints.serialize(), self.selectorSetsFull, self.nodeIntMask, self.out)
     def getPosetPEList(self):
         return self.posetPElist
     # @coro
