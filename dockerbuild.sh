@@ -39,7 +39,7 @@ if [ "$TOKEN" != "" ]; then
     echo "$TOKEN" > .hub_token
 else
     cd "$SCRIPT_DIR/DockerDeps"
-    docker build -t fastbatllnn-deps:local .
+    docker build --platform linux/amd64 -t fastbatllnn-deps:local .
     PROCESSING="s/fastbatllnn/fastbatllnn/"
 fi
 
@@ -57,4 +57,4 @@ else
     PYTHON=""
 fi
 
-cat Dockerfile | sed -u -e $PROCESSING | docker build --no-cache --build-arg USER_NAME=$user --build-arg UID=$UID --build-arg GID=$GID --build-arg CORES=$CORES -t fastbatllnn-run:${user} -f- .
+cat Dockerfile | sed -u -e $PROCESSING | docker build --platform linux/amd64 --no-cache --build-arg USER_NAME=$user --build-arg UID=$UID --build-arg GID=$GID --build-arg CORES=$CORES -t fastbatllnn-run:${user} -f- .
