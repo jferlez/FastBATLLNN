@@ -18,7 +18,7 @@ RUN apt-get update && apt-get -y install software-properties-common && \
     apt -y install nodejs && \
     npm install -g vim-language-server node-gyp tree-sitter tree-sitter-cli && \
     python3.11 -m pip install --upgrade pip
-RUN python3.11 -m pip install --use-pep517 numpy==1.24.2 tensorflow==2.13.0 scipy==1.10.1 greenlet==2.0.2 pycddlib==2.1.6 Cython==0.29.33 pyopencl==2022.3.1 pycuda==2022.2.2 cupy-cuda11x==11.6.0 mpmath==1.3.0 matplotlib==3.7.1 onnx==1.14.0 onnxruntime==1.15.0 onnx==1.14.0 onnxruntime==1.15.0 pylint==2.17.1 flake8==6.0.0 vim-vint==0.3.21 swiglpk==5.0.8 threadpoolctl==3.1.0 skl2onnx==1.14.1 python-lsp-server==1.7.4 pylsp-mypy pyls-isort pynvim==0.4.3 cdifflib==1.2.6 tree_sitter jupyterlab ipympl portalocker Pillow==10.0.0 kiwisolver==1.4.4 build==0.10.0 jedi==0.18.0 parso==0.8.3 && \
+RUN python3.11 -m pip install --use-pep517 build==1.0.3 numpy==1.24.2 tensorflow==2.13.0 scipy==1.10.1 greenlet==2.0.2 pycddlib==2.1.6 Cython==0.29.33 pyopencl==2022.3.1 pycuda==2022.2.2 cupy-cuda11x==11.6.0 mpmath==1.3.0 matplotlib==3.7.1 onnx==1.14.0 onnxruntime==1.15.0 onnx==1.14.0 onnxruntime==1.15.0 pylint==2.17.1 flake8==6.0.0 vim-vint==0.3.21 swiglpk==5.0.8 threadpoolctl==3.1.0 skl2onnx==1.14.1 python-lsp-server==1.7.4 pylsp-mypy pyls-isort pynvim==0.4.3 cdifflib==1.2.6 tree_sitter jupyterlab ipympl portalocker Pillow==10.0.0 kiwisolver==1.4.4 jedi==0.18.0 parso==0.8.3 && \
     python3.11 -m pip install torch==2.0.1 torchvision==0.15.2 torchaudio==2.0.2 torchtext==0.15.2 --index-url https://download.pytorch.org/whl/cu118 && \
     python3.11 -m pip install --upgrade "jax[cuda11_pip]" -f https://storage.googleapis.com/jax-releases/jax_cuda_releases.html
 # RUN git clone https://github.com/google/jax && \
@@ -98,11 +98,11 @@ RUN git clone https://github.com/UIUC-PPL/charm4py && \
     git clone https://github.com/numba/numba && \
     git clone https://github.com/numba/llvmlite && \
     cd llvmlite && \
-    git checkout 70f057b59a9d11de1c4d1792aabe6d5bf24eacc3 && \
-    LLVM_CONFIG=llvm-config-14 python3.11 setup.py install && \
+    git checkout 2c3dae019a4a38d2c8494d628ea5d4da447cc374 && \
+    LLVM_CONFIG=llvm-config-14 python3.11 -m build -n && python3.11 -m pip install ./dist/llvm*whl && \
     cd ../numba && git fetch && git pull && \
-    git checkout ac1a5f85fc9128cb7a7c862401467b6bb2ae85bf && \
-    python3.11 setup.py install && \
+    git checkout 58b4954a9a31a8473377d62e67c3b923236fbbd6 && \
+    python3.11 -m build -n && python3.11 -m pip install ./dist/numba*whl && \
     cd .. && \
     rm -rf *
 
