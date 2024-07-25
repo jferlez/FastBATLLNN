@@ -86,11 +86,11 @@ RUN wget "https://content.mellanox.com/ofed/MLNX_OFED-23.10-0.5.5.0/MLNX_OFED_LI
 # Install charm4py
 RUN git clone https://github.com/UIUC-PPL/charm4py && \
     cd charm4py && \
-    git checkout fc0f0108ffdb6fd5b4d868d250cc9fe4e3285c4d && \
+    git checkout 78b3eca35db654498f26b12f36930682a84f6c13 && \
     sed -i -E -e "s/(\s+)(args\ \+\=)/\1args\.remove('\+\+interactive')\n\1\2/" ./charmrun/start.py && \
     git clone https://github.com/UIUC-PPL/charm charm_src/charm && \
     cd charm_src/charm && \
-    git checkout 850300aaf5a04bc7d3b851afaf9c50b8f18b1f1e && \
+    git checkout b8ee98cc09bf263d3d811679e9ce7005fd614f70 && \
     cd ../.. && \
     PATH="/usr/mpi/gcc/openmpi-4.1.7a1/bin:$PATH" && \
     python3.11 setup.py install --mpi && \
