@@ -1,7 +1,7 @@
 import numpy as np
 import charm4py
 from charm4py import charm, Chare, coro, Reducer, Group, Future, Array, Channel
-import TLLnetIO as TLLnet
+import TLLnet
 import posetFastCharm
 import TLLHypercubeReach
 
@@ -72,10 +72,6 @@ class Main(Chare):
         tll.setLocalLinearFns(localLinearFns)
         tll.setSelectorSets(selectorSets)
 
-        # Create a Keras implementation of the TLL to generate output samples:
-        # (WARNING: for large TLLs the Keras model is prohibitively large!)
-        tll.createKeras(flat=False,incBias=False)
-
 
         # Specify input constraints polytope: [-ext, ext]
         # (NOTE: we have a scalar input/scalar output TLL)
@@ -88,7 +84,8 @@ class Main(Chare):
 
         # Generate some input/output samples to get a sense of the TLL's max/min outputs:
         numSamples = 100
-        samples = tll.model.predict(2*ext*np.random.rand(numSamples,tll.n) - ext).flatten()
+        samples, _, _ = tll.evalAt(2*ext*np.random.rand(numSamples,tll.n).T - ext)
+        samples = samples.flatten()
 
         print('\n\nMax of Output Samples: ' + str(np.max(samples)))
         print('Min of Output Samples: ' + str(np.min(samples)))
