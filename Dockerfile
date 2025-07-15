@@ -8,9 +8,9 @@ ARG CORES
 RUN sed -i '16i Port 3000' /etc/ssh/sshd_config
 
 # Delete some groups that overlap with MacOS standard user groups
-RUN delgroup --only-if-empty dialout
-RUN delgroup --only-if-empty fax
-RUN delgroup --only-if-empty voice
+RUN delgroup dialout
+RUN delgroup fax
+RUN delgroup voice
 
 RUN addgroup --gid ${GID} ${USER_NAME}
 RUN useradd -rm -d /home/${USER_NAME} -s /bin/bash -g ${USER_NAME} -G sudo -u ${UID} ${USER_NAME}
@@ -43,7 +43,7 @@ RUN git clone --recursive https://github.com/jferlez/FastBATLLNN
 
 # This installs VNNLIB support
 #RUN git clone https://github.com/stanleybak/nnenum
-RUN ln -s /usr/local/lib/python3.11/dist-packages/nnenum /home/${USER_NAME}/tools/nnenum
+RUN ln -s /usr/local/lib/python3.13/dist-packages/nnenum /home/${USER_NAME}/tools/nnenum
 
 # WORKDIR /home/${USER_NAME}/tools/FastBATLLNN/HyperplaneRegionEnum
 # RUN python3.9 posetFastCharm_numba.py
