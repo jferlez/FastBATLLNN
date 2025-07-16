@@ -22,7 +22,7 @@ RUN apt-get update && apt-get -y install software-properties-common && \
     apt -y install nodejs && \
     npm install -g vim-language-server node-gyp tree-sitter tree-sitter-cli && \
     python3.13 -m pip install --upgrade pip
-RUN sudo apt -y remove python3-traitlets python3-numpy python3-kiwisolver && python3.13 -m pip install --use-pep517 build==1.2.2.post1 protobuf==6.31.1 numpy==2.3.1 scipy==1.16.0 greenlet==3.2.3 tf-nightly==2.20.0.dev20250711 pycddlib==3.0.2 Cython==3.0.12 mpmath==1.3.0 matplotlib==3.10.3 onnxruntime==1.22.1 pylint==3.3.7 flake8==7.3.0 vim-vint==0.3.21 swiglpk==5.0.12 threadpoolctl==3.6.0 skl2onnx==1.19.1 python-lsp-server==1.12.2 pylsp-mypy pyls-isort pynvim==0.5.2 cdifflib==1.2.6 tree_sitter jupyterlab ipympl portalocker Pillow==11.3.0 kiwisolver==1.4.8 jedi==0.19.2 parso==0.8.4 py-cpuinfo==9.0.0 psutil==7.0.0 traitlets==5.14.3 && \
+RUN sudo apt -y remove python3-traitlets python3-numpy python3-kiwisolver && python3.13 -m pip install --use-pep517 build==1.2.2.post1 protobuf==6.31.1 numpy==2.1.3 scipy==1.16.0 greenlet==3.2.3 tf-nightly==2.20.0.dev20250711 pycddlib==3.0.2 Cython==3.0.12 mpmath==1.3.0 matplotlib==3.10.3 onnxruntime==1.22.1 pylint==3.3.7 flake8==7.3.0 vim-vint==0.3.21 swiglpk==5.0.12 threadpoolctl==3.6.0 skl2onnx==1.19.1 python-lsp-server==1.12.2 pylsp-mypy pyls-isort pynvim==0.5.2 cdifflib==1.2.6 tree_sitter jupyterlab ipympl portalocker Pillow==11.3.0 kiwisolver==1.4.8 jedi==0.19.2 parso==0.8.4 py-cpuinfo==9.0.0 psutil==7.0.0 traitlets==5.14.3 && \
     python3.13 -m pip install torch==2.7.1 torchvision==0.22.1 torchaudio==2.7.1 && \
     python3.13 -m pip install --upgrade "jax[cuda12_pip]" -f https://storage.googleapis.com/jax-releases/jax_cuda_releases.html
 #  cupy-cuda12x==13.5.1  scipy==1.17.0
