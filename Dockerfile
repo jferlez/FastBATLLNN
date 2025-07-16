@@ -14,8 +14,8 @@ RUN delgroup voice
 
 # Delete any existing user/group with the provided UID/GID
 # (24.04 Ubuntu images have an 'ubuntu' user/group with uid/gid 1000 out of the box)
-RUN bash -c "OLDUSER=\$(cat /etc/passwd | grep -E '^\w+\:x\:${UID}' | sed -E -e 's/^(\w+)\:.*/\1/' -); if [ \"\$OLDUSER\" != \"\" ]; then deluser --force \$OLDUSER; fi" && \
-    bash -c "GRPNAME=\$(cat /etc/group | grep -E '^\w+\:x\:${GID}' | sed -E -e 's/^(\w+)\:.*/\1/' -); if [ \"\$GRPNAME\" != \"\" ]; then groupdel -f \$GRPNAME; fi"
+RUN bash -c "OLDUSER=\$(cat /etc/passwd | grep -E '^\w+\:x\:${UID}' | sed -E -e 's/^(\w+)\:.*/\1/' -); if [ \"\$OLDUSER\" != \"\" ]; then deluser \$OLDUSER; fi" && \
+    bash -c "GRPNAME=\$(cat /etc/group | grep -E '^\w+\:x\:${GID}' | sed -E -e 's/^(\w+)\:.*/\1/' -); if [ \"\$GRPNAME\" != \"\" ]; then delgroup \$GRPNAME; fi"
 RUN addgroup --gid ${GID} ${USER_NAME}
 RUN useradd -rm -d /home/${USER_NAME} -s /bin/bash -g ${USER_NAME} -G sudo -u ${UID} ${USER_NAME}
 RUN echo "${USER_NAME}:${USER_NAME}" | chpasswd
