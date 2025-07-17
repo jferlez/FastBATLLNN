@@ -99,8 +99,10 @@ RUN git clone https://github.com/UIUC-PPL/charm4py && \
     cd charm_src/charm && \
     git checkout 3cf60d56fd9db5b399dc4569d7cc7f77e73a8ea1 && \
     cd ../.. && \
+    sed -i -E -e 's/^build_mpi\ =\ False/build_mpi\ =\ True/' -e 's/(\s*)self\.mpi\ =\ False/\1self\.mpi\ =\ True/' setup.py &&  \
     PATH="/usr/mpi/gcc/openmpi-4.1.7rc1/bin:$PATH" && \
-    python3.13 -m pip install --use-pep517 --config-settings="--mpi=True" . && \
+    python3.13 -m pip install --use-pep517 . && \
+    # python3.13 setup.py install --mpi && \
     cd .. && \
     git clone https://github.com/numba/numba && \
     git clone https://github.com/numba/llvmlite && \
