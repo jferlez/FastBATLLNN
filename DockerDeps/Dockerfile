@@ -2,7 +2,8 @@
 FROM nvidia/cuda:12.9.1-cudnn-devel-ubuntu24.04
 WORKDIR /tmp/docker_build
 RUN ln -snf /usr/share/zoneinfo/$CONTAINER_TIMEZONE /etc/localtime && echo $CONTAINER_TIMEZONE > /etc/timezone
-RUN apt-get update && apt-get -y install software-properties-common && \
+RUN apt-get update && apt-get -y install software-properties-common && apt-get -y install wget && \
+    wget https://apt.llvm.org/llvm.sh && chmod +x llvm.sh && ./llvm.sh 22 && rm llvm.sh && \
     add-apt-repository ppa:neovim-ppa/unstable && \
     add-apt-repository ppa:deadsnakes/nightly && \
     apt-get update && apt-get -y install python3.13 python3.13-dev libpython3.13-dev curl && \
@@ -16,14 +17,14 @@ RUN apt-get update && apt-get -y install software-properties-common && \
     echo "deb [signed-by=/etc/apt/trusted.gpg.d/GPG-KEY-Mellanox.pub] $DOCA_URL ./" > /etc/apt/sources.list.d/doca.list && \
     apt-get update && \
     apt-get -y upgrade && \
-    apt -y install clang-14 clang-15 clang-18 cmake gfortran gfortran-14 gcc-14 g++-14 libstdc++-14-dev libgsl-dev libcdd-dev libfftw3-dev libsuitesparse-dev git libgmp-dev vim emacs nano screen tmux ipython3 openssh-server sudo curl universal-ctags ripgrep psmisc locales clangd util-linux git-lfs htop zlib1g zlib1g-dev && \
+    apt -y install clang-14 clang-15 clang-18 cmake gfortran gfortran-14 gcc-14 g++-14 libstdc++-14-dev libgsl-dev libcdd-dev libfftw3-dev libsuitesparse-dev git libgmp-dev vim emacs nano screen tmux ipython3 openssh-server sudo curl universal-ctags ripgrep psmisc locales clangd util-linux htop zlib1g zlib1g-dev && \
     apt -y install autoconf libnuma-dev debhelper kmod ethtool libpci3 flex libfuse2 m4 libelf1 lsof libnl-route-3-dev autotools-dev libnuma1 libnl-route-3-200 libusb-1.0-0 tk libnl-3-dev swig tcl libnl-3-200 pciutils udev libltdl-dev libmnl0 bison graphviz automake pkg-config chrpath && \
     curl -sL https://deb.nodesource.com/setup_22.x | bash - && \
     apt -y install nodejs && \
     npm install -g vim-language-server node-gyp tree-sitter tree-sitter-cli && \
     python3.13 -m pip install --upgrade pip
-RUN sudo apt -y remove python3-traitlets python3-numpy python3-kiwisolver && python3.13 -m pip install --use-pep517 build==1.2.2.post1 protobuf==6.31.1 numpy==2.1.3 scipy==1.16.0 greenlet==3.2.3 tf-nightly==2.20.0.dev20250711 pycddlib==3.0.2 Cython==3.0.12 mpmath==1.3.0 matplotlib==3.10.3 onnxruntime==1.22.1 pylint==3.3.7 flake8==7.3.0 vim-vint==0.3.21 swiglpk==5.0.12 threadpoolctl==3.6.0 skl2onnx==1.19.1 python-lsp-server==1.12.2 pylsp-mypy pyls-isort pynvim==0.5.2 cdifflib==1.2.6 tree_sitter jupyterlab ipympl portalocker Pillow==11.3.0 kiwisolver==1.4.8 jedi==0.19.2 parso==0.8.4 py-cpuinfo==9.0.0 psutil==7.0.0 traitlets==5.14.3 && \
-    python3.13 -m pip install torch==2.7.1 torchvision==0.22.1 torchaudio==2.7.1 && \
+RUN sudo apt -y remove python3-traitlets python3-numpy python3-kiwisolver python3-attr && python3.13 -m pip install --use-pep517 build==1.4.4 protobuf==6.31.1 numpy==2.4.6 scipy==1.17.1 greenlet==3.3.2 tf-nightly==2.22.0.dev20260530 pycddlib==3.0.2 Cython==3.2.5 mpmath==1.4.1 matplotlib==3.10.9 onnxruntime==1.22.1 pylint==4.0.5 flake8==7.3.0 vim-vint==0.3.21 swiglpk==5.0.12 threadpoolctl==3.6.0 skl2onnx==1.19.1 python-lsp-server==1.14.0 pylsp-mypy python-lsp-ruff python-lsp-black pyls-isort pynvim==0.6.0 cdifflib==1.2.6 tree_sitter jupyterlab ipympl portalocker Pillow==12.2.0 kiwisolver==1.5.0 jedi==0.19.2 parso==0.8.6 py-cpuinfo==9.0.0 psutil==7.2.2 traitlets==5.14.3 && \
+    python3.13 -m pip install torch==2.12.0 torchvision==0.27.0 torchaudio==2.11.0 --index-url https://download.pytorch.org/whl/cu126 && \
     python3.13 -m pip install --upgrade "jax[cuda12_pip]" -f https://storage.googleapis.com/jax-releases/jax_cuda_releases.html
 #  cupy-cuda12x==13.5.1  scipy==1.17.0
 # RUN git clone https://github.com/google/jax && \
@@ -61,7 +62,13 @@ RUN wget -q "https://packages.microsoft.com/config/ubuntu/$(lsb_release -rs)/pac
     sudo apt-get update && sudo apt-get install -y powershell
 
 # Install latest neovim
-RUN sudo apt-get -y install neovim
+RUN sudo apt-get -y install ninja-build gettext cmake curl build-essential git &&\
+    git clone https://github.com/neovim/neovim && \
+    cd neovim && \
+    make CMAKE_BUILD_TYPE=RelWithDebInfo && \
+    sudo make install && \
+    cd .. && rm -rf neovim
+#sudo apt-get -y install neovim
 # Build Fast BATLLNN dependencies
 RUN wget https://ftp.gnu.org/gnu/glpk/glpk-5.0.tar.gz && \
     tar -xf glpk-5.0.tar.gz && \
@@ -91,15 +98,18 @@ RUN wget https://ftp.gnu.org/gnu/glpk/glpk-5.0.tar.gz && \
 #     rm -rf *
 RUN apt -y install doca-ofed
 # Install charm4py
-RUN git clone https://github.com/UIUC-PPL/charm4py && \
+RUN apt-get -y install libzstd-dev && \
+    git clone https://github.com/UIUC-PPL/charm4py && \
     cd charm4py && \
-    git checkout a067434616f23ef726e6076ebfe7a34dc02a317a && \
+    git checkout 53df41d531e5067895c3ef373b6935aafb16f668 && \
     sed -i -E -e "s/(\s+)(args\ \+\=)/\1args\.remove('\+\+interactive')\n\1\2/" ./charmrun/start.py && \
     git clone https://github.com/UIUC-PPL/charm charm_src/charm && \
     cd charm_src/charm && \
-    git checkout 3cf60d56fd9db5b399dc4569d7cc7f77e73a8ea1 && \
+    git checkout 3c3086b33bc9bb59a37230a10a9ef0d4bf2e58f5 && \
     cd ../.. && \
     sed -i -E -e 's/^build_mpi\ =\ False/build_mpi\ =\ True/' -e 's/(\s*)self\.mpi\ =\ False/\1self\.mpi\ =\ True/' setup.py &&  \
+    sed -i -E -e 's/(\s*cmd = f.\.\/build charm4py.*)(.)/\1 --with-refnum-type=uint\2/' ./setup.py && \
+    sed -i -E -e 's/(class Chare\(object\))/FIDMAXVAL = 4294967295\n\n\1/' ./charm4py/chare.py && sed -i -E -e 's/65535/FIDMAXVAL/' ./charm4py/chare.py && \
     PATH="/usr/mpi/gcc/openmpi-4.1.7rc1/bin:$PATH" && \
     python3.13 -m pip install --use-pep517 . && \
     # python3.13 setup.py install --mpi && \
@@ -107,10 +117,10 @@ RUN git clone https://github.com/UIUC-PPL/charm4py && \
     git clone https://github.com/numba/numba && \
     git clone https://github.com/numba/llvmlite && \
     cd llvmlite && \
-    git checkout 2c67a6b8deaaa21cf23e6cb59cf66905b63281ba && \
-    LLVM_CONFIG=llvm-config-15 python3.13 -m pip install --use-pep517 .  && \
+    git checkout 6302ab2f6779e54aaffc8dc5a603a67aa9316899 && \
+    LLVM_CONFIG=llvm-config-22 LLVM_DIR=/usr/lib/llvm-22 python3.13 -m pip install --use-pep517 .  && \
     cd ../numba && git fetch && git pull && \
-    git checkout 1e70d8ceba56a135e046e32e1e7ad2fcd22fd8ab && \
+    git checkout acf9191499d390eebb78fa65a17833de1fd33084 && \
     python3.13 -m pip install --use-pep517 . && \
     cd .. && \
     rm -rf *
