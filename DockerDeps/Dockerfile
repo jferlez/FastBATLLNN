@@ -117,10 +117,10 @@ RUN apt-get -y install libzstd-dev && \
     git clone https://github.com/numba/numba && \
     git clone https://github.com/numba/llvmlite && \
     cd llvmlite && \
-    git checkout 6302ab2f6779e54aaffc8dc5a603a67aa9316899 && \
+    git checkout 1130f6f5669723d1c093fdf81627a9859b25747f && \
     LLVM_CONFIG=llvm-config-22 LLVM_DIR=/usr/lib/llvm-22 python3.13 -m pip install --use-pep517 .  && \
     cd ../numba && git fetch && git pull && \
-    git checkout acf9191499d390eebb78fa65a17833de1fd33084 && \
+    git checkout 3efa119da913315b1cfc68c5628f6d540ffd91b2 && \
     python3.13 -m pip install --use-pep517 . && \
     cd .. && \
     rm -rf *
