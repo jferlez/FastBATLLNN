@@ -100,7 +100,7 @@ class Main(Chare):
         charm.awaitCreation(tllReach)
         tllReach.initialize(tll , constraints, 100, useQuery, awaitable=True).get()
 
-        optsDict = {'hashStoreUseBits':True,'prefilter':True,'solver':'glpk','verbose':True}
+        optsDict = {'hashStoreUseBits':True,'prefilter':True,'solver':'glpk','verbose':1}
 
         print('\n\n----------------- VERIFYING LOWER BOUND:  -----------------')
         t = time.time()
