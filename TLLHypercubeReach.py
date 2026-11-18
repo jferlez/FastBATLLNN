@@ -330,10 +330,12 @@ class TLLHypercubeReach(Chare):
 
     @coro
     def searchBound(self,seedBd,out=0,lb=True,tol=1e-3,opts={}):
-        if 'verbose' in opts:
-            verbose = opts['verbose']
+        localOpts = deepcopy(opts)
+        if 'verbose' in localOpts:
+            verbose = localOpts['verbose']
         else:
-            verbose = False
+            verbose = 0
+            localOpts['verbose'] = verbose
         if out >= self.m:
             raise ValueError('Output ' + str(out) + ' is greater than m = ' + str(self.m))
         # lb2ub = 1
@@ -348,7 +350,7 @@ class TLLHypercubeReach(Chare):
 
         while itCnt > 0:
             bdToCheck = windUB if windLB==-np.inf else 0.5*(windLB + windUB)
-            ver = self.verifyLB( bdToCheck, out=out, opts=opts) if lb else self.verifyUB( bdToCheck,out=out, verbose=verbose)
+            ver = self.verifyLB( bdToCheck, out=out, opts=localOpts) if lb else self.verifyUB( bdToCheck,out=out, verbose=verbose)
 
             if verbose:
                 print( 'Iteration ' + str(itCnt) +  ': ' + str(bdToCheck) + ' is ' + ('a VALID' if ver else 'an INVALID') + ' lower bound!')
