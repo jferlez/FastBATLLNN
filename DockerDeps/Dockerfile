@@ -105,7 +105,8 @@ RUN apt-get -y install libzstd-dev && \
     sed -i -E -e "s/(\s+)(args\ \+\=)/\1args\.remove('\+\+interactive')\n\1\2/" ./charmrun/start.py && \
     git clone https://github.com/UIUC-PPL/charm charm_src/charm && \
     cd charm_src/charm && \
-    git checkout 3c3086b33bc9bb59a37230a10a9ef0d4bf2e58f5 && \
+    git checkout 69c48ad848a26455a33ee736f45c3ef7d64e101b && \
+    cd src/libs/ck-libs/io && curl -O -L https://github.com/charmplusplus/charm/blob/69c48ad848a26455a33ee736f45c3ef7d64e101b/src/libs/ck-libs/io/fs_parameters.c && cd ../../../.. && \
     cd ../.. && \
     sed -i -E -e 's/^build_mpi\ =\ False/build_mpi\ =\ True/' -e 's/(\s*)self\.mpi\ =\ False/\1self\.mpi\ =\ True/' setup.py &&  \
     sed -i -E -e 's/(\s*cmd = f.\.\/build charm4py.*)(.)/\1 --with-refnum-type=uint\2/' ./setup.py && \
